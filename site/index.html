@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  <meta name="author" content="Shing Wan CHOI">
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>Basic Tutorial for Genome Wide Association Analysis</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/theme_extra.css" />
+  <link href="css/extra.css" rel="stylesheet" />
+  <link href="css/details.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script> 
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-145068952-1', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> Basic Tutorial for Genome Wide Association Analysis</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#datasets">Datasets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#citation">Citation</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="QC/">1. Quality Control of GWAS Data</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="popstrat/">2. Population Stratification</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="cal_prs/">3. Association Analyses</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="plink/">PLINK</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="plink_visual/">4. Visualizing association results</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="" href="assocdive.md">5. Deep dive into underpinnings of associations</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">Basic Tutorial for Genome Wide Association Analysis</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="home">Home<a class="headerlink" href="#home" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This tutorial provides a step-by-step guide to performing basic Genome Wide Association Study (GWAS) analyses and accompanies our <a href="...MAYBE A LINK AT SOME POINT...">GWAS Guide paper</a>. The aim of this tutorial is to provide a simple introduction of GWAS analyses while equipping existing users with a better understanding of the processes and implementation of mainstay GWAS tools. </p>
+<p>The tutorial is separated into five main section. </p>
+<ol>
+<li><a href="QC/">Quality Control of GWAS Data</a></li>
+<li><a href="popstrat/">Population Stratification</a></li>
+<li><a href="assoc.md">Association Analyses</a></li>
+<li><a href="visual.md">Visualizing of Association results</a></li>
+<li><a href="assocdive.md">Deep dive into underpinnings of associations</a></li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Data used in this tutorial are simulated and intended for demonstration purposes only. The results from this tutorial will not reflect the true performance of different software. </p>
+</div>
+<div class="admonition notess">
+<p class="admonition-title">Notess</p>
+<p>We assume you have basic knownledges on how to use the terminal, <code>plink</code> and <code>R</code>. 
+If you are unfamiliar with any of those, you can refer to the following online resources:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Software</th>
+<th align="center">link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">terminal (OS X / Linux)</td>
+<td align="center"><a href="https://www.digitalocean.com/community/tutorials/basic-linux-navigation-and-file-management">1</a>, <a href="https://linuxconfig.org/bash-scripting-tutorial-for-beginners">2</a></td>
+</tr>
+<tr>
+<td align="center">terminal (Windows)</td>
+<td align="center"><a href="https://www.cs.princeton.edu/courses/archive/spr05/cos126/cmd-prompt.html">1</a>, <a href="https://www.tutorialspoint.com/batch_script/index.htm">2</a></td>
+</tr>
+<tr>
+<td align="center">plink</td>
+<td align="center"><a href="https://www.cog-genomics.org/plink/1.9/">v1.90</a>, <a href="http://zzz.bwh.harvard.edu/plink/">v1.75</a></td>
+</tr>
+<tr>
+<td align="center">R</td>
+<td align="center"><a href="https://www.tutorialspoint.com/r/index.htm">1</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial is written for Linux and OS X operating systems. 
+Windows users will need to change some commands accordingly.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Throughout the tutorial you will see tabs above some of the code:</p>
+<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">A</label><div class="tabbed-content">
+<pre class="highlight"><code class="language-bash">echo "Tab A"</code></pre>
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">B</label><div class="tabbed-content">
+<pre class="highlight"><code class="language-bash">echo "Tab B"</code></pre>
+</div>
+</div>
+<p>You can click on the tab to change to an alternative code (eg. to a different operation system)</p>
+</div>
+<h2 id="datasets">Datasets<a class="headerlink" href="#datasets" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="base.md">Base data</a></li>
+<li><a href="https://drive.google.com/file/d/1uhJR_3sn7RA8U5iYQbcmTp6vFdQiF4F2/view?usp=sharing">Target data</a>: Simulated data based on the 1000 Genomes Project European samples</li>
+</ol>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<p>To follow the tutorial, you will need the following programs installed:</p>
+<ol>
+<li><a href="https://www.r-project.org/">R</a> (<strong>version 3.2.3+</strong>)</li>
+<li><a href="https://www.cog-genomics.org/plink2">PLINK 1.9</a></li>
+</ol>
+<h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permanent link">&para;</a></h2>
+<p>If you find this tutorial helpful for a publication, then please consider citing:</p>
+<div class="admonition important">
+<p class="admonition-title">Citation</p>
+</div>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="QC/" class="btn btn-neutral float-right" title="1. Quality Control of GWAS Data">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/choishingwan/PRS-Tutorial/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="QC/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+      <script src="javascripts/details.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.1.2
+Build Date UTC : 2020-11-21 03:43:48.876246+00:00
+-->

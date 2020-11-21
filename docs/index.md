@@ -63,4 +63,4 @@ If you find this tutorial helpful for a publication, then please consider citing
 
 !!! important "Citation"
 
-    Choi, S.W., Mak, T.S. & O’Reilly, P.F. Tutorial: a guide to performing polygenic risk score analyses. Nat Protoc (2020). [https://doi.org/10.1038/s41596-020-0353-1](https://doi.org/10.1038/s41596-020-0353-1)
+
