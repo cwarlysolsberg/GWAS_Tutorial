@@ -1,0 +1,44 @@
+site_name: Basic Tutorial for Genome Wide Association Analysis
+repo_url: https://github.com/choishingwan/PRS-Tutorial
+site_author: Shing Wan CHOI
+nav:
+    - index.md
+    - 1. Quality Control of GWAS Data: QC.md
+    - 2. Population Stratification: popstrat.md
+    - 3. Association Analyses: cal_prs.md
+    - PLINK: plink.md
+    - 4. Visualizing association results: plink_visual.md
+    - 5. Deep dive into underpinnings of associations: assocdive.md
+
+theme: 
+    name: readthedocs
+    highlightjs: false
+
+markdown_extensions:
+    - admonition
+    - pymdownx.details
+    - pymdownx.tabbed
+    - pymdownx.superfences
+    - pymdownx.highlight:
+        use_pygments: true
+        noclasses: true
+    - toc:
+        permalink: true
+    - pymdownx.arithmatex:
+        generic: true
+    - pymdownx.betterem:
+        smart_enable: all
+    - pymdownx.caret
+
+
+extra_css:
+  - css/extra.css
+  - css/details.css
+
+google_analytics:
+    - 'UA-145068952-1'
+    - auto
+
+extra_javascript:
+  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+  - javascripts/details.js
