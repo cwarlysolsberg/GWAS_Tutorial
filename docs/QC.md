@@ -11,7 +11,7 @@ You **MUST** download and unzip the R folder from [here](https://drive.google.co
  
 
 !!! warning
-    If you download the summary statistics on a MAC machine, the gz file may decompress automatically, which might result in a corrupted Height.gwas.txt file (including only the header). If this happens then you'll need to disable automatic decompression when downloading the file (eg. follow instructions [here](https://octet.oberlin.edu/does-your-mac-unzip-zip-files-automatically/ ))
+    / ))
 
 
 ### Reading the genotype data file and produce missingness data:

@@ -14,7 +14,7 @@ The tutorial is separated into five main section.
 
     Data used in this tutorial are simulated and intended for demonstration purposes only. The results from this tutorial will not reflect the true performance of different software. 
 
-!!! notess
+!!! notes
 
     We assume you have basic knownledges on how to use the terminal, `plink` and `R`. 
     If you are unfamiliar with any of those, you can refer to the following online resources:
