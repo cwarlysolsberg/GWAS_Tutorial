@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <meta name="author" content="Shing Wan CHOI">
+  
   
   <link rel="shortcut icon" href="../img/favicon.ico">
   <title>2. Population Stratification - Basic Tutorial for Genome Wide Association Analysis</title>
@@ -67,31 +67,21 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">2. Population Stratification</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#obtaining-the-target-data">Obtaining the target data</a>
+    <li class="toctree-l2"><a class="reference internal" href="#obtaining-the-1000-genome-reference-data-set">Obtaining the 1000 genome reference data set</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#qc-checklist-target-data">QC checklist: Target data</a>
+    <li class="toctree-l2"><a class="reference internal" href="#define-variables-to-be-used-in-this-section">Define Variables to be used in this section</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#sample-size"># Sample size</a>
+    <li class="toctree-l2"><a class="reference internal" href="#qc-on-1000-genomes-data">QC on 1000 Genomes data.</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#file-transfer"># File transfer</a>
+    <li class="toctree-l2"><a class="reference internal" href="#extract-the-variants-present-in-1000-genomes-dataset-from-your-dataset">Extract the variants present in 1000 Genomes dataset from your dataset.</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#genome-build"># Genome build</a>
+    <li class="toctree-l2"><a class="reference internal" href="#change-build-on-1000-genomes-data-build-to-match-build-of-hapmap-data">Change build on 1000 Genomes data build to match build of HapMap data</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#standard-gwas-qc"># Standard GWAS QC</a>
+    <li class="toctree-l2"><a class="reference internal" href="#merge-the-map-and-1000-genomes-data-sets">Merge the Map and 1000 Genomes data sets</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#ambiguous-snps"># Ambiguous SNPs</a>
+    <li class="toctree-l2"><a class="reference internal" href="#merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#mismatching-snps"># Mismatching SNPs</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#duplicate-snps"># Duplicate SNPs</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#sex-chromosomes"># Sex chromosomes</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#sample-overlap"># Sample overlap</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#relatedness"># Relatedness</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#generate-final-qced-target-data-file">Generate final QC'ed target data file</a>
+    <li class="toctree-l2"><a class="reference internal" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data">Perform MDS on Map-CEU data anchored by 1000 Genomes data.</a>
     </li>
     </ul>
                     </li>
@@ -110,6 +100,10 @@
                 </ul>
                 <ul>
                     <li class="toctree-l1"><a class="" href="../assocdive.md">5. Deep dive into underpinnings of associations</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../liftover/">liftover</a>
                     </li>
                 </ul>
       </div>
@@ -147,19 +141,192 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="qc-of-target-data">QC of Target Data<a class="headerlink" href="#qc-of-target-data" title="Permanent link">&para;</a></h1>
-<h2 id="obtaining-the-target-data">Obtaining the target data<a class="headerlink" href="#obtaining-the-target-data" title="Permanent link">&para;</a></h2>
-<p>Target data consist of individual-level genotype-phenotype data, usually generated within your lab/department/collaboration. For this tutorial, we have simulated some genotype-phenotype data using the 1000 Genomes Project European samples. 
-You can download the data <a href="https://drive.google.com/file/d/1uhJR_3sn7RA8U5iYQbcmTp6vFdQiF4F2/view?usp=sharing">here</a></p>
-<p>Unzip the data as follow:</p>
-<pre class="highlight"><code class="language-bash">unzip EUR.zip</code></pre>
+                <h1 id="population-stratifacation">Population Stratifacation<a class="headerlink" href="#population-stratifacation" title="Permanent link">&para;</a></h1>
+<h2 id="obtaining-the-1000-genome-reference-data-set">Obtaining the 1000 genome reference data set<a class="headerlink" href="#obtaining-the-1000-genome-reference-data-set" title="Permanent link">&para;</a></h2>
+<p>We will be using data from the 1000 Genomes Project for the population stratification step.</p>
+<p>You can download using the following command </p>
+<p><pre class="highlight"><code class="language-bash">wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz</code></pre>
+The data will need to be converted into plink format with unique indentifiers created for each the SNPs with a missing rs-identifier:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>You will need <code>plink</code> in this section, which can be download from <a href="https://www.cog-genomics.org/plink/1.9/">here</a>.</p>
 <p>Install the program <code>plink</code> and include its location in your PATH directory, which allows us to use <code>plink</code> instead of <code>./plink</code> in the commands below. If PLINK is not in your PATH directory and is instead in your working directory, replace all instances of <code>plink</code> in the tutorial with <code>./plink</code>.</p>
 </div>
-<h2 id="qc-checklist-target-data">QC checklist: Target data<a class="headerlink" href="#qc-checklist-target-data" title="Permanent link">&para;</a></h2>
-<p>Below are the QC steps that comprise the QC checklist for the target data.</p>
+<pre class="highlight"><code class="language-bash">plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000genomes.genotypes
+plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make-bed --out 1000genomes_nomissing.genotypes</code></pre>
+<h2 id="define-variables-to-be-used-in-this-section">Define Variables to be used in this section<a class="headerlink" href="#define-variables-to-be-used-in-this-section" title="Permanent link">&para;</a></h2>
+<p><strong>input files and variables</strong>
+<pre class="highlight"><code class="language-bash">FILE_1K=1000genomes_nomissing.genotypes #1000 genomes file
+FILE_QC=qcout #file from qc tab
+FILE_PRUNEIN=plink.prune.in #snps in approximate linkage equilibrium 
+GENO=0.02 #snp missingness filter
+INDV=0.02 #individual missingness filter
+MAF=0.05 #minor allele frequency filter
+HWE_CONTROL=1e-6 #hardy weinburg equilibrium filter</code></pre></p>
+<p><strong>define general file tags</strong></p>
+<pre class="highlight"><code class="language-bash">sep="_"
+tagbed=".bed"
+tagbim=".bim"
+tagfam=".fam"
+tagmap=".map"</code></pre>
+<p><strong>tags for filtering 1000genome data</strong>
+<pre class="highlight"><code class="language-bash">TAG_1kG="1KG"
+TAG_GENO="geno"
+OUT1="$TAG_1kG$sep$TAG_GENO$sep$GENO"
+TAG_MIND="mind"
+OUT2="$OUT1$sep$TAG_MIND$sep$INDV"
+TAG_MAF="maf"
+OUT3=$OUT2$sep$TAG_MAF$sep$MAF
+TAG_extract="extract"
+OUT4=$OUT3$sep$TAG_extract
+TAG_BUILD="samebuild"
+OUT5=$OUT4$sep$TAG_BUILD
+TAG_REM="removeproblem"
+OUT6=$OUT5$sep$TAG_REM</code></pre></p>
+<p><strong>tags for filtering QCed data</strong>
+<pre class="highlight"><code class="language-bash">TAG_QC="QCin"
+OUT1_QC=$TAG_QC$sep$TAG_extract
+OUT2_QC=$OUT1_QC$sep$TAG_REM
+tag_euro="euro"
+FILEQCEURO=$FILE_QC$sep$tag_euro</code></pre></p>
+<h2 id="qc-on-1000-genomes-data">QC on 1000 Genomes data.<a class="headerlink" href="#qc-on-1000-genomes-data" title="Permanent link">&para;</a></h2>
+<p><strong>Remove variants based on missing genotype data.</strong>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_1K --geno $GENO --make-bed --out $OUT1</code></pre>
+<strong>Remove individuals based on missing genotype data</strong>
+<pre class="highlight"><code class="language-bash">plink --bfile $OUT1 --mind $INDV --allow-no-sex --make-bed --out $OUT2</code></pre>
+<strong>Remove variants based on MAF</strong>
+<pre class="highlight"><code class="language-bash">plink --bfile $OUT2 --maf $MAF --make-bed --out $OUT3</code></pre>
+<strong>Extract the variants present in our dataset from the 1000 genomes dataset</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$2}' "$FILE_QC$tagbim"&gt; QCFILE_SNPs.txt
+awk '{print$2}' "$OUT3$tagbim"&gt; 1kG_temp.bim
+plink --bfile $OUT3 --extract QCFILE_SNPs.txt --make-bed --recode --out $OUT4</code></pre></p>
+<h2 id="extract-the-variants-present-in-1000-genomes-dataset-from-your-dataset">Extract the variants present in 1000 Genomes dataset from your dataset.<a class="headerlink" href="#extract-the-variants-present-in-1000-genomes-dataset-from-your-dataset" title="Permanent link">&para;</a></h2>
+<p><pre class="highlight"><code class="language-bash">awk '{print$2}' $OUT4$tagbim &gt; 1kG_SNPs.txt
+plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC</code></pre>
+<em>The datasets now contain the exact same variants.</em></p>
+<h2 id="change-build-on-1000-genomes-data-build-to-match-build-of-hapmap-data">Change build on 1000 Genomes data build to match build of HapMap data<a class="headerlink" href="#change-build-on-1000-genomes-data-build-to-match-build-of-hapmap-data" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Look at <a href="../liftover/">Liftover tutorial</a> to see how to move data set to another build. </p>
+</div>
+<pre class="highlight"><code class="language-bash">awk '{print$2,$4}' $OUT1_QC$tagmap &gt; buildmap.txt
+# buildmap.txt contains one SNP-id and physical position per line.
+plink --bfile $OUT4 --update-map buildmap.txt --make-bed --out $OUT5</code></pre>
+<h2 id="merge-the-map-and-1000-genomes-data-sets">Merge the Map and 1000 Genomes data sets<a class="headerlink" href="#merge-the-map-and-1000-genomes-data-sets" title="Permanent link">&para;</a></h2>
+<details class="note"><summary>Prior to merging 1000 Genomes data with the data we want to make sure that the files are mergeable, for this we conduct 3 steps:</summary><p>1) Make sure the reference genome is similar in your data and the 1000 Genomes Project datasets </p>
+<p>2) Resolve strand issues. </p>
+<p>3) Remove the SNPs which after the previous two steps still differ between datasets</p>
+</details>
+<p><strong>1) set reference genome</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$2,$5}' $OUT5$tagbim &gt; 1kg_ref-list.txt
+plink --bfile $OUT1_QC --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
+# The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.</code></pre></p>
+<p><strong>2) Resolve strand issues</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$2,$5,$6}' $OUT5$tagbim &gt; 1kGMDS_strand_tmp
+awk '{print$2,$5,$6}' Map-adj.bim &gt; Map-adj_tmp
+sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u &gt; all_differences.txt</code></pre></p>
+<p><em>Flip SNPs for resolving strand issues</em>
+<pre class="highlight"><code class="language-bash">awk '{print$1}' all_differences.txt | sort -u &gt; flip_list.txt
+plink --bfile Map-adj --flip flip_list.txt --reference-allele 1kg_ref-list.txt --make-bed --out corrected_map</code></pre></p>
+<p><em>Check for SNPs which are still problematic after they have been flipped.</em>
+<pre class="highlight"><code class="language-bash">awk '{print$2,$5,$6}' corrected_map.bim &gt; corrected_map_tmp
+sort 1kGMDS_strand_tmp corrected_map_tmp |uniq -u  &gt; uncorresponding_SNPs.txt</code></pre></p>
+<p><strong>3) Remove problematic SNPs from your data and from the 1000 Genomes.</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$1}' uncorresponding_SNPs.txt | sort -u &gt; SNPs_for_exclusion.txt
+plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $OUT2_QC
+plink --bfile $OUT5 --exclude SNPs_for_exclusion.txt --make-bed --out $OUT6</code></pre></p>
+<h2 id="merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data<a class="headerlink" href="#merge-outdata-with-1000-genomes-data" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">plink --bfile $OUT2_QC --bmerge $OUT6$tagbed $OUT6$tagbim $OUT6$tagfam --allow-no-sex --make-bed --out MDS_merge2</code></pre>
+<h2 id="perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data">Perform MDS on Map-CEU data anchored by 1000 Genomes data.<a class="headerlink" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data" title="Permanent link">&para;</a></h2>
+<h1 id="using-a-set-of-pruned-snps">Using a set of pruned SNPs<a class="headerlink" href="#using-a-set-of-pruned-snps" title="Permanent link">&para;</a></h1>
+<p>plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2</p>
+<p>plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</p>
+<h3 id="mds-plot">MDS-plot<a class="headerlink" href="#mds-plot" title="Permanent link">&para;</a></h3>
+<h1 id="download-the-file-with-population-information-of-the-1000-genomes-dataset">Download the file with population information of the 1000 genomes dataset.<a class="headerlink" href="#download-the-file-with-population-information-of-the-1000-genomes-dataset" title="Permanent link">&para;</a></h1>
+<p>wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/20100804.ALL.panel</p>
+<h1 id="the-file-20130502allpanel-contains-population-codes-of-the-individuals-of-1000-genomes">The file 20130502.ALL.panel contains population codes of the individuals of 1000 genomes.<a class="headerlink" href="#the-file-20130502allpanel-contains-population-codes-of-the-individuals-of-1000-genomes" title="Permanent link">&para;</a></h1>
+<h1 id="convert-population-codes-into-superpopulation-codes-ie-aframrasn-and-eur">Convert population codes into superpopulation codes (i.e., AFR,AMR,ASN, and EUR).<a class="headerlink" href="#convert-population-codes-into-superpopulation-codes-ie-aframrasn-and-eur" title="Permanent link">&para;</a></h1>
+<p>awk '{print<span class="arithmatex">\(1,\)</span>1,$2}' 20100804.ALL.panel &gt; race_1kG.txt</p>
+<h1 id="create-a-racefile-of-your-own-data">Create a racefile of your own data.<a class="headerlink" href="#create-a-racefile-of-your-own-data" title="Permanent link">&para;</a></h1>
+<p>awk '{print<span class="arithmatex">\(1,\)</span>2,"-"}' <span class="arithmatex">\(OUT2_QC\)</span>tagfam &gt; racefile_own.txt</p>
+<h1 id="concatenate-racefiles">Concatenate racefiles.<a class="headerlink" href="#concatenate-racefiles" title="Permanent link">&para;</a></h1>
+<p>cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' &gt; MDS_merge2.pop
+sed -i -e "1d" MDS_merge2.pop
+cut -d " " -f 3- MDS_merge2.pop &gt;temp.txt</p>
+<h1 id="make-popfile-for-admixture-script">make popfile for admixture script<a class="headerlink" href="#make-popfile-for-admixture-script" title="Permanent link">&para;</a></h1>
+<p>mv temp.txt MDS_merge2.pop</p>
+<h1 id="conda-install-c-bioconda-admixture">conda install -c bioconda admixture<a class="headerlink" href="#conda-install-c-bioconda-admixture" title="Permanent link">&para;</a></h1>
+<h6 id="run-admixture-script">#####run admixture script<a class="headerlink" href="#run-admixture-script" title="Permanent link">&para;</a></h6>
+<p>qsub -cwd -pe smp 8 -l mem_free=32G -l scratch=100G -l h_rt=40:20:00 ad.sh
+admixture --supervised ./MDS_merge2.bed 12 &gt; log_merge_admixture.out
+Rscript --no-save ../R/admixtureplot.R</p>
+<h2 id="europeantxt-file-comes-from-admixture-script">european.txt file comes from admixture script<a class="headerlink" href="#europeantxt-file-comes-from-admixture-script" title="Permanent link">&para;</a></h2>
+<p>sed 's/JPT/ASN/g' race_1kG.txt&gt;race_1kG2.txt
+sed 's/ASW/AFR/g' race_1kG2.txt&gt;race_1kG3.txt
+sed 's/CEU/EUR/g' race_1kG3.txt&gt;race_1kG4.txt
+sed 's/CHB/ASN/g' race_1kG4.txt&gt;race_1kG5.txt
+sed 's/CHD/ASN/g' race_1kG5.txt&gt;race_1kG6.txt
+sed 's/YRI/AFR/g' race_1kG6.txt&gt;race_1kG7.txt
+sed 's/LWK/AFR/g' race_1kG7.txt&gt;race_1kG8.txt
+sed 's/TSI/EUR/g' race_1kG8.txt&gt;race_1kG9.txt
+sed 's/MXL/AMR/g' race_1kG9.txt&gt;race_1kG10.txt
+sed 's/GBR/EUR/g' race_1kG10.txt&gt;race_1kG11.txt
+sed 's/FIN/EUR/g' race_1kG11.txt&gt;race_1kG12.txt
+sed 's/CHS/ASN/g' race_1kG12.txt&gt;race_1kG13.txt
+sed 's/PUR/AMR/g' race_1kG13.txt&gt;race_1kG14.txt</p>
+<h1 id="create-a-racefile-of-your-own-data_1">Create a racefile of your own data.<a class="headerlink" href="#create-a-racefile-of-your-own-data_1" title="Permanent link">&para;</a></h1>
+<p>awk '{print<span class="arithmatex">\(1,\)</span>2,"OWN"}' <span class="arithmatex">\(OUT2_QC\)</span>tagfam &gt; racefile_own.txt</p>
+<h1 id="concatenate-racefiles_1">Concatenate racefiles.<a class="headerlink" href="#concatenate-racefiles_1" title="Permanent link">&para;</a></h1>
+<p>cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' &gt; racefile.txt</p>
+<h1 id="generate-population-stratification-plot">Generate population stratification plot.<a class="headerlink" href="#generate-population-stratification-plot" title="Permanent link">&para;</a></h1>
+<p>Rscript ../R/MDS_merged.R</p>
+<h2 id="exclude-ethnic-outliers">Exclude ethnic outliers.<a class="headerlink" href="#exclude-ethnic-outliers" title="Permanent link">&para;</a></h2>
+<h1 id="select-individuals-in-your-own-data-below-cut-off-thresholds-the-cut-off-levels-are-not-fixed-ithresholds-but-have-to-be-determined-based-on-the-visualization-of-the-first-two-dimensions-to-exclude-ethnic-outliers-the-thresholds-need-to-be-set-around-the-cluster-of-population-of-interest">Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed ithresholds but have to be determined based on the visualization of the first two dimensions. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.<a class="headerlink" href="#select-individuals-in-your-own-data-below-cut-off-thresholds-the-cut-off-levels-are-not-fixed-ithresholds-but-have-to-be-determined-based-on-the-visualization-of-the-first-two-dimensions-to-exclude-ethnic-outliers-the-thresholds-need-to-be-set-around-the-cluster-of-population-of-interest" title="Permanent link">&para;</a></h1>
+<h1 id="awk-if-4-004-5-003-print-12-mds_merge2mds-eur_mds_merge2">awk '{ if ($4 &lt;-0.04 &amp;&amp; $5 &gt;0.03) print <span class="arithmatex">\(1,\)</span>2 }' MDS_merge2.mds &gt; EUR_MDS_merge2<a class="headerlink" href="#awk-if-4-004-5-003-print-12-mds_merge2mds-eur_mds_merge2" title="Permanent link">&para;</a></h1>
+<h2 id="below-are-the-filters-used-for-my-own-ha-data">below are the filters used for my own HA data<a class="headerlink" href="#below-are-the-filters-used-for-my-own-ha-data" title="Permanent link">&para;</a></h2>
+<h1 id="awk-if-4-01-4-005-5-01-5-003-print-12-mds_merge2mds-eur_mds_merge2">awk '{ if ($4 &lt; 0.1 &amp;&amp; $4 &gt; -0.05 &amp;&amp; $5 &gt; -0.1 &amp;&amp; $5 &lt; 0.03) print <span class="arithmatex">\(1,\)</span>2 }' MDS_merge2.mds &gt; EUR_MDS_merge2<a class="headerlink" href="#awk-if-4-01-4-005-5-01-5-003-print-12-mds_merge2mds-eur_mds_merge2" title="Permanent link">&para;</a></h1>
+<h1 id="tag_euroeuro">tag_euro="euro"<a class="headerlink" href="#tag_euroeuro" title="Permanent link">&para;</a></h1>
+<h1 id="fileqceurofile_qcseptag_euro">FILEQCEURO=<span class="arithmatex">\(FILE_QC\)</span>sep$tag_euro<a class="headerlink" href="#fileqceurofile_qcseptag_euro" title="Permanent link">&para;</a></h1>
+<h1 id="plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro">plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO<a class="headerlink" href="#plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro" title="Permanent link">&para;</a></h1>
+<h2 id="exclude-ethnic-outliers_1">Exclude ethnic outliers.<a class="headerlink" href="#exclude-ethnic-outliers_1" title="Permanent link">&para;</a></h2>
+<p>plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILEQCEURO</p>
+<h1 id="plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro_1">plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO<a class="headerlink" href="#plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro_1" title="Permanent link">&para;</a></h1>
+<h1 id="hwe-limitations">HWE Limitations<a class="headerlink" href="#hwe-limitations" title="Permanent link">&para;</a></h1>
+<p>TAG_HWE_CONTROL="hwe_control"
+OUTQCEURO=<span class="arithmatex">\(FILEQCEURO\)</span>sep<span class="arithmatex">\(TAG_HWE_CONTROL\)</span>sep$HWE_CONTROL
+echo "plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO"
+plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO</p>
+<h1 id="in-this-tutorial-we-aim-to-remove-all-relatedness-from-our-dataset">In this tutorial, we aim to remove all 'relatedness' from our dataset.<a class="headerlink" href="#in-this-tutorial-we-aim-to-remove-all-relatedness-from-our-dataset" title="Permanent link">&para;</a></h1>
+<h1 id="to-demonstrate-that-the-majority-of-the-relatedness-was-due-to-parent-offspring-we-only-include-founders-individuals-without-parents-in-the-dataset">To demonstrate that the majority of the relatedness was due to parent-offspring we only include founders (individuals without parents in the dataset).<a class="headerlink" href="#to-demonstrate-that-the-majority-of-the-relatedness-was-due-to-parent-offspring-we-only-include-founders-individuals-without-parents-in-the-dataset" title="Permanent link">&para;</a></h1>
+<p>found="founder"
+plink --bfile <span class="arithmatex">\(OUTQCEURO --filter-founders --make-bed --out <span class="arithmatex">\(OUTQCEURO\)</span>sep\)</span>found</p>
+<h1 id="check-for-cryptic-relatedness">#Check for cryptic relatedness<a class="headerlink" href="#check-for-cryptic-relatedness" title="Permanent link">&para;</a></h1>
+<h2 id="install-king-and-run">install king and run<a class="headerlink" href="#install-king-and-run" title="Permanent link">&para;</a></h2>
+<p>plink2 --bfile <span class="arithmatex">\(OUTQCEURO\)</span>sep$found --make-king-table --king-table-filter 0.0884
+sed 's/^#//' plink2.kin0 &gt; kin.txt</p>
+<p>plink --bfile <span class="arithmatex">\(OUTQCEURO\)</span>sep<span class="arithmatex">\(found --missing
+Rscript ../R/Relatedness_cpw.R
+lowcover="unrelated"
+OUTCOVER=\)</span>lowcover
+plink --bfile <span class="arithmatex">\(OUTQCEURO\)</span>sep$found --remove 0.2_low_call_rate.txt --make-bed --out $OUTCOVER</p>
+<h2 id="create-covariates-based-on-mds">Create covariates based on MDS.<a class="headerlink" href="#create-covariates-based-on-mds" title="Permanent link">&para;</a></h2>
+<h1 id="perform-an-mds-only-on-qccase-data-without-ethnic-outliers-the-values-of-the-10-mds-dimensions-are-subsequently-used-as-covariates-in-the-association-analysis-in-the-third-tutorial">Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial.<a class="headerlink" href="#perform-an-mds-only-on-qccase-data-without-ethnic-outliers-the-values-of-the-10-mds-dimensions-are-subsequently-used-as-covariates-in-the-association-analysis-in-the-third-tutorial" title="Permanent link">&para;</a></h1>
+<p>plink --bfile $OUTCOVER --extract plink.prune.in --genome --out $OUTCOVER</p>
+<p>tag_mds="MDS"
+POPSTRATOUT=<span class="arithmatex">\(OUTCOVER\)</span>sep$tag_mds
+taggenome=".genome"
+echo "plink --bfile $OUTCOVER --read-genome <span class="arithmatex">\(OUTCOVER\)</span>taggenome --cluster --mds-plot 10 --out $POPSTRATOUT"
+plink --bfile $OUTCOVER --read-genome <span class="arithmatex">\(OUTCOVER\)</span>taggenome --cluster --mds-plot 10 --out $POPSTRATOUT</p>
+<p>tag_dot_mds=".mds"</p>
+<h1 id="change-the-format-of-the-mds-file-into-a-plink-covariate-file">Change the format of the .mds file into a plink covariate file.<a class="headerlink" href="#change-the-format-of-the-mds-file-into-a-plink-covariate-file" title="Permanent link">&para;</a></h1>
+<p>awk '{print<span class="arithmatex">\(1, <span class="arithmatex">(2, <span class="arithmatex">(4, <span class="arithmatex">(5, <span class="arithmatex">(6, <span class="arithmatex">\(7,\)</span>8,\)</span>9,\)</span>10,\)</span>11,\)</span>12,\)</span>13}' <span class="arithmatex">\(POPSTRATOUT\)</span>tag_dot_mds &gt; covar_mds.txt</p>
+<h1 id="the-values-in-covar_mdstxt-will-be-used-as-covariates-to-adjust-for-remaining-population-stratification-in-the-third-tutorial-where-we-will-perform-a-genome-wide-association-analysis">The values in covar_mds.txt will be used as covariates, to adjust for remaining population stratification, in the third tutorial where we will perform a genome-wide association analysis.<a class="headerlink" href="#the-values-in-covar_mdstxt-will-be-used-as-covariates-to-adjust-for-remaining-population-stratification-in-the-third-tutorial-where-we-will-perform-a-genome-wide-association-analysis" title="Permanent link">&para;</a></h1>
+<p>mv <span class="arithmatex">\(OUTCOVER\)</span>tagbed ./popstratout.bed
+mv <span class="arithmatex">\(OUTCOVER\)</span>tagbim ./popstratout.bim
+mv <span class="arithmatex">\(OUTCOVER\)</span>tagfam ./popstratout.fam
+cp popstratout* ../3_Association_GWAS
+cp covar_mds.txt ../3_Association_GWAS
+cd ../3_Association_GWAS</p>
 <h2 id="sample-size"># Sample size<a class="headerlink" href="#sample-size" title="Permanent link">&para;</a></h2>
 <p>We recommend that users only perform PRS analyses on target data of at least 100 individuals. The sample size of our target data here is 503 individuals. </p>
 <h2 id="file-transfer"># File transfer<a class="headerlink" href="#file-transfer" title="Permanent link">&para;</a></h2>

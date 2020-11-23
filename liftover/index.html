@@ -6,10 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <meta name="author" content="Shing Wan CHOI">
+  
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Background - Basic Tutorial for Genome Wide Association Analysis</title>
+  <title>liftover - Basic Tutorial for Genome Wide Association Analysis</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Background";
-    var mkdocs_page_input_path = "ldpred.md";
+    var mkdocs_page_name = "liftover";
+    var mkdocs_page_input_path = "liftover.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -84,6 +84,42 @@
                     <li class="toctree-l1"><a class="" href="../assocdive.md">5. Deep dive into underpinnings of associations</a>
                     </li>
                 </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">liftover</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#installing-ldpred-2">Installing LDpred-2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#required-data">Required Data</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#0-prepare-workspace">0. Prepare workspace</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#1-read-in-the-phenotype-and-covariate-files">1. Read in the phenotype and covariate files</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#2-obtain-hapmap3-snps">2. Obtain HapMap3 SNPs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-load-and-transform-the-summary-statistic-file">3. Load and transform the summary statistic file</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-calculate-the-ld-matrix">3. Calculate the LD matrix</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#4-perform-ld-score-regression">4. Perform LD score regression</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#5-calculate-the-null-r2">5. Calculate the null R2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#7-obtain-model-prs">7. Obtain model PRS</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#using-genome-wide-bed-file">Using Genome wide bed file</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#using-chromosome-separated-bed-files">Using chromosome separated bed files</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#8-get-the-final-performance-of-the-ldpred-models">8. Get the final performance of the LDpred models</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
       </div>
     </div>
     </nav>
@@ -105,10 +141,10 @@
     
       
     
-    <li>Background</li>
+    <li>liftover</li>
     <li class="wy-breadcrumbs-aside">
       
-        <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/ldpred.md"
+        <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/liftover.md"
           class="icon icon-github"> Edit on GitHub</a>
       
     </li>
@@ -620,6 +656,13 @@ auto.model &lt;- lm(reg.formula, dat=reg.dat) %&gt;%
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../plink_visual/" class="btn btn-neutral" title="4. Visualizing association results"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
 
   <hr/>
 
@@ -643,6 +686,8 @@ auto.model &lt;- lm(reg.formula, dat=reg.dat) %&gt;%
       
           <a href="https://github.com/choishingwan/PRS-Tutorial/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
+      
+        <span><a href="../plink_visual/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
     </span>
