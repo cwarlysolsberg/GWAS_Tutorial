@@ -1,6 +1,6 @@
 site_name: Basic Tutorial for Genome Wide Association Analysis
 repo_url: https://github.com/choishingwan/PRS-Tutorial
-site_author: Shing Wan CHOI
+site_author:
 nav:
     - index.md
     - 1. Quality Control of GWAS Data: QC.md
@@ -9,6 +9,7 @@ nav:
     - PLINK: plink.md
     - 4. Visualizing association results: plink_visual.md
     - 5. Deep dive into underpinnings of associations: assocdive.md
+    - liftover: liftover.md
 
 theme: 
     name: readthedocs

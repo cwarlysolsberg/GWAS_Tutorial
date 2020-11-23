@@ -32,25 +32,6 @@ The tutorial is separated into five main section.
     This tutorial is written for Linux and OS X operating systems. 
     Windows users will need to change some commands accordingly.
 
-!!! note
-    Throughout the tutorial you will see tabs above some of the code:
-
-    === "A"
-
-        ```bash
-        echo "Tab A"
-        ```
-
-    === "B"
-
-        ```bash
-        echo "Tab B"
-        ```
-
-    You can click on the tab to change to an alternative code (eg. to a different operation system)
-## Datasets
-1. [Base data](base.md)
-2. [Target data](https://drive.google.com/file/d/1uhJR_3sn7RA8U5iYQbcmTp6vFdQiF4F2/view?usp=sharing): Simulated data based on the 1000 Genomes Project European samples
 
 ## Requirements
 To follow the tutorial, you will need the following programs installed:
