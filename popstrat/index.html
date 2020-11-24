@@ -81,13 +81,27 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data">Perform MDS on Map-CEU data anchored by 1000 Genomes data.</a>
+    <li class="toctree-l2"><a class="reference internal" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#create-mds-plot">Create MDS-plot</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#run-admixture-algorithm">Run Admixture algorithm</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#exclude-ethnic-outliers">Exclude ethnic outliers.</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hardy-weinburg-equilibrium-filter-on-controls">Hardy weinburg equilibrium filter on controls</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#remove-all-relatedness-from-dataset">Remove all 'relatedness' from dataset</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#create-covariates-based-on-mds">Create covariates based on MDS.</a>
     </li>
     </ul>
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../cal_prs/">3. Association Analyses</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../assoc/">3. Association Analyses</a>
                     </li>
                 </ul>
                 <ul>
@@ -168,7 +182,9 @@ HWE_CONTROL=1e-6 #hardy weinburg equilibrium filter</code></pre></p>
 tagbed=".bed"
 tagbim=".bim"
 tagfam=".fam"
-tagmap=".map"</code></pre>
+tagmap=".map"
+taggenome=".genome"
+tag_dot_mds=".mds"</code></pre>
 <p><strong>tags for filtering 1000genome data</strong>
 <pre class="highlight"><code class="language-bash">TAG_1kG="1KG"
 TAG_GENO="geno"
@@ -188,7 +204,14 @@ OUT6=$OUT5$sep$TAG_REM</code></pre></p>
 OUT1_QC=$TAG_QC$sep$TAG_extract
 OUT2_QC=$OUT1_QC$sep$TAG_REM
 tag_euro="euro"
-FILEQCEURO=$FILE_QC$sep$tag_euro</code></pre></p>
+FILEQCEURO=$FILE_QC$sep$tag_euro
+TAG_HWE_CONTROL="hwe_control"
+OUTQCEURO=$FILEQCEURO$sep$TAG_HWE_CONTROL$sep$HWE_CONTROL
+found="founder"
+lowcover="unrelated"
+OUTCOVER=$lowcover
+tag_mds="MDS"
+POPSTRATOUT=$OUTCOVER$sep$tag_mds</code></pre></p>
 <h2 id="qc-on-1000-genomes-data">QC on 1000 Genomes data.<a class="headerlink" href="#qc-on-1000-genomes-data" title="Permanent link">&para;</a></h2>
 <p><strong>Remove variants based on missing genotype data.</strong>
 <pre class="highlight"><code class="language-bash">plink --bfile $FILE_1K --geno $GENO --make-bed --out $OUT1</code></pre>
@@ -237,548 +260,173 @@ plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $O
 plink --bfile $OUT5 --exclude SNPs_for_exclusion.txt --make-bed --out $OUT6</code></pre></p>
 <h2 id="merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data<a class="headerlink" href="#merge-outdata-with-1000-genomes-data" title="Permanent link">&para;</a></h2>
 <pre class="highlight"><code class="language-bash">plink --bfile $OUT2_QC --bmerge $OUT6$tagbed $OUT6$tagbim $OUT6$tagfam --allow-no-sex --make-bed --out MDS_merge2</code></pre>
-<h2 id="perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data">Perform MDS on Map-CEU data anchored by 1000 Genomes data.<a class="headerlink" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data" title="Permanent link">&para;</a></h2>
-<h1 id="using-a-set-of-pruned-snps">Using a set of pruned SNPs<a class="headerlink" href="#using-a-set-of-pruned-snps" title="Permanent link">&para;</a></h1>
-<p>plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2</p>
-<p>plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</p>
-<h3 id="mds-plot">MDS-plot<a class="headerlink" href="#mds-plot" title="Permanent link">&para;</a></h3>
-<h1 id="download-the-file-with-population-information-of-the-1000-genomes-dataset">Download the file with population information of the 1000 genomes dataset.<a class="headerlink" href="#download-the-file-with-population-information-of-the-1000-genomes-dataset" title="Permanent link">&para;</a></h1>
-<p>wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/20100804.ALL.panel</p>
-<h1 id="the-file-20130502allpanel-contains-population-codes-of-the-individuals-of-1000-genomes">The file 20130502.ALL.panel contains population codes of the individuals of 1000 genomes.<a class="headerlink" href="#the-file-20130502allpanel-contains-population-codes-of-the-individuals-of-1000-genomes" title="Permanent link">&para;</a></h1>
-<h1 id="convert-population-codes-into-superpopulation-codes-ie-aframrasn-and-eur">Convert population codes into superpopulation codes (i.e., AFR,AMR,ASN, and EUR).<a class="headerlink" href="#convert-population-codes-into-superpopulation-codes-ie-aframrasn-and-eur" title="Permanent link">&para;</a></h1>
-<p>awk '{print<span class="arithmatex">\(1,\)</span>1,$2}' 20100804.ALL.panel &gt; race_1kG.txt</p>
-<h1 id="create-a-racefile-of-your-own-data">Create a racefile of your own data.<a class="headerlink" href="#create-a-racefile-of-your-own-data" title="Permanent link">&para;</a></h1>
-<p>awk '{print<span class="arithmatex">\(1,\)</span>2,"-"}' <span class="arithmatex">\(OUT2_QC\)</span>tagfam &gt; racefile_own.txt</p>
-<h1 id="concatenate-racefiles">Concatenate racefiles.<a class="headerlink" href="#concatenate-racefiles" title="Permanent link">&para;</a></h1>
-<p>cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' &gt; MDS_merge2.pop
+<h2 id="perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs<a class="headerlink" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
+plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</code></pre>
+<h3 id="create-mds-plot">Create MDS-plot<a class="headerlink" href="#create-mds-plot" title="Permanent link">&para;</a></h3>
+<p><strong>Download the file with population information of the 1000 genomes dataset.</strong>
+<pre class="highlight"><code class="language-bash">wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/20100804.ALL.panel</code></pre>
+<em>The file 20130502.ALL.panel contains population codes of the individuals of 1000 genomes.</em></p>
+<p><strong>Convert population codes into superpopulation codes (i.e., AFR,AMR,ASN, and EUR).</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$1,$1,$2}' 20100804.ALL.panel &gt; race_1kG.txt</code></pre></p>
+<div class="tabbed-set" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<pre class="highlight"><code>data&lt;- read.table(file="MDS_merge2.mds",header=TRUE)
+race&lt;- read.table(file="racefile.txt",header=TRUE)
+datafile&lt;- merge(data,race,by=c("IID","FID"))
+head(datafile)
+
+pdf("MDS.pdf",width=7,height=7)
+for (i in 1:nrow(datafile))
+{
+if (datafile[i,14]=="EUR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="green")}
+par(new=T)
+if (datafile[i,14]=="ASN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="red")}
+par(new=T)
+if (datafile[i,14]=="AMR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col=470)}
+par(new=T)
+if (datafile[i,14]=="AFR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="blue")}
+par(new=T)
+if (datafile[i,14]=="OWN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=3,cex=0.7,col="black")}
+par(new=T)
+}
+
+abline(v=-0.035,lty=3)
+abline(h=0.035,lty=3)
+legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red",470,"blue","black"),bty="o",cex=1)
+dev.off()</code></pre>
+<p><img alt="MDS example" src="../img/MDS.png" /></p>
+<blockquote>
+<p>An example bar plot generated using script in <code>MDS_merged.R</code>    </p>
+</blockquote>
+<h2 id="run-admixture-algorithm">Run Admixture algorithm<a class="headerlink" href="#run-admixture-algorithm" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must install the ADMIXTURE software <a href="http://dalexander.github.io/admixture/download.html">here</a>. If       you are running on a conda environment you can install the admixture software using the following command:
+<pre class="highlight"><code class="language-bash">conda install -c bioconda admixture</code></pre></p>
+</div>
+<p><strong>Concatenate racefiles.</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$1,$2,"-"}' $OUT2_QC$tagfam &gt; racefile_own.txt
+awk '{print$1,$1,$2}' 20100804.ALL.panel &gt; race_1kG.txt
+cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' &gt; MDS_merge2.pop
 sed -i -e "1d" MDS_merge2.pop
-cut -d " " -f 3- MDS_merge2.pop &gt;temp.txt</p>
-<h1 id="make-popfile-for-admixture-script">make popfile for admixture script<a class="headerlink" href="#make-popfile-for-admixture-script" title="Permanent link">&para;</a></h1>
-<p>mv temp.txt MDS_merge2.pop</p>
-<h1 id="conda-install-c-bioconda-admixture">conda install -c bioconda admixture<a class="headerlink" href="#conda-install-c-bioconda-admixture" title="Permanent link">&para;</a></h1>
-<h6 id="run-admixture-script">#####run admixture script<a class="headerlink" href="#run-admixture-script" title="Permanent link">&para;</a></h6>
-<p>qsub -cwd -pe smp 8 -l mem_free=32G -l scratch=100G -l h_rt=40:20:00 ad.sh
-admixture --supervised ./MDS_merge2.bed 12 &gt; log_merge_admixture.out
-Rscript --no-save ../R/admixtureplot.R</p>
-<h2 id="europeantxt-file-comes-from-admixture-script">european.txt file comes from admixture script<a class="headerlink" href="#europeantxt-file-comes-from-admixture-script" title="Permanent link">&para;</a></h2>
-<p>sed 's/JPT/ASN/g' race_1kG.txt&gt;race_1kG2.txt
-sed 's/ASW/AFR/g' race_1kG2.txt&gt;race_1kG3.txt
-sed 's/CEU/EUR/g' race_1kG3.txt&gt;race_1kG4.txt
-sed 's/CHB/ASN/g' race_1kG4.txt&gt;race_1kG5.txt
-sed 's/CHD/ASN/g' race_1kG5.txt&gt;race_1kG6.txt
-sed 's/YRI/AFR/g' race_1kG6.txt&gt;race_1kG7.txt
-sed 's/LWK/AFR/g' race_1kG7.txt&gt;race_1kG8.txt
-sed 's/TSI/EUR/g' race_1kG8.txt&gt;race_1kG9.txt
-sed 's/MXL/AMR/g' race_1kG9.txt&gt;race_1kG10.txt
-sed 's/GBR/EUR/g' race_1kG10.txt&gt;race_1kG11.txt
-sed 's/FIN/EUR/g' race_1kG11.txt&gt;race_1kG12.txt
-sed 's/CHS/ASN/g' race_1kG12.txt&gt;race_1kG13.txt
-sed 's/PUR/AMR/g' race_1kG13.txt&gt;race_1kG14.txt</p>
-<h1 id="create-a-racefile-of-your-own-data_1">Create a racefile of your own data.<a class="headerlink" href="#create-a-racefile-of-your-own-data_1" title="Permanent link">&para;</a></h1>
-<p>awk '{print<span class="arithmatex">\(1,\)</span>2,"OWN"}' <span class="arithmatex">\(OUT2_QC\)</span>tagfam &gt; racefile_own.txt</p>
-<h1 id="concatenate-racefiles_1">Concatenate racefiles.<a class="headerlink" href="#concatenate-racefiles_1" title="Permanent link">&para;</a></h1>
-<p>cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' &gt; racefile.txt</p>
-<h1 id="generate-population-stratification-plot">Generate population stratification plot.<a class="headerlink" href="#generate-population-stratification-plot" title="Permanent link">&para;</a></h1>
-<p>Rscript ../R/MDS_merged.R</p>
+cut -d " " -f 3- MDS_merge2.pop &gt;temp.txt</code></pre>
+<strong>make popfile for admixture script</strong>
+<pre class="highlight"><code class="language-bash">mv temp.txt MDS_merge2.pop</code></pre></p>
+<p><strong>run admixture script</strong>
+<pre class="highlight"><code class="language-bash">qsub -cwd -pe smp 8 -l mem_free=32G -l scratch=100G -l h_rt=40:20:00 ad.sh
+##admixture --supervised ./MDS_merge2.bed 12 &gt; log_merge_admixture.out</code></pre></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This step can take a very long time. Running overnight may be neccessary. </p>
+</div>
+<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<p><pre class="highlight"><code>R
+tbl=read.table("MDS_merge2.12.Q")
+popGroups = read.table("MDS_merge2.pop")
+fam=read.table("MDS_merge2.fam")
+mergedAdmWithPopGroups = cbind(tbl, popGroups)
+ordered = mergedAdmWithPopGroups
+#ceu v5
+#tsi v12
+#fin v2
+#gbr v1
+ordered$EUR=ordered$V5+ordered$V12+ordered$V2+ordered$V1
+fam$race=ordered$EUR
+ids1=fam$V1[which(fam$race&gt;0.8)]
+ids=data.frame(ids1)
+ids$ids2=fam$V2[which(fam$race&gt;0.8)]
+##list of europeans to extract from files
+write.table(ids,'europeans.txt',quote = FALSE,row.names = FALSE,col.names=FALSE)
+ordered$V5=c()
+ordered$V12=c()
+ordered$V2=c()
+ordered$V1=c()
+ordered=ordered[order(-ordered$EUR),]
+#barplot(t(as.matrix(subset(ordered, select=c("YRI","ASW","CHB","CHS","EUR","JPT","LWK","MXL","PUR")))), col=rainbow(12), border=NA,names.arg=popnew, las=2,cex.names=0.1)
+pdf('admixture.pdf')
+barplot(t(as.matrix(subset(ordered, select=c("V3" , "V4" , "V6" , "V7"  ,"V8"  ,"V9" ,"V10", "V11","EUR")))), col=rainbow(9), border=NA, las=2,ylab="Percent Pop",xaxt="n",xlab='&lt;---- Direction of more European')
+dev.off()</code></pre>
+<img alt="Admixture example" src="../img/Admix.png" /></p>
+<blockquote>
+<p>An example bar plot generated using script in <code>admixtureplot.R</code> </p>
+</blockquote>
+<p>The output of this script prints out a text file <strong>europeans.txt</strong> with a list of all the individuals that are found to be 80% or more European. </p>
 <h2 id="exclude-ethnic-outliers">Exclude ethnic outliers.<a class="headerlink" href="#exclude-ethnic-outliers" title="Permanent link">&para;</a></h2>
-<h1 id="select-individuals-in-your-own-data-below-cut-off-thresholds-the-cut-off-levels-are-not-fixed-ithresholds-but-have-to-be-determined-based-on-the-visualization-of-the-first-two-dimensions-to-exclude-ethnic-outliers-the-thresholds-need-to-be-set-around-the-cluster-of-population-of-interest">Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed ithresholds but have to be determined based on the visualization of the first two dimensions. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.<a class="headerlink" href="#select-individuals-in-your-own-data-below-cut-off-thresholds-the-cut-off-levels-are-not-fixed-ithresholds-but-have-to-be-determined-based-on-the-visualization-of-the-first-two-dimensions-to-exclude-ethnic-outliers-the-thresholds-need-to-be-set-around-the-cluster-of-population-of-interest" title="Permanent link">&para;</a></h1>
-<h1 id="awk-if-4-004-5-003-print-12-mds_merge2mds-eur_mds_merge2">awk '{ if ($4 &lt;-0.04 &amp;&amp; $5 &gt;0.03) print <span class="arithmatex">\(1,\)</span>2 }' MDS_merge2.mds &gt; EUR_MDS_merge2<a class="headerlink" href="#awk-if-4-004-5-003-print-12-mds_merge2mds-eur_mds_merge2" title="Permanent link">&para;</a></h1>
-<h2 id="below-are-the-filters-used-for-my-own-ha-data">below are the filters used for my own HA data<a class="headerlink" href="#below-are-the-filters-used-for-my-own-ha-data" title="Permanent link">&para;</a></h2>
-<h1 id="awk-if-4-01-4-005-5-01-5-003-print-12-mds_merge2mds-eur_mds_merge2">awk '{ if ($4 &lt; 0.1 &amp;&amp; $4 &gt; -0.05 &amp;&amp; $5 &gt; -0.1 &amp;&amp; $5 &lt; 0.03) print <span class="arithmatex">\(1,\)</span>2 }' MDS_merge2.mds &gt; EUR_MDS_merge2<a class="headerlink" href="#awk-if-4-01-4-005-5-01-5-003-print-12-mds_merge2mds-eur_mds_merge2" title="Permanent link">&para;</a></h1>
-<h1 id="tag_euroeuro">tag_euro="euro"<a class="headerlink" href="#tag_euroeuro" title="Permanent link">&para;</a></h1>
-<h1 id="fileqceurofile_qcseptag_euro">FILEQCEURO=<span class="arithmatex">\(FILE_QC\)</span>sep$tag_euro<a class="headerlink" href="#fileqceurofile_qcseptag_euro" title="Permanent link">&para;</a></h1>
-<h1 id="plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro">plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO<a class="headerlink" href="#plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro" title="Permanent link">&para;</a></h1>
-<h2 id="exclude-ethnic-outliers_1">Exclude ethnic outliers.<a class="headerlink" href="#exclude-ethnic-outliers_1" title="Permanent link">&para;</a></h2>
-<p>plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILEQCEURO</p>
-<h1 id="plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro_1">plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO<a class="headerlink" href="#plink-bfile-file_qc-keep-eur_mds_merge2-make-bed-out-fileqceuro_1" title="Permanent link">&para;</a></h1>
-<h1 id="hwe-limitations">HWE Limitations<a class="headerlink" href="#hwe-limitations" title="Permanent link">&para;</a></h1>
-<p>TAG_HWE_CONTROL="hwe_control"
-OUTQCEURO=<span class="arithmatex">\(FILEQCEURO\)</span>sep<span class="arithmatex">\(TAG_HWE_CONTROL\)</span>sep$HWE_CONTROL
-echo "plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO"
-plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO</p>
-<h1 id="in-this-tutorial-we-aim-to-remove-all-relatedness-from-our-dataset">In this tutorial, we aim to remove all 'relatedness' from our dataset.<a class="headerlink" href="#in-this-tutorial-we-aim-to-remove-all-relatedness-from-our-dataset" title="Permanent link">&para;</a></h1>
-<h1 id="to-demonstrate-that-the-majority-of-the-relatedness-was-due-to-parent-offspring-we-only-include-founders-individuals-without-parents-in-the-dataset">To demonstrate that the majority of the relatedness was due to parent-offspring we only include founders (individuals without parents in the dataset).<a class="headerlink" href="#to-demonstrate-that-the-majority-of-the-relatedness-was-due-to-parent-offspring-we-only-include-founders-individuals-without-parents-in-the-dataset" title="Permanent link">&para;</a></h1>
-<p>found="founder"
-plink --bfile <span class="arithmatex">\(OUTQCEURO --filter-founders --make-bed --out <span class="arithmatex">\(OUTQCEURO\)</span>sep\)</span>found</p>
-<h1 id="check-for-cryptic-relatedness">#Check for cryptic relatedness<a class="headerlink" href="#check-for-cryptic-relatedness" title="Permanent link">&para;</a></h1>
-<h2 id="install-king-and-run">install king and run<a class="headerlink" href="#install-king-and-run" title="Permanent link">&para;</a></h2>
-<p>plink2 --bfile <span class="arithmatex">\(OUTQCEURO\)</span>sep$found --make-king-table --king-table-filter 0.0884
-sed 's/^#//' plink2.kin0 &gt; kin.txt</p>
-<p>plink --bfile <span class="arithmatex">\(OUTQCEURO\)</span>sep<span class="arithmatex">\(found --missing
-Rscript ../R/Relatedness_cpw.R
-lowcover="unrelated"
-OUTCOVER=\)</span>lowcover
-plink --bfile <span class="arithmatex">\(OUTQCEURO\)</span>sep$found --remove 0.2_low_call_rate.txt --make-bed --out $OUTCOVER</p>
+<p><em>Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed thresholds but have to be determined based on the visualization of the first two dimensions. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.</em></p>
+<p><pre class="highlight"><code class="language-bash">awk '{ if ($4 &lt;-0.04 &amp;&amp; $5 &gt;0.03) print $1,$2 }' MDS_merge2.mds &gt; EUR_MDS_merge2
+plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO</code></pre>
+<em>to exclude ethnic outliers using output from ADMIXTURE use the following script</em>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILEQCEURO</code></pre></p>
+<h2 id="hardy-weinburg-equilibrium-filter-on-controls">Hardy weinburg equilibrium filter on controls<a class="headerlink" href="#hardy-weinburg-equilibrium-filter-on-controls" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO</code></pre>
+<h2 id="remove-all-relatedness-from-dataset">Remove all 'relatedness' from dataset<a class="headerlink" href="#remove-all-relatedness-from-dataset" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">plink --bfile $OUTQCEURO --filter-founders --make-bed --out $OUTQCEURO$sep$found</code></pre>
+<div class="tabbed-set" data-tabs="3:1"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<pre class="highlight"><code>data&lt;- read.table(file="kin.txt",header=TRUE)
+data_related=data[,c(1,2,3,4)]
+missing &lt;- read.table("plink.imiss", header =TRUE, as.is=T)
+FID1=data_related[,c(1,2)]
+FID2=data_related[,c(3,4)]
+
+FID1$index=row.names(FID1)
+FID2$index=row.names(FID2)
+
+FID1$IID=FID1$IID1
+FID2$IID=FID2$IID2
+
+FID1[,1:2]=c()
+FID2[,1:2]=c()
+
+FID1=merge(FID1,missing,by="IID")
+FID2=merge(FID2,missing,by="IID")
+
+FID1[,4:6]=c()
+FID2[,4:6]=c()
+
+FID1$index=as.numeric(FID1$index)
+FID2$index=as.numeric(FID2$index)
+
+q=c(setdiff(FID2$index, FID1$index), setdiff(FID1$index, FID2$index))
+if (length(q) != 0) {
+FID1=FID1[!(FID1$index==q),]
+FID2=FID2[!(FID2$index==q),]
+}
+
+FID1=FID1[order(FID1[,2]),]
+FID2=FID2[order(FID2[,2]),]
+
+##this binds the FIDs,IIDs,missingness for all pairs
+bind=cbind(FID1,FID2)
+bind$index=c()
+##this displays just the values for missingness for each pair
+bindval=cbind(FID1$F_MISS,FID2$F_MISS)
+colnames(bindval)=c(1,2)
+max=as.numeric(colnames(bindval)[apply(bindval,1,which.max)])
+
+#finds the corresponding IID and FID (bind1 and bind2) for the individual with the higher missingness so it can be removed
+bind1=bind[cbind(seq_along(max*3-1), max*3-1)]
+bind2=bind[cbind(seq_along(max*3-2), max*3-2)]
+final=cbind(bind1,bind2)
+final=unique(final)
+write.table(final, '0.2_low_call_rate.txt', append = FALSE, sep = " ", dec = ".",
+            row.names = FALSE, col.names = FALSE,quote=FALSE)</code></pre>
+<p><strong>remove individual with higher missingness</strong>
+<pre class="highlight"><code class="language-bash">plink --bfile $OUTQCEURO$sep$found --remove 0.2_low_call_rate.txt --make-bed --out $OUTCOVER</code></pre></p>
 <h2 id="create-covariates-based-on-mds">Create covariates based on MDS.<a class="headerlink" href="#create-covariates-based-on-mds" title="Permanent link">&para;</a></h2>
-<h1 id="perform-an-mds-only-on-qccase-data-without-ethnic-outliers-the-values-of-the-10-mds-dimensions-are-subsequently-used-as-covariates-in-the-association-analysis-in-the-third-tutorial">Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial.<a class="headerlink" href="#perform-an-mds-only-on-qccase-data-without-ethnic-outliers-the-values-of-the-10-mds-dimensions-are-subsequently-used-as-covariates-in-the-association-analysis-in-the-third-tutorial" title="Permanent link">&para;</a></h1>
-<p>plink --bfile $OUTCOVER --extract plink.prune.in --genome --out $OUTCOVER</p>
-<p>tag_mds="MDS"
-POPSTRATOUT=<span class="arithmatex">\(OUTCOVER\)</span>sep$tag_mds
-taggenome=".genome"
-echo "plink --bfile $OUTCOVER --read-genome <span class="arithmatex">\(OUTCOVER\)</span>taggenome --cluster --mds-plot 10 --out $POPSTRATOUT"
-plink --bfile $OUTCOVER --read-genome <span class="arithmatex">\(OUTCOVER\)</span>taggenome --cluster --mds-plot 10 --out $POPSTRATOUT</p>
-<p>tag_dot_mds=".mds"</p>
-<h1 id="change-the-format-of-the-mds-file-into-a-plink-covariate-file">Change the format of the .mds file into a plink covariate file.<a class="headerlink" href="#change-the-format-of-the-mds-file-into-a-plink-covariate-file" title="Permanent link">&para;</a></h1>
-<p>awk '{print<span class="arithmatex">\(1, <span class="arithmatex">(2, <span class="arithmatex">(4, <span class="arithmatex">(5, <span class="arithmatex">(6, <span class="arithmatex">\(7,\)</span>8,\)</span>9,\)</span>10,\)</span>11,\)</span>12,\)</span>13}' <span class="arithmatex">\(POPSTRATOUT\)</span>tag_dot_mds &gt; covar_mds.txt</p>
-<h1 id="the-values-in-covar_mdstxt-will-be-used-as-covariates-to-adjust-for-remaining-population-stratification-in-the-third-tutorial-where-we-will-perform-a-genome-wide-association-analysis">The values in covar_mds.txt will be used as covariates, to adjust for remaining population stratification, in the third tutorial where we will perform a genome-wide association analysis.<a class="headerlink" href="#the-values-in-covar_mdstxt-will-be-used-as-covariates-to-adjust-for-remaining-population-stratification-in-the-third-tutorial-where-we-will-perform-a-genome-wide-association-analysis" title="Permanent link">&para;</a></h1>
-<p>mv <span class="arithmatex">\(OUTCOVER\)</span>tagbed ./popstratout.bed
-mv <span class="arithmatex">\(OUTCOVER\)</span>tagbim ./popstratout.bim
-mv <span class="arithmatex">\(OUTCOVER\)</span>tagfam ./popstratout.fam
+<p><em>Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial</em>
+<pre class="highlight"><code class="language-bash">plink --bfile $OUTCOVER --extract plink.prune.in --genome --out $OUTCOVER
+plink --bfile $OUTCOVER --read-genome $OUTCOVER$taggenome --cluster --mds-plot 10 --out $POPSTRATOUT
+awk '{print$1, $2, $4, $5, $6, $7,$8,$9,$10,$11,$12,$13}' $POPSTRATOUT$tag_m$tag_dot_mds &gt; covar_mds.txt</code></pre>
+<strong>The values in covar_mds.txt will be used as covariates, to adjust for remaining population stratification, in the third tutorial where we will perform a genome-wide association analysis.</strong></p>
+<pre class="highlight"><code class="language-bash">mv $OUTCOVER$tagbed ./popstratout.bed
+mv $OUTCOVER$tagbim ./popstratout.bim
+mv $OUTCOVER$tagfam ./popstratout.fam
 cp popstratout* ../3_Association_GWAS
 cp covar_mds.txt ../3_Association_GWAS
-cd ../3_Association_GWAS</p>
-<h2 id="sample-size"># Sample size<a class="headerlink" href="#sample-size" title="Permanent link">&para;</a></h2>
-<p>We recommend that users only perform PRS analyses on target data of at least 100 individuals. The sample size of our target data here is 503 individuals. </p>
-<h2 id="file-transfer"># File transfer<a class="headerlink" href="#file-transfer" title="Permanent link">&para;</a></h2>
-<p>Usually we do not need to download and transfer the target data file because it is typically generated locally. However, the file should contain an md5sum code in case we send the data file to collaborators who may want to confirm that the file has not changed during the transfer.</p>
-<details class="note"><summary>What is the md5sum code for each of the target files?</summary><table>
-<thead>
-<tr>
-<th align="center">File</th>
-<th align="center">md5sum</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center"><strong>EUR.bed</strong></td>
-<td align="center">98bcef133f683b1272d3ea5f97742e0e</td>
-</tr>
-<tr>
-<td align="center"><strong>EUR.bim</strong></td>
-<td align="center">6b286002904880055a9c94e01522f059</td>
-</tr>
-<tr>
-<td align="center"><strong>EUR.cov</strong></td>
-<td align="center">85ed18288c708e095385418517e9c3bd</td>
-</tr>
-<tr>
-<td align="center"><strong>EUR.fam</strong></td>
-<td align="center">e7b856f0c7bcaffc8405926d08386e97</td>
-</tr>
-<tr>
-<td align="center"><strong>EUR.height</strong></td>
-<td align="center">dd445ce969a81cded20da5c88b82d4df</td>
-</tr>
-</tbody>
-</table>
-</details>
-<h2 id="genome-build"># Genome build<a class="headerlink" href="#genome-build" title="Permanent link">&para;</a></h2>
-<p>As stated in the base data section, the genome build for our base and target data is the same, as it should be.</p>
-<h2 id="standard-gwas-qc"># Standard GWAS QC<a class="headerlink" href="#standard-gwas-qc" title="Permanent link">&para;</a></h2>
-<p>The target data must be quality controlled to at least the standards 
-implemented in GWAS studies, e.g. removing SNPs with low genotyping rate, 
-low minor allele frequency, out of Hardy-Weinberg Equilibrium, removing
-individuals with low genotyping rate 
-(see <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6001694/">Marees et al</a>).</p>
-<p>The following <code>plink</code> command applies some of these QC metrics to the target data:</p>
-<pre class="highlight"><code class="language-bash">plink \
-    --bfile EUR \
-    --maf 0.01 \
-    --hwe 1e-6 \
-    --geno 0.01 \
-    --mind 0.01 \
-    --write-snplist \
-    --make-just-fam \
-    --out EUR.QC</code></pre>
-<p>Each of the parameters corresponds to the following</p>
-<table>
-<thead>
-<tr>
-<th align="center">Paramter</th>
-<th align="center">Value</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center">bfile</td>
-<td align="center">EUR</td>
-<td align="left">Informs <code>plink</code> that the input genotype files should have a prefix of <code>EUR</code></td>
-</tr>
-<tr>
-<td align="center">maf</td>
-<td align="center">0.01</td>
-<td align="left">Removes all SNPs with minor allele frequency less than 0.05. Genotyping errors typically have a larger influence on SNPs with low MAF. Studies with large sample sizes could apply a lower MAF threshold</td>
-</tr>
-<tr>
-<td align="center">hwe</td>
-<td align="center">1e-6</td>
-<td align="left">Removes SNPs with low P-value from the Hardy-Weinberg Equilibrium Fisher's exact or chi-squared test. SNPs with significant P-values from the HWE test are more likely affected by genotyping error or the effects of natural selection. Filtering should be performed on the control samples to avoid filtering SNPs that are causal (under selection in cases). When phenotype information is included, plink will automatically perform the filtering in the controls.</td>
-</tr>
-<tr>
-<td align="center">geno</td>
-<td align="center">0.01</td>
-<td align="left">Excludes SNPs that are missing in a high fraction of subjects. A two-stage filtering process is usually performed (see <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6001694/">Marees et al</a>).</td>
-</tr>
-<tr>
-<td align="center">mind</td>
-<td align="center">0.01</td>
-<td align="left">Excludes individuals who have a high rate of genotype missingness, since this may indicate problems in the DNA sample or processing. (see <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6001694/">Marees et al</a> for more details).</td>
-</tr>
-<tr>
-<td align="center">make-just-fam</td>
-<td align="center">-</td>
-<td align="left">Informs <code>plink</code> to only generate the QC'ed sample name to avoid generating the .bed file.</td>
-</tr>
-<tr>
-<td align="center">write-snplist</td>
-<td align="center">-</td>
-<td align="left">Informs <code>plink</code> to only generate the QC'ed SNP list to avoid generating the .bed file.</td>
-</tr>
-<tr>
-<td align="center">out</td>
-<td align="center">EUR.QC</td>
-<td align="left">Informs <code>plink</code> that all output should have a prefix of <code>EUR.QC</code></td>
-</tr>
-</tbody>
-</table>
-<details class="note"><summary>How many SNPs and samples were filtered?</summary><ul>
-<li><code>14</code> samples were removed due to a high rate of genotype missingness</li>
-<li><code>5,353</code> SNP were removed due to missing genotype data</li>
-<li><code>944</code> SNPs were removed due to being out of Hardy-Weinberg Equilibrium</li>
-<li><code>5,061</code> SNPs were removed due to low minor allele frequency</li>
-</ul>
-</details>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Normally, we can generate a new genotype file using the new sample list.
-However,  this will use up a lot of storage space. Using <code>plink</code>'s
-<code>--extract</code>, <code>--exclude</code>, <code>--keep</code>, <code>--remove</code>, <code>--make-just-fam</code> and <code>--write-snplist</code> functions, we can work 
-solely on the list of samples and SNPs without duplicating the 
-genotype file, reducing the storage space usage.  </p>
-</div>
-<p>Very high or low heterozygosity rates in individuals could be due to DNA contamination or to high levels of inbreeding. Therefore, samples with extreme heterozygosity are typically removed prior to downstream analyses. </p>
-<p>First, we perform prunning to remove highly correlated SNPs:</p>
-<pre class="highlight"><code class="language-bash">plink \
-    --bfile EUR \
-    --keep EUR.QC.fam \
-    --extract EUR.QC.snplist \
-    --indep-pairwise 200 50 0.25 \
-    --out EUR.QC</code></pre>
-<p>Each of the parameters corresponds to the following</p>
-<table>
-<thead>
-<tr>
-<th align="center">Paramter</th>
-<th align="center">Value</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center">bfile</td>
-<td align="center">EUR</td>
-<td align="left">Informs <code>plink</code> that the input genotype files should have a prefix of <code>EUR</code></td>
-</tr>
-<tr>
-<td align="center">keep</td>
-<td align="center">EUR.QC.fam</td>
-<td align="left">Informs <code>plink</code> that we only want to use samples in <code>EUR.QC.fam</code> in the analysis</td>
-</tr>
-<tr>
-<td align="center">extract</td>
-<td align="center">EUR.QC.snplist</td>
-<td align="left">Informs <code>plink</code> that we only want to use SNPs in <code>EUR.QC.snplist</code> in the analysis</td>
-</tr>
-<tr>
-<td align="center">indep-pairwise</td>
-<td align="center">200 50 0.25</td>
-<td align="left">Informs <code>plink</code> that we wish to perform prunning with a window size of 200 variants, sliding across the genome with step size of 50 variants at a time, and filter out any SNPs with LD <span class="arithmatex">\(r^2\)</span> higher than 0.25</td>
-</tr>
-<tr>
-<td align="center">out</td>
-<td align="center">EUR.QC</td>
-<td align="left">Informs <code>plink</code> that all output should have a prefix of <code>EUR.QC</code></td>
-</tr>
-</tbody>
-</table>
-<p>This will generate two files 1) <strong>EUR.QC.prune.in</strong> and 2) <strong>EUR.QC.prune.out</strong>. All SNPs within <strong>EUR.QC.prune.in</strong> have a pairwise <span class="arithmatex">\(r^2 &lt; 0.25\)</span>. </p>
-<p>Heterozygosity rates can then be computed using <code>plink</code>:</p>
-<pre class="highlight"><code class="language-bash">plink \
-    --bfile EUR \
-    --extract EUR.QC.prune.in \
-    --keep EUR.QC.fam \
-    --het \
-    --out EUR.QC</code></pre>
-<p>This will generate the <strong>EUR.QC.het</strong> file, which contains F coefficient estimates for assessing heterozygosity.
-We will remove individuals with F coefficients that are more than 3 standard deviation (SD) units from the mean, which can be performed using the following <code>R</code> command (assuming that you have R downloaded, then you can open an <code>R</code> session by typing <code>R</code> in your terminal):</p>
-<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Without library</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R">dat &lt;- read.table("EUR.QC.het", header=T) # Read in the EUR.het file, specify it has header
-m &lt;- mean(dat$F) # Calculate the mean  
-s &lt;- sd(dat$F) # Calculate the SD
-valid &lt;- subset(dat, F &lt;= m+3*s &amp; F &gt;= m-3*s) # Get any samples with F coefficient within 3 SD of the population mean
-write.table(valid[,c(1,2)], "EUR.valid.sample", quote=F, row.names=F) # print FID and IID for valid samples
-q() # exit R</code></pre>
-</div>
-<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">With data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R">library(data.table)
-# Read in file
-dat &lt;- fread("EUR.QC.het")
-# Get samples with F coefficient within 3 SD of the population mean
-valid &lt;- dat[F&lt;=mean(F)+3*sd(F) &amp; F&gt;=mean(F)-3*sd(F)] 
-# print FID and IID for valid samples
-fwrite(valid[,c("FID","IID")], "EUR.valid.sample", sep="\t") 
-q() # exit R</code></pre>
-</div>
-</div>
-<details class="note"><summary>How many samples were excluded due to high heterozygosity rate?</summary><ul>
-<li><code>2</code> samples were excluded</li>
-</ul>
-</details>
-<h2 id="ambiguous-snps"># Ambiguous SNPs<a class="headerlink" href="#ambiguous-snps" title="Permanent link">&para;</a></h2>
-<p>These were removed during the base data QC.</p>
-<h2 id="mismatching-snps"># Mismatching SNPs<a class="headerlink" href="#mismatching-snps" title="Permanent link">&para;</a></h2>
-<p>SNPs that have mismatching alleles reported in the base and target data may be resolvable by strand-flipping the alleles to their complementary alleles in e.g. the target data, such as for a SNP with A/C in the base data and G/T in the target. This can be achieved with the following steps:</p>
-<p>1. Load the bim file, the summary statistic and the QC SNP list into R</p>
-<div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Without data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># Read in bim file
-bim &lt;- read.table("EUR.bim")
-colnames(bim) &lt;- c("CHR", "SNP", "CM", "BP", "B.A1", "B.A2")
-# Read in QCed SNPs
-qc &lt;- read.table("EUR.QC.snplist", header = F, stringsAsFactors = F)
-# Read in the GWAS data
-height &lt;-
-    read.table(gzfile("Height.QC.gz"),
-            header = T,
-            stringsAsFactors = F, 
-            sep="\t")
-# Change all alleles to upper case for easy comparison
-height$A1 &lt;- toupper(height$A1)
-height$A2 &lt;- toupper(height$A2)
-bim$B.A1 &lt;- toupper(bim$B.A1)
-bim$B.A2 &lt;- toupper(bim$B.A2)</code></pre>
-</div>
-<input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">With data.table and magrittr</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># magrittr allow us to do piping, which help to reduce the 
-# amount of intermediate data types
-library(data.table)
-library(magrittr)
-# Read in bim file 
-bim &lt;- fread("EUR.bim") %&gt;%
-    # Note: . represents the output from previous step
-    # The syntax here means, setnames of the data read from
-    # the bim file, and replace the original column names by 
-    # the new names
-    setnames(., colnames(.), c("CHR", "SNP", "CM", "BP", "B.A1", "B.A2")) %&gt;%
-    # And immediately change the alleles to upper cases
-    .[,c("B.A1","B.A2"):=list(toupper(B.A1), toupper(B.A2))]
-# Read in summary statistic data (require data.table v1.12.0+)
-height &lt;- fread("Height.QC.gz") %&gt;%
-    # And immediately change the alleles to upper cases
-    .[,c("A1","A2"):=list(toupper(A1), toupper(A2))]
-# Read in QCed SNPs
-qc &lt;- fread("EUR.QC.snplist", header=F)</code></pre>
-</div>
-</div>
-<p>2. Identify SNPs that require strand flipping </p>
-<div class="tabbed-set" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Without data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># Merge summary statistic with target
-info &lt;- merge(bim, height, by = c("SNP", "CHR", "BP"))
-# Filter QCed SNPs
-info &lt;- info[info$SNP %in% qc$V1,]
-# Function for finding the complementary allele
-complement &lt;- function(x) {
-    switch (
-        x,
-        "A" = "T",
-        "C" = "G",
-        "T" = "A",
-        "G" = "C",
-        return(NA)
-    )
-}
-# Get SNPs that have the same alleles across base and target
-info.match &lt;- subset(info, A1 == B.A1 &amp; A2 == B.A2)
-# Identify SNPs that are complementary between base and target
-info$C.A1 &lt;- sapply(info$B.A1, complement)
-info$C.A2 &lt;- sapply(info$B.A2, complement)
-info.complement &lt;- subset(info, A1 == C.A1 &amp; A2 == C.A2)
-# Update the complementary alleles in the bim file
-# This allow us to match the allele in subsequent analysis
-complement.snps &lt;- bim$SNP %in% info.complement$SNP
-bim[complement.snps,]$B.A1 &lt;-
-    sapply(bim[complement.snps,]$B.A1, complement)
-bim[complement.snps,]$B.A2 &lt;-
-    sapply(bim[complement.snps,]$B.A2, complement)</code></pre>
-</div>
-<input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><label for="__tabbed_3_2">With data.table and magrittr</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># Merge summary statistic with target
-info &lt;- merge(bim, height, by=c("SNP", "CHR", "BP")) %&gt;%
-    # And filter out QCed SNPs
-    .[SNP %in% qc[,V1]]
-
-# Function for calculating the complementary allele
-complement &lt;- function(x){
-    switch (x,
-        "A" = "T",
-        "C" = "G",
-        "T" = "A",
-        "G" = "C",
-        return(NA)
-    )
-} 
-# Get SNPs that have the same alleles across base and target
-info.match &lt;- info[A1 == B.A1 &amp; A2 == B.A2, SNP]
-# Identify SNPs that are complementary between base and target
-com.snps &lt;- info[sapply(B.A1, complement) == A1 &amp;
-                    sapply(B.A2, complement) == A2, SNP]
-# Now update the bim file
-bim[SNP %in% com.snps, c("B.A1", "B.A2") :=
-        list(sapply(B.A1, complement),
-            sapply(B.A2, complement))]</code></pre>
-</div>
-</div>
-<p>3. Identify SNPs that require recoding in the target (to ensure the coding allele in the target data is the effective allele in the base summary statistic)</p>
-<div class="tabbed-set" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Without data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># identify SNPs that need recoding
-info.recode &lt;- subset(info, A1 == B.A2 &amp; A2 == B.A1)
-# Update the recode SNPs
-recode.snps &lt;- bim$SNP %in% info.recode$SNP
-tmp &lt;- bim[recode.snps,]$B.A1
-bim[recode.snps,]$B.A1 &lt;- bim[recode.snps,]$B.A2
-bim[recode.snps,]$B.A2 &lt;- tmp
-
-# identify SNPs that need recoding &amp; complement
-info.crecode &lt;- subset(info, A1 == C.A2 &amp; A2 == C.A1)
-# Update the recode + strand flip SNPs
-com.snps &lt;- bim$SNP %in% info.crecode$SNP
-tmp &lt;- bim[com.snps,]$B.A1
-bim[com.snps,]$B.A1 &lt;- as.character(sapply(bim[com.snps,]$B.A2, complement))
-bim[com.snps,]$B.A2 &lt;- as.character(sapply(tmp, complement))
-
-# Output updated bim file
-write.table(
-    bim,
-    "EUR.QC.adj.bim",
-    quote = F,
-    row.names = F,
-    col.names = F,
-    sep="\t"
-)</code></pre>
-</div>
-<input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><label for="__tabbed_4_2">With data.table  and magrittr</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># identify SNPs that need recoding
-recode.snps &lt;- info[B.A1==A2 &amp; B.A2==A1, SNP]
-# Update the bim file
-bim[SNP %in% recode.snps, c("B.A1", "B.A2") :=
-        list(B.A2, B.A1)]
-
-# identify SNPs that need recoding &amp; complement
-com.recode &lt;- info[sapply(B.A1, complement) == A2 &amp;
-                    sapply(B.A2, complement) == A1, SNP]
-# Now update the bim file
-bim[SNP %in% com.recode, c("B.A1", "B.A2") :=
-        list(sapply(B.A2, complement),
-            sapply(B.A1, complement))]
-# Write the updated bim file
-fwrite(bim, "EUR.QC.adj.bim", col.names=F, sep="\t")</code></pre>
-</div>
-</div>
-<p>4. Identify SNPs that have different allele in base and target (usually due to difference in genome build or Indel)</p>
-<div class="tabbed-set" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><label for="__tabbed_5_1">Without data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R">mismatch &lt;-
-    bim$SNP[!(bim$SNP %in% info.match$SNP |
-                bim$SNP %in% info.complement$SNP | 
-                bim$SNP %in% info.recode$SNP |
-                bim$SNP %in% info.crecode$SNP)]
-write.table(
-    mismatch,
-    "EUR.mismatch",
-    quote = F,
-    row.names = F,
-    col.names = F
-)
-q() # exit R</code></pre>
-</div>
-<input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><label for="__tabbed_5_2">With data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R">mismatch &lt;- bim[!(SNP %in% info.match |
-                    SNP %in% com.snps |
-                    SNP %in% recode.snps |
-                    SNP %in% com.recode), SNP]
-write.table(mismatch, "EUR.mismatch", quote=F, row.names=F, col.names=F)
-q() # exit R</code></pre>
-</div>
-</div>
-<p>5. Replace <strong>EUR.bim</strong> with <strong>EUR.QC.adj.bim</strong>:</p>
-<p><pre class="highlight"><code class="language-bash"># Make a back up
-mv EUR.bim EUR.bim.bk
-ln -s EUR.QC.adj.bim EUR.bim</code></pre>
-The above commands do the following:</p>
-<ol>
-<li>Rename <strong>EUR.bim</strong> to <strong>EUR.bim.bk</strong></li>
-<li>Soft linking (<code>ln -s</code>) <strong>EUR.QC.adj.bim</strong> as <strong>EUR.bim</strong></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Most PRS software will perform strand-flipping automatically, thus this step is usually not required.</p>
-</div>
-<h2 id="duplicate-snps"># Duplicate SNPs<a class="headerlink" href="#duplicate-snps" title="Permanent link">&para;</a></h2>
-<p>Make sure to remove any duplicate SNPs in your target data (these target data were simulated and so include no duplicated SNPs).</p>
-<h2 id="sex-chromosomes"># Sex chromosomes<a class="headerlink" href="#sex-chromosomes" title="Permanent link">&para;</a></h2>
-<p>Sometimes sample mislabelling can occur, which may lead to invalid results. One indication of a mislabelled sample is a difference between reported sex and that indicated by the sex chromosomes. While this may be due to a difference in sex and gender identity, it could also reflect mislabeling of samples or misreporting and, thus, individuals in which there is a mismatch between biological and reported sex are typically removed. A sex check can be performed in PLINK, in which individuals are called as females if their X chromosome homozygosity estimate (F statistic) is &lt; 0.2 and as males if the estimate is &gt; 0.8.</p>
-<p>Before performing a sex check, pruning should be performed (see <a href="target.md#35-standard-gwas-qc">here</a>).
-A sex check can then easily be conducted using <code>plink</code>
-<pre class="highlight"><code class="language-bash">plink \
-    --bfile EUR \
-    --extract EUR.QC.prune.in \
-    --keep EUR.valid.sample \
-    --check-sex \
-    --out EUR.QC</code></pre></p>
-<p>This will generate a file called <strong>EUR.QC.sexcheck</strong> containing the F-statistics for each individual. Individuals are typically called as being biologically male if the F-statistic is &gt; 0.8 and biologically female if F &lt; 0.2.</p>
-<div class="tabbed-set" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><label for="__tabbed_6_1">Without library</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R"># Read in file
-valid &lt;- read.table("EUR.valid.sample", header=T)
-dat &lt;- read.table("EUR.QC.sexcheck", header=T)
-valid &lt;- subset(dat, STATUS=="OK" &amp; FID %in% valid$FID)
-write.table(valid[,c("FID", "IID")], "EUR.QC.valid", row.names=F, col.names=F, sep="\t", quote=F) 
-q() # exit R</code></pre>
-</div>
-<input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><label for="__tabbed_6_2">With data.table</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-R">library(data.table)
-# Read in file
-valid &lt;- fread("EUR.valid.sample")
-dat &lt;- fread("EUR.QC.sexcheck")[FID%in%valid$FID]
-fwrite(dat[STATUS=="OK",c("FID","IID")], "EUR.QC.valid", sep="\t") 
-q() # exit R</code></pre>
-</div>
-</div>
-<details class="note"><summary>How many samples were excluded due mismatched Sex information?</summary><ul>
-<li><code>4</code> samples were excluded</li>
-</ul>
-</details>
-<h2 id="sample-overlap"># Sample overlap<a class="headerlink" href="#sample-overlap" title="Permanent link">&para;</a></h2>
-<p>Since the target data were simulated there are no overlapping samples between the base and target data here (see the relevant section of <a href="https://www.nature.com/articles/s41596-020-0353-1">the paper</a> for discussion of the importance of avoiding sample overlap). </p>
-<h2 id="relatedness"># Relatedness<a class="headerlink" href="#relatedness" title="Permanent link">&para;</a></h2>
-<p>Closely related individuals in the target data may lead to overfitted results, limiting the generalisability of the results. </p>
-<p>Before calculating the relatedness, pruning should be performed (see <a href="target.md#35-standard-gwas-qc">here</a>).
-Individuals that have a first or second degree relative in the sample (<span class="arithmatex">\(\hat{\pi} &gt; 0.125\)</span>) can be removed with the following command:</p>
-<pre class="highlight"><code class="language-bash">plink \
-    --bfile EUR \
-    --extract EUR.QC.prune.in \
-    --keep EUR.QC.valid \
-    --rel-cutoff 0.125 \
-    --out EUR.QC</code></pre>
-<details class="note"><summary>How many related samples were excluded?</summary><ul>
-<li><code>0</code> samples were excluded</li>
-</ul>
-</details>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A greedy algorithm is used to remove closely related individuals in a way that optimizes the size of the sample retained.                However, the algorithm is dependent on the random seed used, which can generate different results. Therefore, to reproduce
-the same result, you will need to specify the same random seed. </p>
-<p>PLINK's algorithm for removing related individuals does not account for the phenotype under study. 
-To minimize the removal of cases of a disease, the following algorithm can be used instead: 
-<a href="https://gitlab.com/choishingwan/GreedyRelated">GreedyRelated</a>.</p>
-</div>
-<h2 id="generate-final-qced-target-data-file">Generate final QC'ed target data file<a class="headerlink" href="#generate-final-qced-target-data-file" title="Permanent link">&para;</a></h2>
-<p>After performing the full analysis, you can generate a QC'ed data set with the following command:
-<pre class="highlight"><code class="language-bash">plink \
-    --bfile EUR \
-    --make-bed \
-    --keep EUR.QC.rel.id \
-    --out EUR.QC \
-    --extract EUR.QC.snplist \
-    --exclude EUR.mismatch</code></pre></p>
+cd ../3_Association_GWAS</code></pre>
               
             </div>
           </div>
@@ -786,7 +434,7 @@ To minimize the removal of cases of a disease, the following algorithm can be us
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../cal_prs/" class="btn btn-neutral float-right" title="3. Association Analyses">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../assoc/" class="btn btn-neutral float-right" title="3. Association Analyses">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../QC/" class="btn btn-neutral" title="1. Quality Control of GWAS Data"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -820,7 +468,7 @@ To minimize the removal of cases of a disease, the following algorithm can be us
         <span><a href="../QC/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../cal_prs/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../assoc/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>3. Association Analyses - Basic Tutorial for Genome Wide Association Analysis</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link href="../css/extra.css" rel="stylesheet" />
+  <link href="../css/details.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "3. Association Analyses";
+    var mkdocs_page_input_path = "assoc.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script> 
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-145068952-1', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Basic Tutorial for Genome Wide Association Analysis</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../QC/">1. Quality Control of GWAS Data</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../popstrat/">2. Population Stratification</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">3. Association Analyses</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#we-only-need-to-define-a-few-variables-for-this-section-of-the-analysis">We only need to define a few variables for this section of the analysis</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#perform-association-analyses">Perform Association Analyses:</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#account-for-multiple-testing">Account for Multiple testing</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../plink/">PLINK</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../plink_visual/">4. Visualizing association results</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="" href="../assocdive.md">5. Deep dive into underpinnings of associations</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../liftover/">liftover</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Basic Tutorial for Genome Wide Association Analysis</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>3. Association Analyses</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/assoc.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="performing-association-analyses">Performing Association Analyses<a class="headerlink" href="#performing-association-analyses" title="Permanent link">&para;</a></h1>
+<p><em>For the association analyses we use the files generated in the previous tutorial (population stratification), named: popstratout (with .bed, .bim, and .fam. extensions) and covar_mds.txt</em></p>
+<h2 id="we-only-need-to-define-a-few-variables-for-this-section-of-the-analysis">We only need to define a few variables for this section of the analysis<a class="headerlink" href="#we-only-need-to-define-a-few-variables-for-this-section-of-the-analysis" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">FILE_GWAS=popstratout
+FILE_COV=covar_mds.txt
+tag_bim=".bim"</code></pre>
+<h2 id="perform-association-analyses">Perform Association Analyses:<a class="headerlink" href="#perform-association-analyses" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">logistic</label><div class="tabbed-content">
+<p>The <strong>--logistic</strong> method will allow you to include covariates in your association analysis. To include sex as a covariate (which is recommended for many phenotypes), add sex to the command as shown below. We will be using 10 principal components as covariates in this logistic analysis. We use the MDS components calculated from the previous tutorial: covar_mds.txt. We use the option <strong>hide-covar</strong> to only show the additive results of the SNPs in the output file.
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' --out logistic_results
+#plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results</code></pre>
+<strong>Remove NA values, those might give problems generating plots in later steps.</strong>
+<pre class="highlight"><code class="language-bash">awk '!/'NA'/' logistic_results.assoc.logistic &gt; logistic_results.assoc_2.logistic</code></pre></p>
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">--assoc</label><div class="tabbed-content">
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the --assoc option does not allow to correct covariates such as principal components (PC's)/ MDScomponents, which makes it less suited for association analyses.</p>
+</div>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_GWAS --assoc --out assoc_results</code></pre>
+</div>
+<input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><label for="__tabbed_1_3">--linear</label><div class="tabbed-content">
+<p>In case of a quantitative outcome measure the option --logistic should be replaced by --linear. The use of the --assoc option is also possible for quantitative outcome measures (as metioned previously, this option does not allow the use of covariates).</p>
+</div>
+</div>
+<h2 id="account-for-multiple-testing">Account for Multiple testing<a class="headerlink" href="#account-for-multiple-testing" title="Permanent link">&para;</a></h2>
+<p>There are various way to deal with multiple testing outside of the conventional genome-wide significance threshold of 5.0E-8, below we present a couple: </p>
+<h1 id="adjust">adjust<a class="headerlink" href="#adjust" title="Permanent link">&para;</a></h1>
+<p><pre class="highlight"><code class="language-bash">plink --bfile $FILE_GWAS -assoc --adjust --out adjusted_assoc_results
+grep -oP '(?&lt;==).*' adjusted_assoc_results.log &gt;test.txt
+sed 's/\.$//' test.txt &gt;lambda.txt</code></pre>
+The output file gives a Bonferroni corrected p-value, along with FDR and others.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is a computational intensive step. Further pros and cons of this method, which can be used for association and dealing with multiple testing, are described in our article corresponding to this tutorial (https://www.ncbi.nlm.nih.gov/pubmed/29484742).To reduce computational time, we only perform this test on a subset of the SNPs from chromosome 22. The EMP2 column provides the values for multiple testing corrected p-value.</p>
+</div>
+<pre class="highlight"><code class="language-bash"># Perform 1000000 permutations.
+plink --bfile $FILE_GWAS --assoc --mperm 1000000 --out 1M_perm_result
+# Order your data, from lowest to highest p-value.
+sort -gk 4 1M_perm_result.assoc.mperm &gt; sorted_subset.txt
+# Check ordered permutation results
+head sorted_subset.txt</code></pre>
+<h1 id="generate-manhattan-and-qq-plots">Generate Manhattan and QQ plots.<a class="headerlink" href="#generate-manhattan-and-qq-plots" title="Permanent link">&para;</a></h1>
+<div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Generating Manhattan plot in R</label><div class="tabbed-content"></div>
+<input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">Generating QQ plot in R</label><div class="tabbed-content"></div>
+</div>
+<p><pre class="highlight"><code>list.of.packages &lt;- c("ggplot2")
+new.packages &lt;- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+library(ggplot2)
+
+inflation=read.table("lambda.txt")
+inflation=inflation$V1
+
+rs_log &lt;- read.table("logistic_results.assoc_2.logistic", head=TRUE)
+rs_as &lt;- read.table("assoc_results.assoc", head=TRUE)
+
+
+###function for plotting with 95% confidence interval
+gg_qqplot &lt;- function(ps, ci = 0.95) {
+  n  &lt;- length(ps)
+  df &lt;- data.frame(
+    observed = -log10(sort(ps)),
+    expected = -log10(ppoints(n)),
+    clower   = -log10(qbeta(p = (1 - ci) / 2, shape1 = 1:n, shape2 = n:1)),
+    cupper   = -log10(qbeta(p = (1 + ci) / 2, shape1 = 1:n, shape2 = n:1))
+  )
+  log10Pe &lt;- expression(paste("Expected -log"[10], plain(P)))
+  log10Po &lt;- expression(paste("Observed -log"[10], plain(P)))
+  ggplot(df) +
+    geom_ribbon(
+      mapping = aes(x = expected, ymin = clower, ymax = cupper),
+      alpha = 0.1
+    ) +
+    geom_point(aes(expected, observed), shape = 1, size = 3) +
+    geom_abline(intercept = 0, slope = 1, alpha = 0.5) +
+    geom_line(aes(expected, cupper), linetype = 2, size = 0.5) +
+    geom_line(aes(expected, clower), linetype = 2, size = 0.5) +
+    xlab(log10Pe) +
+    ylab(log10Po)
+}
+
+##Run--&gt;
+jpeg("QQ-Plot_logistic_COVAR.jpeg")
+gg_qqplot(rs_log$P) +
+  theme_bw(base_size = 24) +
+  annotate(
+    geom = "text",
+    x = -Inf,
+    y = Inf,
+    hjust = -0.15,
+    vjust = 1 + 0.15 * 3,
+    label = sprintf("λ = %.2f", inflation),
+    size = 8
+  ) +
+  theme(
+    axis.ticks = element_line(size = 0.5),
+    panel.grid = element_blank()
+    # panel.grid = element_line(size = 0.5, color = "grey80")
+  )
+dev.off()
+
+jpeg("QQ-Plot_assoc.jpeg")
+gg_qqplot(rs_as$P) +
+  theme_bw(base_size = 24)+
+  theme(axis.ticks = element_line(size = 0.5),
+    panel.grid = element_blank())
+dev.off()</code></pre>
+<img alt="Manhattan example" src="../img/manhattan.png" />
+<img alt="QQ example" src="../img/qq.png" /></p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../plink/" class="btn btn-neutral float-right" title="PLINK">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../popstrat/" class="btn btn-neutral" title="2. Population Stratification"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/choishingwan/PRS-Tutorial/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../popstrat/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../plink/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+      <script src="../javascripts/details.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
