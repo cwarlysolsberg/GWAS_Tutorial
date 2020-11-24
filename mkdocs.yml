@@ -5,7 +5,7 @@ nav:
     - index.md
     - 1. Quality Control of GWAS Data: QC.md
     - 2. Population Stratification: popstrat.md
-    - 3. Association Analyses: cal_prs.md
+    - 3. Association Analyses: assoc.md
     - PLINK: plink.md
     - 4. Visualizing association results: plink_visual.md
     - 5. Deep dive into underpinnings of associations: assocdive.md
@@ -43,3 +43,5 @@ google_analytics:
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
   - javascripts/details.js
+  
+
