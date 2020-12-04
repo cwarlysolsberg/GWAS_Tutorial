@@ -9,6 +9,7 @@ The tutorial is separated into five main section.
 3. [Association Analyses](assoc.md)
 4. [Visualizing of Association results](visual.md)
 5. [Deep dive into underpinnings of associations](assocdive.md)
+6. [Polygenic Risk Score](prs.md)
 
 !!! warning
 
