@@ -213,17 +213,17 @@ plink --bfile $OUT3 --remove het_fail_ind.txt --make-bed --out $OUT4
 ##Transfer files to use for population stratification
 **rename files and copy to population stratification folder** 
 ```bash
-mkdir 2_Population_stratification
+mkdir ../2_Population_stratification
 bed=".bed"
 fam=".fam"
 bim=".bim"
 mv $OUT4$bed ./qcout.bed
 mv $OUT4$bim ./qcout.bim
 mv $OUT4$fam ./qcout.fam
-cp qcout* 2_Population_stratification
-cp plink.prune.in 2_Population_stratification
+cp qcout* ../2_Population_stratification
+cp plink.prune.in ../2_Population_stratification
 ```
 **change directory into population stratification folder**
 ```bash
-cd 2_Population_stratification
+cd ../2_Population_stratification
 ```

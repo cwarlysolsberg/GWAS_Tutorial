@@ -76,6 +76,8 @@ lowcover="unrelated"
 OUTCOVER=$lowcover
 tag_mds="MDS"
 POPSTRATOUT=$OUTCOVER$sep$tag_mds
+tag_pca="PCA"
+INPCA=$OUTCOVER
 ```
 ##QC on 1000 Genomes data.
 
@@ -165,15 +167,7 @@ plink --bfile $OUT5 --exclude SNPs_for_exclusion.txt --make-bed --out $OUT6
 ```bash
 plink --bfile $OUT2_QC --bmerge $OUT6$tagbed $OUT6$tagbim $OUT6$tagfam --allow-no-sex --make-bed --out MDS_merge2
 ```
-
-## Perform MDS on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
-
-```bash 
-plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
-plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2
-```
-
-### Create MDS-plot
+## Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
 
 **Download the file with population information of the 1000 genomes dataset.**
 ```bash
@@ -190,7 +184,7 @@ awk '{print$1,$1,$2}' 20100804.ALL.panel > race_1kG.txt
 ```bash
 awk '{print$1,$2,"OWN"}' $OUT2_QC$tagfam > racefile_own.txt
 ```
-**make txtfile of concatenated racefiles**
+**make txt file of concatenated racefiles**
 ```bash
 sed 's/JPT/ASN/g' race_1kG.txt>race_1kG2.txt
 sed 's/ASW/AFR/g' race_1kG2.txt>race_1kG3.txt
@@ -207,40 +201,86 @@ sed 's/CHS/ASN/g' race_1kG12.txt>race_1kG13.txt
 sed 's/PUR/AMR/g' race_1kG13.txt>race_1kG14.txt
 cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
 ```
-# Generate population stratification plot.
-=== "Performed in R"
 
-```{r}
-data<- read.table(file="MDS_merge2.mds",header=TRUE)
-race<- read.table(file="racefile.txt",header=TRUE)
-datafile<- merge(data,race,by=c("IID","FID"))
-head(datafile)
+# Perform MDS
 
-pdf("MDS.pdf",width=7,height=7)
-for (i in 1:nrow(datafile))
-{
-if (datafile[i,14]=="EUR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="green")}
-par(new=T)
-if (datafile[i,14]=="ASN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="red")}
-par(new=T)
-if (datafile[i,14]=="AMR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col=470)}
-par(new=T)
-if (datafile[i,14]=="AFR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="blue")}
-par(new=T)
-if (datafile[i,14]=="OWN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=3,cex=0.7,col="black")}
-par(new=T)
-}
+=== "Perform MDS Clustering"
+    ```bash 
+    plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
+    plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2
+    ```
+=== "Create MDS-plot"
+    # Generate population stratification plot.
+    === "Performed in R"
+    
+    ```{r}
+    data<- read.table(file="MDS_merge2.mds",header=TRUE)
+    race<- read.table(file="racefile.txt",header=TRUE)
+    datafile<- merge(data,race,by=c("IID","FID"))
+    head(datafile)
+    
+    pdf("MDS.pdf",width=7,height=7)
+    for (i in 1:nrow(datafile))
+    {
+    if (datafile[i,14]=="EUR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="green")}
+    par(new=T)
+    if (datafile[i,14]=="ASN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="red")}
+    par(new=T)
+    if (datafile[i,14]=="AMR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col=470)}
+    par(new=T)
+    if (datafile[i,14]=="AFR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="blue")}
+    par(new=T)
+    if (datafile[i,14]=="OWN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=3,cex=0.7,col="black")}
+    par(new=T)
+    }
+    
+    abline(v=-0.035,lty=3)
+    abline(h=0.035,lty=3)
+    legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red",470,"blue","black"),bty="o",cex=1)
+    dev.off()
+    ```
 
-abline(v=-0.035,lty=3)
-abline(h=0.035,lty=3)
-legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red",470,"blue","black"),bty="o",cex=1)
-dev.off()
-```
+    ![MDS example](img/MDS.png)
+    > An example bar plot generated using script in `MDS_merged.R`    
 
-![MDS example](img/MDS.png)
-> An example bar plot generated using script in `MDS_merged.R`    
+# Perform PCA 
 
-
+=== "Perform PCA Clustering"
+    ```bash
+    plink --bfile MDS_merge2 --indep-pairwise 50 5 0.5 
+    plink --bfile MDS_merge2 --extract plink.prune.in  --make-bed --pca 10 'header' --out PCA_MERGE
+    ```
+=== "Create PCA-plot"
+    === "Performed in R"
+    ```{r}
+    data<- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+    race<- read.table(file="racefile.txt",header=TRUE)
+    datafile<- merge(data,race,by=c("IID","FID"))
+    head(datafile)
+    
+    pdf("pca.pdf",width=7,height=7)
+    for (i in 1:nrow(datafile))
+    {
+    if (datafile[i,13]=="EUR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="green")}
+    par(new=T)
+    if (datafile[i,13]=="ASN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="red")}
+    par(new=T)
+    if (datafile[i,13]=="AMR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="orange")}
+    par(new=T)
+    if (datafile[i,13]=="AFR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="blue")}
+    par(new=T)
+    if (datafile[i,13]=="OWN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=3,cex=0.7,col="black")}
+    par(new=T)
+    }
+    
+    abline(v=-0.005,lty=3)
+    abline(h=-0.005,lty=3)
+    legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red","orange","blue","black"),bty="o",cex=1)
+    dev.off()
+    
+    ## awk '{ if ($3 <-0.005 && $4 >-0.005) print $1,$2 }' PCA_MERGE.eigenvec > EUR_samp.txt
+    ```
+    ![PCA example](img/pca.png)
 ## Run Admixture algorithm
 
 !!! note
