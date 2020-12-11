@@ -81,21 +81,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#create-mds-plot">Create MDS-plot</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#run-admixture-algorithm">Run Admixture algorithm</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#exclude-ethnic-outliers">Exclude ethnic outliers.</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#hardy-weinburg-equilibrium-filter-on-controls">Hardy weinburg equilibrium filter on controls</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#remove-all-relatedness-from-dataset">Remove all 'relatedness' from dataset</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#create-covariates-based-on-mds">Create covariates based on MDS.</a>
+    <li class="toctree-l2"><a class="reference internal" href="#perform-mds-and-pca-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs</a>
     </li>
     </ul>
                     </li>
@@ -118,6 +104,10 @@
                 </ul>
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="../liftover/">liftover</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../prs/">PRS</a>
                     </li>
                 </ul>
       </div>
@@ -211,7 +201,9 @@ found="founder"
 lowcover="unrelated"
 OUTCOVER=$lowcover
 tag_mds="MDS"
-POPSTRATOUT=$OUTCOVER$sep$tag_mds</code></pre></p>
+POPSTRATOUT=$OUTCOVER$sep$tag_mds
+tag_pca="PCA"
+INPCA=$OUTCOVER</code></pre></p>
 <h2 id="qc-on-1000-genomes-data">QC on 1000 Genomes data.<a class="headerlink" href="#qc-on-1000-genomes-data" title="Permanent link">&para;</a></h2>
 <p><strong>Remove variants based on missing genotype data.</strong>
 <pre class="highlight"><code class="language-bash">plink --bfile $FILE_1K --geno $GENO --make-bed --out $OUT1</code></pre>
@@ -260,16 +252,36 @@ plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $O
 plink --bfile $OUT5 --exclude SNPs_for_exclusion.txt --make-bed --out $OUT6</code></pre></p>
 <h2 id="merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data<a class="headerlink" href="#merge-outdata-with-1000-genomes-data" title="Permanent link">&para;</a></h2>
 <pre class="highlight"><code class="language-bash">plink --bfile $OUT2_QC --bmerge $OUT6$tagbed $OUT6$tagbim $OUT6$tagfam --allow-no-sex --make-bed --out MDS_merge2</code></pre>
-<h2 id="perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs<a class="headerlink" href="#perform-mds-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps" title="Permanent link">&para;</a></h2>
-<pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
-plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</code></pre>
-<h3 id="create-mds-plot">Create MDS-plot<a class="headerlink" href="#create-mds-plot" title="Permanent link">&para;</a></h3>
+<h2 id="perform-mds-and-pca-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs<a class="headerlink" href="#perform-mds-and-pca-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps" title="Permanent link">&para;</a></h2>
 <p><strong>Download the file with population information of the 1000 genomes dataset.</strong>
 <pre class="highlight"><code class="language-bash">wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/20100804.ALL.panel</code></pre>
 <em>The file 20130502.ALL.panel contains population codes of the individuals of 1000 genomes.</em></p>
 <p><strong>Convert population codes into superpopulation codes (i.e., AFR,AMR,ASN, and EUR).</strong>
 <pre class="highlight"><code class="language-bash">awk '{print$1,$1,$2}' 20100804.ALL.panel &gt; race_1kG.txt</code></pre></p>
-<div class="tabbed-set" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Performed in R</label><div class="tabbed-content"></div>
+<p><strong>Create a racefile of your own data.</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$1,$2,"OWN"}' $OUT2_QC$tagfam &gt; racefile_own.txt</code></pre>
+<strong>make txt file of concatenated racefiles</strong>
+<pre class="highlight"><code class="language-bash">sed 's/JPT/ASN/g' race_1kG.txt&gt;race_1kG2.txt
+sed 's/ASW/AFR/g' race_1kG2.txt&gt;race_1kG3.txt
+sed 's/CEU/EUR/g' race_1kG3.txt&gt;race_1kG4.txt
+sed 's/CHB/ASN/g' race_1kG4.txt&gt;race_1kG5.txt
+sed 's/CHD/ASN/g' race_1kG5.txt&gt;race_1kG6.txt
+sed 's/YRI/AFR/g' race_1kG6.txt&gt;race_1kG7.txt
+sed 's/LWK/AFR/g' race_1kG7.txt&gt;race_1kG8.txt
+sed 's/TSI/EUR/g' race_1kG8.txt&gt;race_1kG9.txt
+sed 's/MXL/AMR/g' race_1kG9.txt&gt;race_1kG10.txt
+sed 's/GBR/EUR/g' race_1kG10.txt&gt;race_1kG11.txt
+sed 's/FIN/EUR/g' race_1kG11.txt&gt;race_1kG12.txt
+sed 's/CHS/ASN/g' race_1kG12.txt&gt;race_1kG13.txt
+sed 's/PUR/AMR/g' race_1kG13.txt&gt;race_1kG14.txt
+cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' &gt; racefile.txt</code></pre></p>
+<h1 id="perform-mds">Perform MDS<a class="headerlink" href="#perform-mds" title="Permanent link">&para;</a></h1>
+<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Perform MDS Clustering</label><div class="tabbed-content">
+<pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
+plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</code></pre>
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Create MDS-plot</label><div class="tabbed-content">
+<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <pre class="highlight"><code>data&lt;- read.table(file="MDS_merge2.mds",header=TRUE)
 race&lt;- read.table(file="racefile.txt",header=TRUE)
@@ -299,6 +311,45 @@ dev.off()</code></pre>
 <blockquote>
 <p>An example bar plot generated using script in <code>MDS_merged.R</code>    </p>
 </blockquote>
+</div>
+</div>
+<h1 id="perform-pca">Perform PCA<a class="headerlink" href="#perform-pca" title="Permanent link">&para;</a></h1>
+<div class="tabbed-set" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Perform PCA Clustering</label><div class="tabbed-content">
+<pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --indep-pairwise 50 5 0.5 
+plink --bfile MDS_merge2 --extract plink.prune.in  --make-bed --pca 10 'header' --out PCA_MERGE</code></pre>
+</div>
+<input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><label for="__tabbed_3_2">Create PCA-plot</label><div class="tabbed-content">
+<div class="tabbed-set" data-tabs="4:1"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<p><pre class="highlight"><code>data&lt;- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+race&lt;- read.table(file="racefile.txt",header=TRUE)
+datafile&lt;- merge(data,race,by=c("IID","FID"))
+head(datafile)
+
+pdf("pca.pdf",width=7,height=7)
+for (i in 1:nrow(datafile))
+{
+if (datafile[i,13]=="EUR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="green")}
+par(new=T)
+if (datafile[i,13]=="ASN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="red")}
+par(new=T)
+if (datafile[i,13]=="AMR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="orange")}
+par(new=T)
+if (datafile[i,13]=="AFR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="blue")}
+par(new=T)
+if (datafile[i,13]=="OWN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=3,cex=0.7,col="black")}
+par(new=T)
+}
+
+abline(v=-0.005,lty=3)
+abline(h=-0.005,lty=3)
+legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red","orange","blue","black"),bty="o",cex=1)
+dev.off()
+
+## awk '{ if ($3 &lt;-0.005 &amp;&amp; $4 &gt;-0.005) print $1,$2 }' PCA_MERGE.eigenvec &gt; EUR_samp.txt</code></pre>
+<img alt="PCA example" src="../img/pca.png" /></p>
+</div>
+</div>
 <h2 id="run-admixture-algorithm">Run Admixture algorithm<a class="headerlink" href="#run-admixture-algorithm" title="Permanent link">&para;</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -320,7 +371,7 @@ cut -d " " -f 3- MDS_merge2.pop &gt;temp.txt</code></pre>
 <p class="admonition-title">Warning</p>
 <p>This step can take a very long time. Running overnight may be neccessary. </p>
 </div>
-<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
+<div class="tabbed-set" data-tabs="5:1"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><label for="__tabbed_5_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <p><pre class="highlight"><code>R
 tbl=read.table("MDS_merge2.12.Q")
@@ -363,7 +414,7 @@ plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO</code>
 <pre class="highlight"><code class="language-bash">plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO</code></pre>
 <h2 id="remove-all-relatedness-from-dataset">Remove all 'relatedness' from dataset<a class="headerlink" href="#remove-all-relatedness-from-dataset" title="Permanent link">&para;</a></h2>
 <pre class="highlight"><code class="language-bash">plink --bfile $OUTQCEURO --filter-founders --make-bed --out $OUTQCEURO$sep$found</code></pre>
-<div class="tabbed-set" data-tabs="3:1"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Performed in R</label><div class="tabbed-content"></div>
+<div class="tabbed-set" data-tabs="6:1"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><label for="__tabbed_6_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <pre class="highlight"><code>data&lt;- read.table(file="kin.txt",header=TRUE)
 data_related=data[,c(1,2,3,4)]
