@@ -29,7 +29,7 @@ tag_bim=".bim"
     ```
 
 === "--linear"
-    In case of a quantitative outcome measure the option --logistic should be replaced by --linear. The use of the --assoc option is also possible for quantitative outcome measures (as metioned previously, this option does not allow the use of covariates).
+    In case of a quantitative outcome measure the option --logistic should be replaced by --linear. The use of the --assoc option is also possible for quantitative outcome measures (as metioned previously, this option does not allow the use of covariates). 
    
 
 ## Account for Multiple testing

@@ -13,7 +13,7 @@ The tutorial is separated into five main section.
 
 !!! warning
 
-    Data used in this tutorial are simulated and intended for demonstration purposes only. The results from this tutorial will not reflect the true performance of different software. 
+    Data used in this tutorial are simulated and intended for demonstration purposes only. The results from this tutorial will not reflect the true performance of different software.
 
 !!! notes
 
