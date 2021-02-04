@@ -49,14 +49,10 @@ MAF=0.05
 plink --bfile $FILESET.geno.mind --maf $MAF --make-bed --out $FILESET.geno.mind.maf
 ```
 **Extract the variants present in our dataset from the 1000 genomes dataset**
-The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We want to extract the second column from the 1000 Genomes file as well as our own file so we can extract our SNPS from the 1000 Genome data set and vice versa before merging. Remember the QC fileset is the output file from the [QC Section](QC.md) which can be defined as a variable **FILE_QC** as shown below. As the *awk* command requires a single file input, we will also define the '.bim' string as a variable stored as **tagbim**. 
+The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We want to extract the second column from the 1000 Genomes file as well as our own file so we can extract our SNPS from the 1000 Genome data set and vice versa before merging. Remember the QC fileset is the output file from the [QC Section](QC.md) which can be defined as a variable **FILE_QC** as shown below. 
 
 ```bash
 FILE_QC=qcout
-tagbim=".bim"
-```
-
-```bash
 awk '{print$2}' "$FILE_QC.bim"> QCFILE_SNPs.txt
 awk '{print$2}' "$FILESET.geno.mind.maf.bim"> 1kG_temp.bim
 plink --bfile $FILESET.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILESET.geno.mind.maf.extract
