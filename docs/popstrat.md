@@ -25,52 +25,11 @@ plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000
 plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make-bed --out 1000genomes_nomissing.genotypes
 ```
 
-## Define Variables to be used in this section
-
-**input files and variables**
-```bash 
-FILE_PRUNEIN=plink.prune.in #snps in approximate linkage equilibrium 
-INDV=0.02 #individual missingness filter
-MAF=0.05 #minor allele frequency filter
-HWE_CONTROL=1e-6 #hardy weinburg equilibrium filter
-```
-
-**define general file tags**
-
-```bash
-sep="_"
-tagbed=".bed"
-
-tagfam=".fam"
-tagmap=".map"
-taggenome=".genome"
-tag_dot_mds=".mds"
-```
-
-**tags for filtering 1000genome data**
-
-**tags for filtering QCed data**
-```bash
-TAG_QC="QCin"
-tag_euro="euro"
-FILEQCEURO=$FILE_QC$sep$tag_euro
-TAG_HWE_CONTROL="hwe_control"
-OUTQCEURO=$FILEQCEURO$sep$TAG_HWE_CONTROL$sep$HWE_CONTROL
-found="founder"
-lowcover="unrelated"
-OUTCOVER=$lowcover
-tag_mds="MDS"
-POPSTRATOUT=$OUTCOVER$sep$tag_mds
-tag_pca="PCA"
-INPCA=$OUTCOVER
-```
 ##QC on 1000 Genomes data.
 
 **Remove variants based on missing genotype data.**
-<<<<<<< HEAD
 
-=======
->>>>>>> ccac43f31485dd230cdf380a2c6a496fa5b20c20
+
 First, we again want to define our fileset name for our 1000_genomes file under variable **FILE_1K**, and we set our desired genotype missingness threshold as 0.02. The thresholds applied to the 1000 Genomes data set are the same as those applied to our own data set. For more information on the selection of the basic QC parameters, go back to the [QC Section](QC.md). 
 ```bash
 FILE_1K=1000genomes_nomissing.genotypes
@@ -98,14 +57,14 @@ tagbim=".bim"
 ```
 
 ```bash
-awk '{print$2}' "$FILE_QC$tagbim"> QCFILE_SNPs.txt
-awk '{print$2}' "$FILESET.geno.mind.maf$tagbim"> 1kG_temp.bim
+awk '{print$2}' "$FILE_QC.bim"> QCFILE_SNPs.txt
+awk '{print$2}' "$FILESET.geno.mind.maf.bim"> 1kG_temp.bim
 plink --bfile $FILESET.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILESET.geno.mind.maf.extract
 ```
 
 ## Extract the variants present in 1000 Genomes dataset from your dataset.
 ```bash
-awk '{print$2}' $FILESET.geno.mind.maf.extract$tagbim > 1kG_SNPs.txt
+awk '{print$2}' $FILESET.geno.mind.maf.extract.bim > 1kG_SNPs.txt
 plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC.extract
 ```
 *The datasets now contain the exact same variants.*
@@ -116,7 +75,7 @@ plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC
     Alternatively, look at [Liftover tutorial](Additional_considerations.md) to see how to move data set to another build. 
 
 ```bash 
-awk '{print$2,$4}' $FILE_QC.extract$tagmap > buildmap.txt
+awk '{print$2,$4}' $FILE_QC.extract.map > buildmap.txt
 # buildmap.txt contains one SNP-id and physical position per line.
 plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILESET.geno.mind.maf.extract.build
 
@@ -135,14 +94,14 @@ plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-be
 
 **1) set reference genome**
 ```bash
-awk '{print$2,$5}' $FILESET.geno.mind.maf.extract.build$tagbim > 1kg_ref-list.txt
+awk '{print$2,$5}' $FILESET.geno.mind.maf.extract.build.bim > 1kg_ref-list.txt
 plink --bfile $FILE_QC.extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
 # The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.
 ```
 
 **2) Resolve strand issues**
 ```bash
-awk '{print$2,$5,$6}' $FILESET.geno.mind.maf.extract.build$tagbim > 1kGMDS_strand_tmp
+awk '{print$2,$5,$6}' $FILESET.geno.mind.maf.extract.build.bim > 1kGMDS_strand_tmp
 awk '{print$2,$5,$6}' Map-adj.bim > Map-adj_tmp
 sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u > all_differences.txt
 ```
@@ -169,7 +128,7 @@ plink --bfile $FILESET.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.
 ## Merge outdata with 1000 Genomes Data
 
 ```bash
-plink --bfile $FILE_QC.extract.rem --bmerge $FILESET.geno.mind.maf.extract.build.rem$tagbed $FILESET.geno.mind.maf.extract.build.rem$tagbim $FILESET.geno.mind.maf.extract.build.rem$tagfam --allow-no-sex --make-bed --out MDS_merge2
+plink --bfile $FILE_QC.extract.rem --bmerge $FILESET.geno.mind.maf.extract.build.rem.bed $FILESET.geno.mind.maf.extract.build.rem.bim $FILESET.geno.mind.maf.extract.build.rem.fam --allow-no-sex --make-bed --out MDS_merge2
 ```
 ## Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
 
@@ -186,7 +145,7 @@ awk '{print$1,$1,$2}' 20100804.ALL.panel > race_1kG.txt
 
 **Create a racefile of your own data.**
 ```bash
-awk '{print$1,$2,"OWN"}' $FILE_QC.extract.rem$tagfam > racefile_own.txt
+awk '{print$1,$2,"OWN"}' $FILE_QC.extract.rem.fam > racefile_own.txt
 ```
 **make txt file of concatenated racefiles**
 ```bash
@@ -210,7 +169,7 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
 
 === "Perform MDS Clustering"
     ```bash 
-    plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
+    plink --bfile MDS_merge2 --extract plink.prune.in --genome --out MDS_merge2
     plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2
     ```
 === "Create MDS-plot"
@@ -295,7 +254,7 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
     ```
 **Concatenate racefiles.**
 ```bash
-awk '{print$1,$2,"-"}' $FILE_QC.extract.rem$tagfam > racefile_own.txt
+awk '{print$1,$2,"-"}' $FILE_QC.extract.rem.fam > racefile_own.txt
 awk '{print$1,$1,$2}' 20100804.ALL.panel > race_1kG.txt
 cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' > MDS_merge2.pop
 sed -i -e "1d" MDS_merge2.pop
@@ -357,35 +316,38 @@ The output of this script prints out a text file **europeans.txt** with a list o
 
 ```bash
 awk '{ if ($4 <-0.04 && $5 >0.03) print $1,$2 }' MDS_merge2.mds > EUR_MDS_merge2
-plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO
+plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILE_QC.euro
 ```
 *to exclude ethnic outliers using output from ADMIXTURE use the following script*
 ```bash
-plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILEQCEURO
+plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILE_QC.euro
 ```
 
-## Hardy Weinburg equilibrium filter on controls  
+## Hardy Weinburg equilibrium filter on controls
+
+
 ```bash
-plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO
+HWE_CONTROL=1e-6
+plink --bfile $FILE_QC.euro --hwe $HWE_CONTROL --make-bed --out $FILE_QC.euro.hwe_control
 ```
 
 ## Filter founders from dataset 
 This excludes all samples with at least one known parental ID in the current analysis
 ```bash
-plink --bfile $OUTQCEURO --filter-founders --make-bed --out $OUTQCEURO$sep$found
+plink --bfile $FILE_QC.euro.hwe_control --filter-founders --make-bed --out $FILE_QC.euro.hwe_control.found
 ```
 
 ## Check for cryptic relatedness with plink2
 Use KING method (implemented in Plink2) to filter out individuals that are more closely related than third cousins. 
 
 ```bash 
-plink2 --bfile $OUTQCEURO$sep$found --make-king-table --king-table-filter 0.0884
+plink2 --bfile $FILE_QC.euro.hwe_control.found --make-king-table --king-table-filter 0.0884
 sed 's/^#//' plink2.kin0 > kin.txt
 ```
 Assess missingness so you can remove individual with most missingness in each pair
 
 ```bash 
-plink --bfile $OUTQCEURO$sep$found --missing
+plink --bfile $FILE_QC.euro.hwe_control.found --missing
 ```
 In R, run the following script to remove the individuals with the highest amount of missingness in each related pair. 
 ```
@@ -444,21 +406,21 @@ write.table(final, '0.2_low_call_rate.txt', append = FALSE, sep = " ", dec = "."
 
 **remove individual with higher missingness**
 ```bash
-plink --bfile $OUTQCEURO$sep$found --remove 0.2_low_call_rate.txt --make-bed --out $OUTCOVER
+plink --bfile $FILE_QC.euro.hwe_control.found --remove 0.2_low_call_rate.txt --make-bed --out $FILE_QC.euro.hwe_control.found.unrelated
 ```
 ## Create covariates based on MDS.
 *Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial*
 ```bash	
-plink --bfile $OUTCOVER --extract plink.prune.in --genome --out $OUTCOVER
-plink --bfile $OUTCOVER --read-genome $OUTCOVER$taggenome --cluster --mds-plot 10 --out $POPSTRATOUT
-awk '{print$1, $2, $4, $5, $6, $7,$8,$9,$10,$11,$12,$13}' $POPSTRATOUT$tag_m$tag_dot_mds > covar_mds.txt
+plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --extract plink.prune.in --genome --out $FILE_QC.euro.hwe_control.found.unrelated
+plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --read-genome $FILE_QC.euro.hwe_control.found.unrelated.genome --cluster --mds-plot 10 --out $FILE_QC.euro.hwe_control.found.unrelated.MDS
+awk '{print$1, $2, $4, $5, $6, $7,$8,$9,$10,$11,$12,$13}' $FILE_QC.euro.hwe_control.found.unrelated.MDS.mds > covar_mds.txt
 ```
 **The values in covar_mds.txt will be used as covariates, to adjust for remaining population stratification, in the third tutorial where we will perform a genome-wide association analysis.**
 
 ```bash
-mv $OUTCOVER$tagbed ./popstratout.bed
-mv $OUTCOVER$tagbim ./popstratout.bim
-mv $OUTCOVER$tagfam ./popstratout.fam
+mv $FILE_QC.euro.hwe_control.found.unrelated.bed ./popstratout.bed
+mv $FILE_QC.euro.hwe_control.found.unrelated.bim ./popstratout.bim
+mv $FILE_QC.euro.hwe_control.found.unrelated.fam ./popstratout.fam
 cp popstratout* ../3_Association_GWAS
 cp covar_mds.txt ../3_Association_GWAS
 cd ../3_Association_GWAS
