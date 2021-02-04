@@ -9,8 +9,13 @@ nav:
     - PLINK: plink.md
     - 4. Visualizing association results: plink_visual.md
     - 5. Deep dive into underpinnings of associations: assocdive.md
+<<<<<<< HEAD
     - 6. Additional Considerations : Additional_considerations.md
 
+=======
+    - 6. Additional Considerations: Additional_considerations.md
+    - 7.PRS: prs.md
+>>>>>>> ccac43f31485dd230cdf380a2c6a496fa5b20c20
 
 theme: 
     name: readthedocs

@@ -1,6 +1,6 @@
-# Background
+# Introduction
 
-[LDpred-2](https://privefl.github.io/bigsnpr/articles/LDpred2.html) is one of the dedicated PRS programs which is an `R` package that uses a Bayesian approach to polygenic risk scoring.
+While this tutorial is intended to be as robust as possible, there are some additional processes and considerations that may be needed for individual datasets. This section serves to provide examples of when and how to incorportant various tools and commands that were not necessary for our example HapMap dataset, but are likely to come up in other analyses. 
 
 ## Installing LDpred-2
 

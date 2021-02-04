@@ -81,7 +81,10 @@ INPCA=$OUTCOVER
 ##QC on 1000 Genomes data.
 
 **Remove variants based on missing genotype data.**
+<<<<<<< HEAD
 
+=======
+>>>>>>> ccac43f31485dd230cdf380a2c6a496fa5b20c20
 First, we again want to define our fileset name for our 1000_genomes file under variable **FILE_1K**, and we set our desired genotype missingness threshold as 0.02. The thresholds applied to the 1000 Genomes data set are the same as those applied to our own data set. For more information on the selection of the basic QC parameters, go back to the [QC Section](QC.md). 
 ```bash
 FILE_1K=1000genomes_nomissing.genotypes
@@ -129,7 +132,7 @@ plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC
 ```bash 
 awk '{print$2,$4}' $OUT1_QC$tagmap > buildmap.txt
 # buildmap.txt contains one SNP-id and physical position per line.
-plink --bfile $OUT4 --update-map buildmap.txt --make-bed --out $OUT5
+plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $OUT5
 ```
 
 ## Merge the Map and 1000 Genomes data sets
