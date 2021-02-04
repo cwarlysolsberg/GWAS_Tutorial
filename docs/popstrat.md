@@ -3,17 +3,22 @@
 
 We will be using data from the 1000 Genomes Project for the population stratification step.
 
-You can download using the following command 
+You can download using the following command:
 
 ```bash
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz
 ```
-The data will need to be converted into plink format with unique indentifiers created for each the SNPs with a missing rs-identifier:
+
+Note that, while there is more updated data available from the 1000 Genomes project, we decided to use this data for 2 reasons: 
+1. The most updated data set is much larger and separated by chromosome leading to a far more computationally intensive process to use this data set. 
+2. We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the [Separated by Chromosome](Additional_considerations.md) section on the Additional Considerations page. 
 
 !!! note
     You will need `plink` in this section, which can be download from [here](https://www.cog-genomics.org/plink/1.9/).
 
     Install the program `plink` and include its location in your PATH directory, which allows us to use `plink` instead of `./plink` in the commands below. If PLINK is not in your PATH directory and is instead in your working directory, replace all instances of `plink` in the tutorial with `./plink`.
+
+The data will need to be converted into plink format with unique indentifiers created for each the SNPs with a missing rs-identifier. First, the *.vcf* file is converted to  *.bim,.bed,.fam* format using the **--make-bed** handle in plink. Next missing ids are filled out using the **--set-missing-var-ids** flag. It is important to note that if you are using a different build you will need to adjust the *[b37]* accordingly. 
 
 ```bash 
 plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000genomes.genotypes
@@ -24,10 +29,7 @@ plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make
 
 **input files and variables**
 ```bash 
-FILE_1K=1000genomes_nomissing.genotypes #1000 genomes file
-FILE_QC=qcout #file from qc tab
 FILE_PRUNEIN=plink.prune.in #snps in approximate linkage equilibrium 
-GENO=0.02 #snp missingness filter
 INDV=0.02 #individual missingness filter
 MAF=0.05 #minor allele frequency filter
 HWE_CONTROL=1e-6 #hardy weinburg equilibrium filter
@@ -38,7 +40,7 @@ HWE_CONTROL=1e-6 #hardy weinburg equilibrium filter
 ```bash
 sep="_"
 tagbed=".bed"
-tagbim=".bim"
+
 tagfam=".fam"
 tagmap=".map"
 taggenome=".genome"
@@ -49,13 +51,10 @@ tag_dot_mds=".mds"
 ```bash
 TAG_1kG="1KG"
 TAG_GENO="geno"
-OUT1="$TAG_1kG$sep$TAG_GENO$sep$GENO"
 TAG_MIND="mind"
 OUT2="$OUT1$sep$TAG_MIND$sep$INDV"
 TAG_MAF="maf"
 OUT3=$OUT2$sep$TAG_MAF$sep$MAF
-TAG_extract="extract"
-OUT4=$OUT3$sep$TAG_extract
 TAG_BUILD="samebuild"
 OUT5=$OUT4$sep$TAG_BUILD
 TAG_REM="removeproblem"
@@ -82,27 +81,42 @@ INPCA=$OUTCOVER
 ##QC on 1000 Genomes data.
 
 **Remove variants based on missing genotype data.**
+
+First, we again want to define our fileset name for our 1000_genomes file under variable **FILE_1K**, and we set our desired genotype missingness threshold as 0.02. The thresholds applied to the 1000 Genomes data set are the same as those applied to our own data set. For more information on the selection of the basic QC parameters, go back to the [QC Section](QC.md). 
 ```bash
-plink --bfile $FILE_1K --geno $GENO --make-bed --out $OUT1
+FILE_1K=1000genomes_nomissing.genotypes
+GENO=0.02
+plink --bfile $FILE_1K --geno $GENO --make-bed --out $FILE_1K.geno
 ```
 **Remove individuals based on missing genotype data**
+We set our desired individual missingness threshold as 0.02.
 ```bash
-plink --bfile $OUT1 --mind $INDV --allow-no-sex --make-bed --out $OUT2
+INDV=0.02
+plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILESET.geno.mind
 ```
 **Remove variants based on MAF**
+We set our desired minor allele frequency to 0.05 (or 0.01 if that is what you used for your own *large* data set). 
 ```bash
-plink --bfile $OUT2 --maf $MAF --make-bed --out $OUT3
+MAF=0.05
+plink --bfile $FILESET.geno.mind --maf $MAF --make-bed --out $FILESET.geno.mind.maf
 ```
 **Extract the variants present in our dataset from the 1000 genomes dataset**
+The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We want to extract the second column from the 1000 Genomes file as well as our own file so we can extract our SNPS from the 1000 Genome data set and vice versa before merging. Remember the QC fileset is the output file from the [QC Section](QC.md) which can be defined as a variable **FILE_QC** as shown below. As the *awk* command requires a single file input, we will also define the '.bim' string as a variable stored as **tagbim**. 
+
+```bash
+FILE_QC=qcout
+tagbim=".bim"
+```
+
 ```bash
 awk '{print$2}' "$FILE_QC$tagbim"> QCFILE_SNPs.txt
-awk '{print$2}' "$OUT3$tagbim"> 1kG_temp.bim
-plink --bfile $OUT3 --extract QCFILE_SNPs.txt --make-bed --recode --out $OUT4
+awk '{print$2}' "$FILESET.geno.mind.maf$tagbim"> 1kG_temp.bim
+plink --bfile $FILESET.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILESET.geno.mind.maf.extract
 ```
 
 ## Extract the variants present in 1000 Genomes dataset from your dataset.
 ```bash
-awk '{print$2}' $OUT4$tagbim > 1kG_SNPs.txt
+awk '{print$2}' $FILESET.geno.mind.maf.extract$tagbim > 1kG_SNPs.txt
 plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC
 ```
 *The datasets now contain the exact same variants.*
@@ -110,7 +124,7 @@ plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC
 ## Change build on 1000 Genomes data build to match build of HapMap data
 
 !!! note
-    Look at [Liftover tutorial](liftover.md) to see how to move data set to another build. 
+    Alternatively, look at [Liftover tutorial](Additional_considerations.md) to see how to move data set to another build. 
 
 ```bash 
 awk '{print$2,$4}' $OUT1_QC$tagmap > buildmap.txt
@@ -360,22 +374,30 @@ plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO
 plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILEQCEURO
 ```
 
-## Hardy weinburg equilibrium filter on controls  
+## Hardy Weinburg equilibrium filter on controls  
 ```bash
 plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO
 ```
 
-## Remove all 'relatedness' from dataset
+## Filter founders from dataset 
+This excludes all samples with at least one known parental ID in the current analysis
 ```bash
 plink --bfile $OUTQCEURO --filter-founders --make-bed --out $OUTQCEURO$sep$found
 ```
 
-**Check for cryptic relatedness with plink2**
-```bash
+## Check for cryptic relatedness with plink2
+Use KING method (implemented in Plink2) to filter out individuals that are more closely related than third cousins. 
+
+```bash 
 plink2 --bfile $OUTQCEURO$sep$found --make-king-table --king-table-filter 0.0884
 sed 's/^#//' plink2.kin0 > kin.txt
-##assess missingness so you can remove individual with most missingness in each pair
+```
+Assess missingness so you can remove individual with most missingness in each pair
+
+```bash 
 plink --bfile $OUTQCEURO$sep$found --missing
+```
+In R, run the following script to remove the individuals with the highest amount of missingness in each related pair. 
 ```
 === "Performed in R"
 
