@@ -48,24 +48,10 @@ tag_dot_mds=".mds"
 ```
 
 **tags for filtering 1000genome data**
-```bash
-TAG_1kG="1KG"
-TAG_GENO="geno"
-TAG_MIND="mind"
-OUT2="$OUT1$sep$TAG_MIND$sep$INDV"
-TAG_MAF="maf"
-OUT3=$OUT2$sep$TAG_MAF$sep$MAF
-TAG_BUILD="samebuild"
-OUT5=$OUT4$sep$TAG_BUILD
-TAG_REM="removeproblem"
-OUT6=$OUT5$sep$TAG_REM
-```
 
 **tags for filtering QCed data**
 ```bash
 TAG_QC="QCin"
-OUT1_QC=$TAG_QC$sep$TAG_extract
-OUT2_QC=$OUT1_QC$sep$TAG_REM
 tag_euro="euro"
 FILEQCEURO=$FILE_QC$sep$tag_euro
 TAG_HWE_CONTROL="hwe_control"
@@ -120,7 +106,7 @@ plink --bfile $FILESET.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --reco
 ## Extract the variants present in 1000 Genomes dataset from your dataset.
 ```bash
 awk '{print$2}' $FILESET.geno.mind.maf.extract$tagbim > 1kG_SNPs.txt
-plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC
+plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC.extract
 ```
 *The datasets now contain the exact same variants.*
 
@@ -130,9 +116,10 @@ plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC
     Alternatively, look at [Liftover tutorial](Additional_considerations.md) to see how to move data set to another build. 
 
 ```bash 
-awk '{print$2,$4}' $OUT1_QC$tagmap > buildmap.txt
+awk '{print$2,$4}' $FILE_QC.extract$tagmap > buildmap.txt
 # buildmap.txt contains one SNP-id and physical position per line.
-plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $OUT5
+plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILESET.geno.mind.maf.extract.build
+
 ```
 
 ## Merge the Map and 1000 Genomes data sets
@@ -148,14 +135,14 @@ plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-be
 
 **1) set reference genome**
 ```bash
-awk '{print$2,$5}' $OUT5$tagbim > 1kg_ref-list.txt
-plink --bfile $OUT1_QC --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
+awk '{print$2,$5}' $FILESET.geno.mind.maf.extract.build$tagbim > 1kg_ref-list.txt
+plink --bfile $FILE_QC.extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
 # The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.
 ```
 
 **2) Resolve strand issues**
 ```bash
-awk '{print$2,$5,$6}' $OUT5$tagbim > 1kGMDS_strand_tmp
+awk '{print$2,$5,$6}' $FILESET.geno.mind.maf.extract.build$tagbim > 1kGMDS_strand_tmp
 awk '{print$2,$5,$6}' Map-adj.bim > Map-adj_tmp
 sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u > all_differences.txt
 ```
@@ -175,14 +162,14 @@ sort 1kGMDS_strand_tmp corrected_map_tmp |uniq -u  > uncorresponding_SNPs.txt
 **3) Remove problematic SNPs from your data and from the 1000 Genomes.**
 ```bash
 awk '{print$1}' uncorresponding_SNPs.txt | sort -u > SNPs_for_exclusion.txt
-plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $OUT2_QC
-plink --bfile $OUT5 --exclude SNPs_for_exclusion.txt --make-bed --out $OUT6
+plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_QC.extract.rem
+plink --bfile $FILESET.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.txt --make-bed --out $FILESET.geno.mind.maf.extract.build.rem
 ```
 
 ## Merge outdata with 1000 Genomes Data
 
 ```bash
-plink --bfile $OUT2_QC --bmerge $OUT6$tagbed $OUT6$tagbim $OUT6$tagfam --allow-no-sex --make-bed --out MDS_merge2
+plink --bfile $FILE_QC.extract.rem --bmerge $FILESET.geno.mind.maf.extract.build.rem$tagbed $FILESET.geno.mind.maf.extract.build.rem$tagbim $FILESET.geno.mind.maf.extract.build.rem$tagfam --allow-no-sex --make-bed --out MDS_merge2
 ```
 ## Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
 
@@ -199,7 +186,7 @@ awk '{print$1,$1,$2}' 20100804.ALL.panel > race_1kG.txt
 
 **Create a racefile of your own data.**
 ```bash
-awk '{print$1,$2,"OWN"}' $OUT2_QC$tagfam > racefile_own.txt
+awk '{print$1,$2,"OWN"}' $FILE_QC.extract.rem$tagfam > racefile_own.txt
 ```
 **make txt file of concatenated racefiles**
 ```bash
@@ -308,7 +295,7 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
     ```
 **Concatenate racefiles.**
 ```bash
-awk '{print$1,$2,"-"}' $OUT2_QC$tagfam > racefile_own.txt
+awk '{print$1,$2,"-"}' $FILE_QC.extract.rem$tagfam > racefile_own.txt
 awk '{print$1,$1,$2}' 20100804.ALL.panel > race_1kG.txt
 cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' > MDS_merge2.pop
 sed -i -e "1d" MDS_merge2.pop
