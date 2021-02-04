@@ -502,35 +502,36 @@ plink --bfile $FILESET.autosome --maf $MAF --make-bed --out $FILESET.maf
 
 ??? note "PLINK reports the following output: "
 
-      ```bash
-      PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
-      (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
-      Logging to HapMap_3_r3_1.maf.log.
-      Options in effect:
-         --bfile HapMap_3_r3_1.autosome
-         --maf
-         --make-bed
-        --out HapMap_3_r3_1.maf
+    ```bash
+    $ plink --bfile $FILESET.autosome --maf $MAF --make-bed --out $FILESET.maf
+    PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+    (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+    Logging to HapMap_3_r3_1.maf.log.
+    Options in effect:
+      --bfile HapMap_3_r3_1.autosome
+      --maf 0.05
+      --make-bed
+      --out HapMap_3_r3_1.maf
 
-      12574 MB RAM detected; reserving 6287 MB for main workspace.
-      1398544 variants loaded from .bim file.
-      164 people (80 males, 84 females) loaded from .fam.
-      112 phenotype values loaded from .fam. 
-      Using 1 thread (no multithreaded calculations invoked).
-      Before main variant filters, 112 founders and 52 nonfounders present.
-      Calculating allele frequencies... done.
-      Total genotyping rate is 0.998052.
-      216989 variants removed due to minor allele threshold(s)
-      (--maf/--max-maf/--mac/--max-mac).  
-      1181555 variants and 164 people pass filters and QC.
-      Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
-      are missing.)
-      --make-bed to HapMap_3_r3_1.maf.bed + HapMap_3_r3_1.maf.bim +
-      HapMap_3_r3_1.maf.fam ... done.
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1398544 variants loaded from .bim file.
+    164 people (80 males, 84 females) loaded from .fam.
+    112 phenotype values loaded from .fam.
+    Using 1 thread (no multithreaded calculations invoked).
+    Before main variant filters, 112 founders and 52 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate is 0.998052.
+    325318 variants removed due to minor allele threshold(s)
+    (--maf/--max-maf/--mac/--max-mac).
+    1073226 variants and 164 people pass filters and QC.
+    Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+    are missing.)
+    --make-bed to HapMap_3_r3_1.maf.bed + HapMap_3_r3_1.maf.bim +
+    HapMap_3_r3_1.maf.fam ... done
       ``` 
     
 
-PLINK removed 216,989 SNPs, leaving 1,181,555 variants.
+PLINK removed 325,318 SNPs, leaving 1,073,226 variants.
 
 ## View heterozygosity distribution and remove outliers 
 We next check heterozygosity rates for all individuals within the sample. Excessively high or low heterozygosity rates could indicate sample contamination or inbreeding. 
@@ -544,52 +545,53 @@ plink --bfile $FILESET.maf --indep-pairwise 50 5 0.5
 
 ??? note "PLINK reports the following output: "
 
-      ```bash
-      PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
-      (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
-      Logging to plink.log.
-      Options in effect:
-        --bfile HapMap_3_r3_1.maf
-        --indep-pairwise 50 5 0.5
+    ```bash
+    plink --bfile $FILESET.maf --indep-pairwise 50 5 0.5
+    PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+    (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3  
+    Logging to plink.log.
+    Options in effect:
+      --bfile HapMap_3_r3_1.maf
+      --indep-pairwise 50 5 0.5
 
-      12574 MB RAM detected; reserving 6287 MB for main workspace.
-      1181555 variants loaded from .bim file.
-      164 people (80 males, 84 females) loaded from .fam.
-      112 phenotype values loaded from .fam.
-      Using 1 thread (no multithreaded calculations invoked).
-      Before main variant filters, 112 founders and 52 nonfounders present.
-      Calculating allele frequencies... done.
-      Total genotyping rate is 0.998056.
-      1181555 variants and 164 people pass filters and QC.
-      Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
-      are missing.)
-      Pruned 72903 variants from chromosome 1, leaving 24160.
-      Pruned 75153 variants from chromosome 2, leaving 23660.
-      Pruned 61650 variants from chromosome 3, leaving 20461.
-      Pruned 54811 variants from chromosome 4, leaving 18296.
-      Pruned 56844 variants from chromosome 5, leaving 18953.
-      Pruned 59571 variants from chromosome 6, leaving 19561.
-      Pruned 48413 variants from chromosome 7, leaving 16750.
-      Pruned 48619 variants from chromosome 8, leaving 15872.
-      Pruned 40446 variants from chromosome 9, leaving 14535.
-      Pruned 47072 variants from chromosome 10, leaving 16128.
-      Pruned 45486 variants from chromosome 11, leaving 14872.
-      Pruned 42862 variants from chromosome 12, leaving 15242.
-      Pruned 33176 variants from chromosome 13, leaving 11579.
-      Pruned 28366 variants from chromosome 14, leaving 10326.
-      Pruned 25759 variants from chromosome 15, leaving 9544.
-      Pruned 26582 variants from chromosome 16, leaving 10645.
-      Pruned 22401 variants from chromosome 17, leaving 9445.
-      Pruned 25359 variants from chromosome 18, leaving 9545.
-      Pruned 14712 variants from chromosome 19, leaving 7083.
-      Pruned 22353 variants from chromosome 20, leaving 8463.
-      Pruned 12010 variants from chromosome 21, leaving 4745.
-      Pruned 11899 variants from chromosome 22, leaving 5243.
-      Pruning complete.  876447 of 1181555 variants removed.
-      Marker lists written to plink.prune.in and plink.prune.out .
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1073226 variants loaded from .bim file.
+    164 people (80 males, 84 females) loaded from .fam.
+    112 phenotype values loaded from .fam.
+    Using 1 thread (no multithreaded calculations invoked).
+    Before main variant filters, 112 founders and 52 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate is 0.998039.
+    1073226 variants and 164 people pass filters and QC.
+    Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+    are missing.)
+    Pruned 67124 variants from chromosome 1, leaving 20596.
+    Pruned 69461 variants from chromosome 2, leaving 20337.
+    Pruned 57330 variants from chromosome 3, leaving 17532.
+    Pruned 50485 variants from chromosome 4, leaving 15644.
+    Pruned 52786 variants from chromosome 5, leaving 16231.
+    Pruned 55187 variants from chromosome 6, leaving 16566.
+    Pruned 44767 variants from chromosome 7, leaving 14337.
+    Pruned 45018 variants from chromosome 8, leaving 13625.
+    Pruned 37678 variants from chromosome 9, leaving 12654.
+    Pruned 43374 variants from chromosome 10, leaving 13851.
+    Pruned 42449 variants from chromosome 11, leaving 12835.
+    Pruned 39534 variants from chromosome 12, leaving 13031.
+    Pruned 30539 variants from chromosome 13, leaving 9951.
+    Pruned 26275 variants from chromosome 14, leaving 8869.
+    Pruned 23752 variants from chromosome 15, leaving 8256.
+    Pruned 24630 variants from chromosome 16, leaving 9189.
+    Pruned 20966 variants from chromosome 17, leaving 8152.
+    Pruned 23347 variants from chromosome 18, leaving 8308.
+    Pruned 13565 variants from chromosome 19, leaving 6097.
+    Pruned 20631 variants from chromosome 20, leaving 7317.
+    Pruned 11312 variants from chromosome 21, leaving 4170.
+    Pruned 10938 variants from chromosome 22, leaving 4530.
+    Pruning complete.  811148 of 1073226 variants removed.
+    Marker lists written to plink.prune.in and plink.prune.out 
       ```
 
-The list of SNP rsIDs kept by the pruning procedure is given by plink.prune.in. The SNPs that are removed (876,447 of 1,181,555 variants), as they were in linkage disequilibrium with one or more of the SNPs in plink.prune.in, are listed in plink.prune.out
+The list of SNP rsIDs kept by the pruning procedure is given by plink.prune.in. The SNPs that are removed (811,148 of 1,073,226 variants), as they were in linkage disequilibrium with one or more of the SNPs in plink.prune.in, are listed in plink.prune.out
 
 ??? note "Inspect plink.prune.in: "
 
@@ -600,11 +602,11 @@ The list of SNP rsIDs kept by the pruning procedure is given by plink.prune.in. 
       rs12124819
       rs4970383
       rs1806509
-      rs13302982
       rs28576697
       rs13303106
       rs13303010
-      rs6696281
+      rs2341354
+      rs35940137
       ```
 
 **Compute method-of-moments F coefficient estimates**
@@ -618,44 +620,46 @@ plink --bfile $FILESET.maf --extract plink.prune.in --het --out R_check
 ??? note "Show PLINK output: "
       
       ```bash
-      $ plink --bfile $FILESET.maf --extract plink.prune.in --het --out R_check
+      $ plink --bfile $FILESET
+      .maf --extract plink.prune.in --het --out R_check
       PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
       (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
       Logging to R_check.log.
       Options in effect:
-        --bfile HapMap_3_r3_1.maf
-        --extract plink.prune.in
-        --het
-        --out R_check
-   
-      12574 MB RAM detected; reserving 6287 MB for main workspace.
-      1181555 variants loaded from .bim file.
-      164 people (80 males, 84 females) loaded from .fam.
-      112 phenotype values loaded from .fam.
-      --extract: 305108 variants remaining.
-      Using 1 thread (no multithreaded calculations invoked).
-      Before main variant filters, 112 founders and 52 nonfounders present.
-      Calculating allele frequencies... done.
-      Total genotyping rate is 0.997915.
-      305108 variants and 164 people pass filters and QC.
-      Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
-      are missing.)
-      --het: 305108 variants scanned, report written to R_check.het 
+     --bfile HapMap_3_r3_1.maf
+     --extract plink.prune.in
+     --het
+     --out R_check
 
-??? note "Inspect head R_check.het"
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1073226 variants loaded from .bim file.
+    164 people (80 males, 84 females) loaded from .fam.
+    112 phenotype values loaded from .fam.
+    --extract: 262078 variants remaining.
+    Using 1 thread (no multithreaded calculations invoked).
+    Before main variant filters, 112 founders and 52 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate is 0.997962.
+    262078 variants and 164 people pass filters and QC.
+    Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+    are missing.)
+    --het: 262078 variants scanned, report written to R_check.het .
+    ```
+    
+??? note "Inspect R_check.het"
 
       ```bash 
-      head R_check.het
-       FID       IID       O(HOM)       E(HOM)        N(NM)            F
-      1328   NA06989       212323    2.128e+05       304427    -0.005505
-      1377   NA11891       210171    2.106e+05       301361    -0.004684
-      1349   NA11843       212548    2.132e+05       304893    -0.006574
-      1330   NA12341       210841    2.125e+05       304019     -0.01821
-      1444   NA12739       209993    2.097e+05       300016     0.003624
-      1344   NA10850       213330     2.13e+05       304696     0.003397
-      1328   NA06984       211875     2.12e+05       303274   -0.0009117
-      1463   NA12877       212805    2.129e+05       304527    -0.000839
-      1418   NA12275       211254    2.127e+05       304213      -0.0154
+    head R_check.het
+      FID       IID       O(HOM)       E(HOM)        N(NM)            F
+     1328   NA06989       172125    1.727e+05       261511    -0.006857
+     1377   NA11891       170744    1.711e+05       259125    -0.004518
+     1349   NA11843       172346     1.73e+05       261907    -0.007276
+     1330   NA12341       170768    1.725e+05       261235     -0.01998
+     1444   NA12739       170563    1.704e+05       257944      0.00224
+     1344   NA10850       173379    1.729e+05       261734     0.005574
+     1328   NA06984       171767    1.722e+05       260670    -0.004437
+     1463   NA12877       172550    1.728e+05       261603    -0.002632
+     1418   NA12275       171259    1.726e+05       261348      -0.0153
       ```
 
       The column headers correspond to the following 
@@ -694,14 +698,13 @@ write.table(het_fail, "fail-het-qc.txt", row.names=FALSE)
 
       ```bash
       cat fail-het-qc.txt
-      "FID" "IID" "O.HOM." "E.HOM." "N.NM." "F" "HET_RATE" "HET_DST"
-      1330 "NA12342" 214978 211900 303177 0.03358 0.290915867628481 -4.6106696335086
-      1459 "NA12874" 215947 213100 304804 0.03124 0.291521764806236 -4.38167602607605
-      1341 "NA06985" 208423 211800 302985 -0.03672 0.312101259138241 3.39616618748889
-      1340 "NA06994" 208057 211100 302008 -0.03387 0.31108778575402 3.01313267155537
+    "FID" "IID" "O.HOM." "E.HOM." "N.NM." "F" "HET_RATE" "HET_DST"
+    1330 "NA12342" 174790 172100 260519 0.0308 0.329070048633689 -4.69408664581716
+    1459 "NA12874" 175863 173000 261854 0.03269 0.328392921246191 -4.93949187693739
+    1340 "NA06994" 168357 171300 259327 -0.03301 0.350792628611753 3.17863399503596
       ```
 
-Four individuals have an excessively low heterozygosity rate. We will remove these heterozygous outliers from the genetic data using PLINK. First, we save the first two columns of **fail-het-qc.txt** in a seperate file (sed 's/"// g' is used to remove the quotations marks, such that the file, which was created in R in R becomes compatible with PLINK). Next, we use **--remove** in PLINK to remove the outliers.
+Three individuals have an excessively low heterozygosity rate. We will remove these heterozygous outliers from the genetic data using PLINK. First, we save the first two columns of **fail-het-qc.txt** in a seperate file (sed 's/"// g' is used to remove the quotations marks, such that the file, which was created in R in R becomes compatible with PLINK). Next, we use **--remove** in PLINK to remove the outliers.
 
 ```bash
 sed 's/"// g' fail-het-qc.txt | awk '{print$1, $2}' > het_fail_ind.txt
@@ -714,32 +717,30 @@ plink --bfile $FILESET.maf --remove het_fail_ind.txt --make-bed --out $FILESET.h
 ??? note "The resulting output:"
 
       ```bash
-      plink --bfile $FILESET.maf --remove het_fail_ind.txt --make-bed --out $FILESET.het_fix
-      PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
-      (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
-      Logging to HapMap_3_r3_1.het_fix.log.
-      Options in effect:
-        --bfile HapMap_3_r3_1.maf
-        --make-bed
-        --out HapMap_3_r3_1.het_fix
-        --remove het_fail_ind.txt
+    plink --bfile $FILESET.maf --remove het_fail_ind.txt --make-bed --out $FILESET.het_fix
+    PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+    (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+    Logging to HapMap_3_r3_1.het_fix.log.
+    Options in effect:
+      --bfile HapMap_3_r3_1.maf
+      --make-bed
+      --out HapMap_3_r3_1.het_fix
+      --remove het_fail_ind.txt
 
-      12574 MB RAM detected; reserving 6287 MB for main workspace.
-      1181555 variants loaded from .bim file.
-      164 people (80 males, 84 females) loaded from .fam.
-      112 phenotype values loaded from .fam.
-      --remove: 160 people remaining.
-      Using 1 thread (no multithreaded calculations invoked).
-      Before main variant filters, 108 founders and 52 nonfounders present.
-      Calculating allele frequencies... done.
-      Total genotyping rate in remaining samples is 0.998146.
-      1181555 variants and 160 people pass filters and QC.
-      Among remaining phenotypes, 54 are cases and 54 are controls.  (52 phenotypes
-      are missing.)
-      --make-bed to HapMap_3_r3_1.het_fix.bed + HapMap_3_r3_1.het_fix.bim +
-      HapMap_3_r3_1.het_fix.fam ... done.
-      
-      The four individuals were succesfully removed.
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1073226 variants loaded from .bim file.
+    164 people (80 males, 84 females) loaded from .fam.
+    112 phenotype values loaded from .fam.
+    --remove: 161 people remaining.
+    Using 1 thread (no multithreaded calculations invoked).
+    Before main variant filters, 109 founders and 52 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate in remaining samples is 0.998098.
+    1073226 variants and 161 people pass filters and QC.
+    Among remaining phenotypes, 55 are cases and 54 are controls.  (52 phenotypes
+    are missing.)
+    --make-bed to HapMap_3_r3_1.het_fix.bed + HapMap_3_r3_1.het_fix.bim +
+    HapMap_3_r3_1.het_fix.fam ... done.
       ```
 
 ##Transfer files to use for population stratification
