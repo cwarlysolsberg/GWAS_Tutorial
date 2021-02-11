@@ -48,3 +48,7 @@ Here, we see we appropriately lifted-over to build hg19 (GRCh37)
 ## Meta-Analysis using METAL software
 
 ## Separated by Chromosome
+
+## Cluster computing
+
+## Admixture 
