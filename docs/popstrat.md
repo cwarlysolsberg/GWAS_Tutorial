@@ -386,6 +386,7 @@ FID2=FID2[order(FID2[,2]),]
 ##this binds the FIDs,IIDs,missingness for all pairs
 bind=cbind(FID1,FID2)
 bind$index=c()
+bind$index=c()
 ##this displays just the values for missingness for each pair
 bindval=cbind(FID1$F_MISS,FID2$F_MISS)
 colnames(bindval)=c(1,2)
@@ -396,13 +397,13 @@ bind1=bind[cbind(seq_along(max*3-1), max*3-1)]
 bind2=bind[cbind(seq_along(max*3-2), max*3-2)]
 final=cbind(bind1,bind2)
 final=unique(final)
-write.table(final, '0.2_low_call_rate.txt', append = FALSE, sep = " ", dec = ".",
+write.table(final, 'low_call_rate.txt', append = FALSE, sep = " ", dec = ".",
             row.names = FALSE, col.names = FALSE,quote=FALSE)
 ```           
 
 **remove individual with higher missingness**
 ```bash
-plink --bfile $FILE_QC.euro.hwe_control.found --remove 0.2_low_call_rate.txt --make-bed --out $FILE_QC.euro.hwe_control.found.unrelated
+plink --bfile $FILE_QC.euro.hwe_control.found --remove low_call_rate.txt --make-bed --out $FILE_QC.euro.hwe_control.found.unrelated
 ```
 ## Create covariates based on MDS.
 *Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial*
