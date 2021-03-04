@@ -62,9 +62,18 @@ done
 ```
 This loop takes a long time to run. You may want to let it sit over night if you have the option to. 
 
+for chr in {1..11}; do \
+plink --vcf ALL.chr$chr$gr.genotypes.20170504.vcf.gz --make-bed --vcf-half-call m --out chr_$chr.GRCh38
+done
 
-
-
+for chr in {12..22}; do \
+# plink --bfile chr_$chr.GRCh38 --exclude 1000genomes_hg38-merge.missnp --allow-extra-chr --make-bed --out chr$chr.exclude
+plink --bfile chr_$chr.GRCh38 --allow-extra-chr --make-bed --out chr$chr
+done
+ls *.exclude.bed* >allfiles.txt
+sed 's/..$//' < allfiles.txt > test
+sed 's/..$//' < test > allfiles.txt
+plink --bfile chr_10 --merge-list allfiles.txt --allow-extra-chr --make-bed -out 1000genomes_hg38
 
 ## Cluster computing
 

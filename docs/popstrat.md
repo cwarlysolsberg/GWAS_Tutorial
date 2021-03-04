@@ -176,25 +176,27 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
     race<- read.table(file="racefile.txt",header=TRUE)
     datafile<- merge(data,race,by=c("IID","FID"))
     head(datafile)
-    
-    pdf("MDS.pdf",width=7,height=7)
-    for (i in 1:nrow(datafile))
-    {
-    if (datafile[i,14]=="EUR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="green")}
-    par(new=T)
-    if (datafile[i,14]=="ASN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="red")}
-    par(new=T)
-    if (datafile[i,14]=="AMR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col=470)}
-    par(new=T)
-    if (datafile[i,14]=="AFR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="blue")}
-    par(new=T)
-    if (datafile[i,14]=="OWN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=3,cex=0.7,col="black")}
-    par(new=T)
-    }
-    
-    abline(v=-0.035,lty=3)
-    abline(h=0.035,lty=3)
-    legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red",470,"blue","black"),bty="o",cex=1)
+    library(ggplot2)
+    library(gridExtra)
+    png("MDS.png",units="in",width=13,height=7,res=300)
+    b <- ggplot(datafile, aes(C1, C2, col = race,group=race)) 
+    b <- b+ geom_point(size = 2)
+    b <-b + xlab("MDS1") + ylab("MDS2")+
+    theme(text = element_text(size=13),legend.text=element_text(size=13),legend.title = element_blank(),legend.position='top')+guides(color = guide_legend(override.aes = list(size=8)))
+    c <-ggplot(datafile, aes(C1, C2, col = race,group=race)) 
+    c <-c+ggplot2::stat_ellipse(
+      geom = "path",
+      position = "identity",
+      show.legend = NA,
+      size=2,
+      inherit.aes = TRUE,
+      type = "t",
+      level = 0.95,
+      segments = 51
+    )
+    c <- c + xlab("MDS1") + ylab("MDS2")+
+    theme(text = element_text(size=13),legend.title = element_blank(),legend.position = "none")
+    grid.arrange(b, c, ncol=2)
     dev.off()
     ```
 
