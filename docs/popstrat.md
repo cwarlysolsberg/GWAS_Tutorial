@@ -1,7 +1,14 @@
 # Population Stratifacation
 ## Obtaining the 1000 genome reference data set
 
-We will be using data from the 1000 Genomes Project for the population stratification step.
+
+In this tutorial, you will learn how to restrict the quality-controlled HapMap data to individuals that are all of the same genetic ancestry. Most genetic research focuses on one ancestry group at the time, as mixing ancestry groups may lead to population stratification confounding the results ``reference?``. Within this reference group, we will compute clusters that can be used to correct for further confounding due to population stratification.
+
+To construct population clusters from the HapMap data, we will need to compare genomes in this dataset to genomes from a reference panel for which ancestry is known. The reference panel we will use is from the 1000 genomes project.
+
+Note that, while there is more updated data available from the 1000 Genomes project, we decided to use this data for 2 reasons: 
+1. The most updated data set is much larger and separated by chromosome, which makes it more computationally intensive and requires an adjustment in the coding to account for the seperate chromosomes. 
+2. We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the [Separated by Chromosome](Additional_considerations.md) section on the Additional Considerations page. 
 
 You can download using the following command:
 
@@ -9,66 +16,113 @@ You can download using the following command:
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz
 ```
 
-Note that, while there is more updated data available from the 1000 Genomes project, we decided to use this data for 2 reasons: 
-1. The most updated data set is much larger and separated by chromosome leading to a far more computationally intensive process to use this data set. 
-2. We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the [Separated by Chromosome](Additional_considerations.md) section on the Additional Considerations page. 
+The data comes in a zipped vcf format. Note that the download is quite sizeable (~65GB). When working with genetic data, one regularly encounters sizable files. It is good practice to check the validity of the downloaded files, before working with them further. Sometimes, the distributor of the data will provide a hash value for the file of interest, such that you are able to check the integrity of your downloaded file. You can check the hash value for the 1000 genomes data using the Linux-command.
 
-!!! note
-    You will need `plink` in this section, which can be download from [here](https://www.cog-genomics.org/plink/1.9/).
+```bash
+md5sum ALL.2of4intersection.20100804.genotypes.vcf.gz
+```
 
-    Install the program `plink` and include its location in your PATH directory, which allows us to use `plink` instead of `./plink` in the commands below. If PLINK is not in your PATH directory and is instead in your working directory, replace all instances of `plink` in the tutorial with `./plink`.
+which should return ``9de60b62a195455359390d4c951d92d4``. If the value for your download is not the same, your download might have been corrupted, and we advise you to download the data again.
 
-The data will need to be converted into plink format with unique indentifiers created for each the SNPs with a missing rs-identifier. First, the *.vcf* file is converted to  *.bim,.bed,.fam* format using the **--make-bed** handle in plink. Next missing ids are filled out using the **--set-missing-var-ids** flag. It is important to note that if you are using a different build you will need to adjust the *[b37]* accordingly. 
+As in tutorial 1, we use PLINK to perform analysis on this dataset. First, the data will be converted into the plink binary format (*.bim,.bed,.fam*) using plink's **--make-bed** flag. There is no need to unzip the vcf file, as plink can read and convert gzipped files directly. 
 
 ```bash 
 plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000genomes.genotypes
+```
+
+??? note "Inspect the resulting .fam and .bim files"
+
+    ```bash
+    head 1000genomes.genotypes.fam
+    HG00098 HG00098 0 0 0 -9
+    HG00100 HG00100 0 0 0 -9
+    HG00106 HG00106 0 0 0 -9
+    HG00112 HG00112 0 0 0 -9
+    HG00114 HG00114 0 0 0 -9
+    HG00116 HG00116 0 0 0 -9
+    HG00117 HG00117 0 0 0 -9
+    HG00118 HG00118 0 0 0 -9
+    HG00119 HG00119 0 0 0 -9
+    HG00120 HG00120 0 0 0 -9
+    
+    head 1000genomes.genotypes.bim
+    1       rs112750067     0       10327   C       T
+    1       rs117577454     0       10469   G       C
+    1       rs55998931      0       10492   T       C
+    1       rs58108140      0       10583   A       G
+    1       .       0       11508   A       G
+    1       .       0       11565   T       G
+    1       .       0       12783   G       A
+    1       .       0       13116   G       T
+    1       .       0       13327   C       G
+    1       .       0       13980   C       T
+    ```
+
+One thing to note from the .fam file is that sex ids are missing, plink will read these as ambiguous observations. The head of the .bim file further shows that some SNPs have no assigned rs-id. We can use plink to assign unique identifiers to these SNPs, using the **--set-missing-var-ids** flag. You are free to construct your own ids, but ensure that they are unique. We build our id using the chromosome number (@), a colon, base-pair position (#), the build (b37), the reference allele, a comma, and the alternative allele. The 1000 genomes data uses the Genome Reference Consortium Human Build 37 (GRCh37). It is important to note that if you are using a different build you will need to adjust the *[b37]* accordingly. 
+
+```bash
 plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make-bed --out 1000genomes_nomissing.genotypes
 ```
 
+??? note "Our .bim file now looks as follows:"
+  
+    ```bash
+    head 1000genomes_nomissing.genotypes.bim
+    1       rs112750067     0       10327   C       T
+    1       rs117577454     0       10469   G       C
+    1       rs55998931      0       10492   T       C
+    1       rs58108140      0       10583   A       G
+    1       1:11508[b37]A,G 0       11508   A       G
+    1       1:11565[b37]G,T 0       11565   T       G
+    1       1:12783[b37]A,G 0       12783   G       A
+    1       1:13116[b37]G,T 0       13116   G       T
+    1       1:13327[b37]C,G 0       13327   C       G
+    1       1:13980[b37]C,T 0       13980   C       T
+    ```
+
 ##QC on 1000 Genomes data.
 
-**Remove variants based on missing genotype data.**
+Before we can use our 1000 Genomes data as our reference panel, it is important to perform quality control procedures on this dataset in a similar fashion as outlined in [Tutorial 1](QC.md). We choose the same parameters as in this tutorial for our SNP missingness threshold, individual missingness threshold, and MAF threshold.
 
-
-First, we again want to define our fileset name for our 1000_genomes file under variable **FILE_1K**, and we set our desired genotype missingness threshold as 0.02. The thresholds applied to the 1000 Genomes data set are the same as those applied to our own data set. For more information on the selection of the basic QC parameters, go back to the [QC Section](QC.md). 
 ```bash
 FILE_1K=1000genomes_nomissing.genotypes
 GENO=0.02
-plink --bfile $FILE_1K --geno $GENO --make-bed --out $FILE_1K.geno
-```
-**Remove individuals based on missing genotype data**
-We set our desired individual missingness threshold as 0.02.
-```bash
 INDV=0.02
-plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILE_1K.geno.mind
-```
-**Remove variants based on MAF**
-We set our desired minor allele frequency to 0.05 (or 0.01 if that is what you used for your own *large* data set). 
-```bash
 MAF=0.05
+
+plink --bfile $FILE_1K --geno 0.2 --make-bed --out $FILE_1K.geno.temp
+plink --bfile $FILE_1K.geno.temp --mind 0.2 --allow-no-sex --make-bed --out $FILE_1K.geno.mind.temp
+plink --bfile $FILE_1K.geno.mind.temp --geno $GENO --make-bed --out $FILE_1K.geno
+plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILE_1K.geno.mind
+
+plink --bfile $FILE_1K.geno.mind --maf $MAF --make-bed --out $FILE_1K.geno.mind.maf
+```
+5,808,310 variants and all 629 people pass filters and QC.
+
+**Remove variants based on MAF**
+ 
+```bash
 plink --bfile $FILE_1K.geno.mind --maf $MAF --make-bed --out $FILE_1K.geno.mind.maf
 ```
 **Extract the variants present in our dataset from the 1000 genomes dataset**
-The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We want to extract the second column from the 1000 Genomes file as well as our own file so we can extract our SNPS from the 1000 Genome data set and vice versa before merging. Remember the QC fileset is the output file from the [QC Section](QC.md) which can be defined as a variable **FILE_QC** as shown below. 
+Our reference panel and our dataset of interest (e.g. the cleaned HapMap data) must consist of the same set of SNPs. For the remainder of this tutorial, we will set the environmental variable **FILE_QC** to refer to the clean HapMap data. The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We will then use the **--extract** flag in plink to extract only the SNPs in the 1000 genomes data that are also present in the HapMap data, and vice versa.
 
 ```bash
-FILE_QC=qcout
+FILE_QC=HapMap_3_r3_1.qcout
 awk '{print$2}' "$FILE_QC.bim"> QCFILE_SNPs.txt
-awk '{print$2}' "$FILE_1K.geno.mind.maf.bim"> 1kG_temp.bim
 plink --bfile $FILE_1K.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILE_1K.geno.mind.maf.extract
-```
-
-## Extract the variants present in 1000 Genomes dataset from your dataset.
-```bash
 awk '{print$2}' $FILE_1K.geno.mind.maf.extract.bim > 1kG_SNPs.txt
 plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC.extract
 ```
-*The datasets now contain the exact same variants.*
+
+This results in 1,072,511 SNPs that both datasets have in common.
 
 ## Change build on 1000 Genomes data build to match build of HapMap data
 
+Our next goal is to merge the HapMap data with the 1000 genomes data, such that we can compare the (unknown) population clusters of the HapMap data with the (known) population clusters in the 1000 genomes data. Before merging genetic data, however, a couple of steps need to be taken to ensure that the files align. One of these steps is to ensure that both datasets are in the same build. The 1000 genomes data uses the Genome Reference Consortium Human Build 37 (GRCh37), whereas the HapMap data uses the older build 36. This means that, for the same rsids, the base pair position will slightly differ between these two datasets. We will use the **--update-map** flag in plink to change all base pair positions in the 1000 genomes to the positions as given by the HapMap data. 
+
 !!! note
-    Alternatively, look at [Liftover tutorial](Additional_considerations.md) to see how to move data set to another build. 
+    Most current genetic datasets use build 37 or 38. If you are working with genetic data that is not into the build of your liking, you may wish to move your dataset to another build entirely at the start of your project. Look at our [Liftover tutorial](Additional_considerations.md) to see how to move data set to another build. 
 
 ```bash 
 awk '{print$2,$4}' $FILE_QC.extract.map > buildmap.txt
@@ -76,6 +130,35 @@ awk '{print$2,$4}' $FILE_QC.extract.map > buildmap.txt
 plink --bfile $FILE_1K.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build
 ```
 
+??? note: "The resulting output:"
+    
+    ```bash
+    PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+    (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+    Logging to 1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.log.
+    Options in effect:
+    --bfile 1000genomes_nomissing.genotypes.geno.mind.maf.extract
+    --make-bed
+    --out 1000genomes_nomissing.genotypes.geno.mind.maf.extract.build
+    --update-map buildmap.txt
+
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1072511 variants loaded from .bim file.
+    629 people (0 males, 0 females, 629 ambiguous) loaded from .fam.
+    Ambiguous sex IDs written to
+    1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.nosex .
+    --update-map: 1072511 values updated.
+    Warning: Base-pair positions are now unsorted!
+    Using 1 thread (no multithreaded calculations invoked).
+    Before main variant filters, 629 founders and 0 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate is 0.999412.
+    1072511 variants and 629 people pass filters and QC.
+    Note: No phenotypes present.
+    --make-bed to 1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.bed +
+    1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.bim +
+    1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.fam ... done.
+    ```
 ## Merge the Map and 1000 Genomes data sets
 
 ??? note "Prior to merging 1000 Genomes data with the data we want to make sure that the files are mergeable, for this we conduct 3 steps:"
