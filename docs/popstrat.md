@@ -159,24 +159,65 @@ plink --bfile $FILE_1K.geno.mind.maf.extract --update-map buildmap.txt --make-be
     1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.bim +
     1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.fam ... done.
     ```
-## Merge the Map and 1000 Genomes data sets
+## Merge the HapMap and 1000 Genomes data sets
 
 ??? note "Prior to merging 1000 Genomes data with the data we want to make sure that the files are mergeable, for this we conduct 3 steps:"
 
-    1) Make sure the reference genome is similar in your data and the 1000 Genomes Project datasets 
+    1) Make sure the reference allele is similar in the HapMap data and the 1000 Genomes Project datasets 
     
     2) Resolve strand issues. 
     
     3) Remove the SNPs which after the previous two steps still differ between datasets
 
 
-**1) set reference genome**
+**1) set reference allele**
+The .bim file records the reference allele and the alternative allele at each SNP. These are not necessarily the same in both datasets. In the following commands, we use the --reference-allele flag in PLINK to ensure that the reference alleles in the HapMap data are the same as the reference alleles in 1K genomes. 
+
 ```bash
 awk '{print$2,$5}' $FILE_1K.geno.mind.maf.extract.build.bim > 1kg_ref-list.txt
 plink --bfile $FILE_QC.extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
 # The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.
 ```
 
+??? The resulting output: "
+
+    plink --bfile $FILE_QC.
+    extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
+    PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+    (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+    Logging to Map-adj.log.
+    Options in effect:
+      --a1-allele 1kg_ref-list.txt
+      --bfile HapMap_3_r3_1.qcout.extract
+      --make-bed
+      --out Map-adj
+
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1072511 variants loaded from .bim file.
+    160 people (77 males, 83 females) loaded from .fam.
+    108 phenotype values loaded from .fam.
+    Using 1 thread (no multithreaded calculations invoked).
+    Before main variant filters, 108 founders and 52 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate is 0.99815.
+    Warning: Impossible A1 allele assignment for variant rs11488462.
+    Warning: Impossible A1 allele assignment for variant rs4648786.
+    Warning: Impossible A1 allele assignment for variant rs12748433.
+    Warning: Impossible A1 allele assignment for variant rs28635343.
+    Warning: Impossible A1 allele assignment for variant rs28456011.
+    Warning: Impossible A1 allele assignment for variant rs6604981.
+    Warning: Impossible A1 allele assignment for variant rs4074196.
+    [...]
+    --a1-allele: 1072511 assignments made.
+    1072511 variants and 160 people pass filters and QC.
+    Among remaining phenotypes, 54 are cases and 54 are controls.  (52 phenotypes
+    are missing.)
+    --make-bed to Map-adj.bed + Map-adj.bim + Map-adj.fam ... done.
+    ```
+    
+Note that      
+
+  
 **2) Resolve strand issues**
 ```bash
 awk '{print$2,$5,$6}' $FILE_1K.geno.mind.maf.extract.build.bim > 1kGMDS_strand_tmp
