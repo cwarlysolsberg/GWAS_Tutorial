@@ -40,13 +40,13 @@ plink --bfile $FILE_1K --geno $GENO --make-bed --out $FILE_1K.geno
 We set our desired individual missingness threshold as 0.02.
 ```bash
 INDV=0.02
-plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILESET.geno.mind
+plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILE_1K.geno.mind
 ```
 **Remove variants based on MAF**
 We set our desired minor allele frequency to 0.05 (or 0.01 if that is what you used for your own *large* data set). 
 ```bash
 MAF=0.05
-plink --bfile $FILESET.geno.mind --maf $MAF --make-bed --out $FILESET.geno.mind.maf
+plink --bfile $FILE_1K.geno.mind --maf $MAF --make-bed --out $FILE_1K.geno.mind.maf
 ```
 **Extract the variants present in our dataset from the 1000 genomes dataset**
 The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We want to extract the second column from the 1000 Genomes file as well as our own file so we can extract our SNPS from the 1000 Genome data set and vice versa before merging. Remember the QC fileset is the output file from the [QC Section](QC.md) which can be defined as a variable **FILE_QC** as shown below. 
@@ -54,13 +54,13 @@ The *awk '{print$2}* command selects the second column of the bim file to save t
 ```bash
 FILE_QC=qcout
 awk '{print$2}' "$FILE_QC.bim"> QCFILE_SNPs.txt
-awk '{print$2}' "$FILESET.geno.mind.maf.bim"> 1kG_temp.bim
-plink --bfile $FILESET.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILESET.geno.mind.maf.extract
+awk '{print$2}' "$FILE_1K.geno.mind.maf.bim"> 1kG_temp.bim
+plink --bfile $FILE_1K.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILE_1K.geno.mind.maf.extract
 ```
 
 ## Extract the variants present in 1000 Genomes dataset from your dataset.
 ```bash
-awk '{print$2}' $FILESET.geno.mind.maf.extract.bim > 1kG_SNPs.txt
+awk '{print$2}' $FILE_1K.geno.mind.maf.extract.bim > 1kG_SNPs.txt
 plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC.extract
 ```
 *The datasets now contain the exact same variants.*
@@ -73,8 +73,7 @@ plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC
 ```bash 
 awk '{print$2,$4}' $FILE_QC.extract.map > buildmap.txt
 # buildmap.txt contains one SNP-id and physical position per line.
-plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILESET.geno.mind.maf.extract.build
-
+plink --bfile $FILE_1K.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build
 ```
 
 ## Merge the Map and 1000 Genomes data sets
@@ -90,14 +89,14 @@ plink --bfile $FILESET.geno.mind.maf.extract --update-map buildmap.txt --make-be
 
 **1) set reference genome**
 ```bash
-awk '{print$2,$5}' $FILESET.geno.mind.maf.extract.build.bim > 1kg_ref-list.txt
+awk '{print$2,$5}' $FILE_1K.geno.mind.maf.extract.build.bim > 1kg_ref-list.txt
 plink --bfile $FILE_QC.extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
 # The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.
 ```
 
 **2) Resolve strand issues**
 ```bash
-awk '{print$2,$5,$6}' $FILESET.geno.mind.maf.extract.build.bim > 1kGMDS_strand_tmp
+awk '{print$2,$5,$6}' $FILE_1K.geno.mind.maf.extract.build.bim > 1kGMDS_strand_tmp
 awk '{print$2,$5,$6}' Map-adj.bim > Map-adj_tmp
 sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u > all_differences.txt
 ```
@@ -118,13 +117,13 @@ sort 1kGMDS_strand_tmp corrected_map_tmp |uniq -u  > uncorresponding_SNPs.txt
 ```bash
 awk '{print$1}' uncorresponding_SNPs.txt | sort -u > SNPs_for_exclusion.txt
 plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_QC.extract.rem
-plink --bfile $FILESET.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.txt --make-bed --out $FILESET.geno.mind.maf.extract.build.rem
+plink --bfile $FILE_1K.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build.rem
 ```
 
 ## Merge outdata with 1000 Genomes Data
 
 ```bash
-plink --bfile $FILE_QC.extract.rem --bmerge $FILESET.geno.mind.maf.extract.build.rem.bed $FILESET.geno.mind.maf.extract.build.rem.bim $FILESET.geno.mind.maf.extract.build.rem.fam --allow-no-sex --make-bed --out MDS_merge2
+plink --bfile $FILE_QC.extract.rem --bmerge $FILE_1K.geno.mind.maf.extract.build.rem.bed $FILE_1K.geno.mind.maf.extract.build.rem.bim $FILE_1K.geno.mind.maf.extract.build.rem.fam --allow-no-sex --make-bed --out MDS_merge2
 ```
 ## Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
 
@@ -200,7 +199,6 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
     ```
 
     ![MDS example](img/MDS.png)
-    > An example bar plot generated using script in `MDS_merged.R`    
 
 # Perform PCA 
 
@@ -212,34 +210,39 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
 === "Create PCA-plot"
     === "Performed in R"
     ```{r}
+    library(dplyr)
     data<- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+    eigenval<-read.table(file="PCA_MERGE.eigenval",header=F)
     race<- read.table(file="racefile.txt",header=TRUE)
     datafile<- merge(data,race,by=c("IID","FID"))
+    datafile=datafile %>% filter(datafile$race %in% c("EUR","ASN","AMR","AFR","OWN"))
     head(datafile)
-    
-    pdf("pca.pdf",width=7,height=7)
-    for (i in 1:nrow(datafile))
-    {
-    if (datafile[i,13]=="EUR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="green")}
-    par(new=T)
-    if (datafile[i,13]=="ASN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="red")}
-    par(new=T)
-    if (datafile[i,13]=="AMR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="orange")}
-    par(new=T)
-    if (datafile[i,13]=="AFR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="blue")}
-    par(new=T)
-    if (datafile[i,13]=="OWN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=3,cex=0.7,col="black")}
-    par(new=T)
-    }
-    
-    abline(v=-0.005,lty=3)
-    abline(h=-0.005,lty=3)
-    legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red","orange","blue","black"),bty="o",cex=1)
+    pve = eigenval/sum(eigenval)*100
+    library(ggplot2)
+    library(gridExtra)
+    png("pcagg.png",units="in",width=13,height=7,res=300)
+    b <- ggplot(datafile, aes(PC1, PC2, col = race,group=race)) 
+    b <- b+ geom_point(size = 2)
+    b <-b + xlab(paste0("PC1 (", signif(pve[1,1],3), "%)")) + ylab(paste0("PC2 (", signif(pve[2,1], 3), "%)"))+
+    theme(text = element_text(size=13),legend.text=element_text(size=13),legend.title = element_blank(),legend.position='top')+guides(color = guide_legend(override.aes = list(size=8)))
+    c <-ggplot(datafile, aes(PC1, PC2, col = race,group=race)) 
+    c <-c+ggplot2::stat_ellipse(
+      geom = "path",
+      position = "identity",
+      show.legend = NA,
+      size=2,
+      inherit.aes = TRUE,
+      type = "t",
+      level = 0.95,
+      segments = 51
+    )
+    c <- c + xlab(paste0("PC1 (", signif(pve[1,1],3), "%)")) + ylab(paste0("PC2 (", signif(pve[2,1], 3), "%)"))+
+    theme(text = element_text(size=13),legend.title = element_blank(),legend.position = "none")
+    grid.arrange(b, c, ncol=2)
     dev.off()
-    
-    ## awk '{ if ($3 <-0.005 && $4 >-0.005) print $1,$2 }' PCA_MERGE.eigenvec > EUR_samp.txt
+    awk '{ if ($3 <-0.005 && $4 >-0.005) print $1,$2 }' PCA_MERGE.eigenvec > EUR_samp.txt
     ```
-    ![PCA example](img/pca.png)
+    ![PCA example](img/pcagg.png)
 ## Run Admixture algorithm
 
 !!! note
@@ -264,7 +267,7 @@ mv temp.txt MDS_merge2.pop
 **run admixture script**
 ```bash
 qsub -cwd -pe smp 8 -l mem_free=32G -l scratch=100G -l h_rt=40:20:00 ad.sh
-##admixture --supervised ./MDS_merge2.bed 12 > log_merge_admixture.out
+admixture --supervised ./MDS_merge2.bed 12 > log_merge_admixture.out
 ```
 
 !!! warning

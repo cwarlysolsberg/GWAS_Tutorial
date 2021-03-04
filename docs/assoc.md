@@ -1,21 +1,21 @@
 # Performing Association Analyses 
 
-*For the association analyses we use the files generated in the previous tutorial (population stratification), named: popstratout (with .bed, .bim, and .fam. extensions) and covar_mds.txt*
+*For the association analyses, we use the files generated in the previous tutorial (population stratification), named: popstratout (with .bed, .bim, and .fam. extensions) and covar_pca.txt*
 
 ##We only need to define a few variables for this section of the analysis##
+
+We want to redefine the **FILE_GWAS** variable, the QC'd output file from the last section, and the **FILE_COV** variable, the covariates files. 
 ```bash
 FILE_GWAS=popstratout
-FILE_COV=covar_mds.txt
-tag_bim=".bim"
+FILE_COV=covar_pca.txt
 ```
 
 ## Perform Association Analyses:
 
 === "logistic" 
-    The **--logistic** method will allow you to include covariates in your association analysis. To include sex as a covariate (which is recommended for many phenotypes), add sex to the command as shown below. We will be using 10 principal components as covariates in this logistic analysis. We use the MDS components calculated from the previous tutorial: covar_mds.txt. We use the option **hide-covar** to only show the additive results of the SNPs in the output file.
+    The **--logistic** method will allow you to include covariates in your association analysis. To include sex as a covariate (which is recommended for many phenotypes), add sex to the command as shown below. We will be using 10 principal components as covariates in this logistic analysis. Please not  We use the PCA components calculated from the previous tutorial: covar_PCA.txt. We use the option **hide-covar** to only show the additive results of the SNPs in the output file. We use the **sex** flag to include sex as a covaraite in the model. 
     ```bash
-    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' --out logistic_results
-    #plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results
+    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results
     ```
     **Remove NA values, those might give problems generating plots in later steps.**
     ```bash 

@@ -49,6 +49,23 @@ Here, we see we appropriately lifted-over to build hg19 (GRCh37)
 
 ## Separated by Chromosome
 
+Here, we demonstrate how to perform population stratification using the much larger updated 1000 Genomes data set that is separated by chromosome. The steps here are not only useful for the purpose of population stratification but also to teach users how to handle any data set separated by chromosome (common for large datasets)
+
+First, we can download the data set using a *wget* command:
+
+```bash
+gr=_GRCh38
+for chr in {1..22}; do \
+wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/GRCh38_positions/ALL.chr$chr$gr.genotypes.20170504.vcf.gz
+wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/GRCh38_positions/ALL.chr$chr$gr.genotypes.20170504.vcf.gz.tbi
+done  
+```
+This loop takes a long time to run. You may want to let it sit over night if you have the option to. 
+
+
+
+
+
 ## Cluster computing
 
 ## Admixture 
