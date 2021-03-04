@@ -1,7 +1,14 @@
 # Population Stratifacation
 ## Obtaining the 1000 genome reference data set
 
-We will be using data from the 1000 Genomes Project for the population stratification step.
+
+In this tutorial, you will learn how to restrict the quality-controlled HapMap data to individuals that are all of the same genetic ancestry. Most genetic research focuses on one ancestry group at the time, as mixing ancestry groups may lead to population stratification confounding the results ``reference?``. Within this reference group, we will compute clusters that can be used to correct for further confounding due to population stratification.
+
+To construct population clusters from the HapMap data, we will need to compare genomes in this dataset to genomes from a reference panel for which ancestry is known. The reference panel we will use is from the 1000 genomes project.
+
+Note that, while there is more updated data available from the 1000 Genomes project, we decided to use this data for 2 reasons: 
+1. The most updated data set is much larger and separated by chromosome, which makes it more computationally intensive and requires an adjustment in the coding to account for the seperate chromosomes. 
+2. We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the [Separated by Chromosome](Additional_considerations.md) section on the Additional Considerations page. 
 
 You can download using the following command:
 
@@ -9,21 +16,69 @@ You can download using the following command:
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz
 ```
 
-Note that, while there is more updated data available from the 1000 Genomes project, we decided to use this data for 2 reasons: 
-1. The most updated data set is much larger and separated by chromosome leading to a far more computationally intensive process to use this data set. 
-2. We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the [Separated by Chromosome](Additional_considerations.md) section on the Additional Considerations page. 
+The data comes in a zipped vcf format. Note that the download is quite sizeable (~65GB). When working with genetic data, one regularly encounters sizable files. It is good practice to check the validity of the downloaded files, before working with them further. Sometimes, the distributor of the data will provide a hash value for the file of interest, such that you are able to check the integrity of your downloaded file. You can check the hash value for the 1000 genomes data using the Linux-command.
 
-!!! note
-    You will need `plink` in this section, which can be download from [here](https://www.cog-genomics.org/plink/1.9/).
+```bash
+md5sum ALL.2of4intersection.20100804.genotypes.vcf.gz
+```
 
-    Install the program `plink` and include its location in your PATH directory, which allows us to use `plink` instead of `./plink` in the commands below. If PLINK is not in your PATH directory and is instead in your working directory, replace all instances of `plink` in the tutorial with `./plink`.
+which should return ``9de60b62a195455359390d4c951d92d4``. If the value for your download is not the same, your download might have been corrupted, and we advise you to download the data again.
 
-The data will need to be converted into plink format with unique indentifiers created for each the SNPs with a missing rs-identifier. First, the *.vcf* file is converted to  *.bim,.bed,.fam* format using the **--make-bed** handle in plink. Next missing ids are filled out using the **--set-missing-var-ids** flag. It is important to note that if you are using a different build you will need to adjust the *[b37]* accordingly. 
+As in tutorial 1, we use PLINK to perform analysis on this dataset. First, the data will be converted into the plink binary format (*.bim,.bed,.fam*) using plink's **--make-bed** flag. There is no need to unzip the vcf file, as plink can read and convert gzipped files directly. 
 
 ```bash 
 plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000genomes.genotypes
+```
+
+??? note "Inspect the resulting .fam and .bim files"
+
+    ```bash
+    head 1000genomes.genotypes.fam
+    HG00098 HG00098 0 0 0 -9
+    HG00100 HG00100 0 0 0 -9
+    HG00106 HG00106 0 0 0 -9
+    HG00112 HG00112 0 0 0 -9
+    HG00114 HG00114 0 0 0 -9
+    HG00116 HG00116 0 0 0 -9
+    HG00117 HG00117 0 0 0 -9
+    HG00118 HG00118 0 0 0 -9
+    HG00119 HG00119 0 0 0 -9
+    HG00120 HG00120 0 0 0 -9
+    
+    head 1000genomes.genotypes.bim
+    1       rs112750067     0       10327   C       T
+    1       rs117577454     0       10469   G       C
+    1       rs55998931      0       10492   T       C
+    1       rs58108140      0       10583   A       G
+    1       .       0       11508   A       G
+    1       .       0       11565   T       G
+    1       .       0       12783   G       A
+    1       .       0       13116   G       T
+    1       .       0       13327   C       G
+    1       .       0       13980   C       T
+    ```
+
+One thing to note from the .fam file is that sex ids are missing, plink will read these as ambiguous observations. The head of the .bim file further shows that some SNPs have no assigned rs-id. We can use plink to assign unique identifiers to these SNPs, using the **--set-missing-var-ids** flag. You are free to construct your own ids, but ensure that they are unique. We build our id using the chromosome number (@), a colon, base-pair position (#), the build (b37), the reference allele, a comma, and the alternative allele. The 1000 genomes data uses the Genome Reference Consortium Human Build 37 (GRCh37). It is important to note that if you are using a different build you will need to adjust the *[b37]* accordingly. 
+
+```bash
 plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make-bed --out 1000genomes_nomissing.genotypes
 ```
+
+??? note "Our .bim file now looks as follows:"
+  
+    ```bash
+    head 1000genomes_nomissing.genotypes.bim
+    1       rs112750067     0       10327   C       T
+    1       rs117577454     0       10469   G       C
+    1       rs55998931      0       10492   T       C
+    1       rs58108140      0       10583   A       G
+    1       1:11508[b37]A,G 0       11508   A       G
+    1       1:11565[b37]G,T 0       11565   T       G
+    1       1:12783[b37]A,G 0       12783   G       A
+    1       1:13116[b37]G,T 0       13116   G       T
+    1       1:13327[b37]C,G 0       13327   C       G
+    1       1:13980[b37]C,T 0       13980   C       T
+    ```
 
 ##QC on 1000 Genomes data.
 
