@@ -214,28 +214,57 @@ plink --bfile $FILE_QC.extract --reference-allele 1kg_ref-list.txt --make-bed --
     are missing.)
     --make-bed to Map-adj.bed + Map-adj.bim + Map-adj.fam ... done.
     ```
-    
-Note that      
-
-  
 **2) Resolve strand issues**
+
+Note that PLINK warns us that some A1 allele assignments are impossible. We can use grep on both files to see why one of these SNPs looks different in both files:
+
+```bash
+  grep rs11488462 $FILE_1K.geno.mind.maf.extract.build.bim
+  1       rs11488462      0       1343243 C       T
+  grep rs11488462 $FILE_QC.extract.bim
+  1       rs11488462      0       1343243 G       A
+```
+
+It is clear that in these cases, flipping the allele in the HapMap data from G to A is of no use, since the reference allele at this SNP in the 1K genomes is C. How could a given SNP have a different reference allele as well as a different alternative allele? These differences are due to strand issues. The reference allele is represented by a nucleotide, but each nucleotide has an underlying complement that is present on the other DNA strand, where C complements G and T complements A. Hence, if different strands were genotyped in different samples, the same reference allele could be labelled by a C (T) in the one sample, and by a G (A) in the other. In the example above, the issue is easily resolved by flipping the reference and alternative allele in the HapMap data to their complimentary nucleotides: G to C and A to T, thus aligning this particular SNP with the 1K data. We resolve these strand issues for all SNPs in which PLINK could not align reference alleles using the --flip flag in PLINK, which will flip a given list of rsids towards its complimentary strand. 
+  
+Before we can use the --flip flag in PLINK, we have to create a list of SNP rsids that consists only of the conflicting strands that need flipping. We do this in the first three lines of the following code, where we use ``sort | uniq'' to extract only those lines that are not the same in the .bim files of HapMap and 1K Genomes in terms of the combination of rsid, reference allele, and alternative alleles. In the fourth line, we keep only the rsid, and keep each rsid once to obtain the list of rsid's which strands we have to flip in the HapMap data.
+
 ```bash
 awk '{print$2,$5,$6}' $FILE_1K.geno.mind.maf.extract.build.bim > 1kGMDS_strand_tmp
 awk '{print$2,$5,$6}' Map-adj.bim > Map-adj_tmp
 sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u > all_differences.txt
-```
-
-*Flip SNPs for resolving strand issues*
-```bash
 awk '{print$1}' all_differences.txt | sort -u > flip_list.txt
 plink --bfile Map-adj --flip flip_list.txt --reference-allele 1kg_ref-list.txt --make-bed --out corrected_map
 ```
 
 *Check for SNPs which are still problematic after they have been flipped.*
+Are both datasets fully aligned now? Unfortunately not. Let's again extract SNPs that are not the same in terms of their rsid, reference allele, and alternative allele in .bim files of both the HapMap data and the 1K genomes data. 
+
 ```bash
 awk '{print$2,$5,$6}' corrected_map.bim > corrected_map_tmp
 sort 1kGMDS_strand_tmp corrected_map_tmp |uniq -u  > uncorresponding_SNPs.txt
+wc -l uncorresponding_SNPs.txt
 ```
+
+There are still 53 SNPs that do not have the same reference allele and alternative allele in both datasets. Let's again look at one of these SNPs in both .bim files to get a sense of what is going on.
+
+```bash
+head uncorresponding_SNPs.txt
+
+rs10060593 A G
+rs10060593 A T
+rs10083559 T C
+rs10083559 T G
+rs10116901 C A
+rs10116901 C T
+rs11524965 T C
+rs11524965 T G
+rs11687477 A C
+rs11687477 T C
+
+```
+
+Clearly, flipping strand issues has not aligned the SNPs from both datasets here. Since it only concerns a small number of SNPs, it is the safest to throw them away, rather than spend more time on trying to resolve these remaining alignment issues. **Do we really have to throw all of these away?** 
 
 **3) Remove problematic SNPs from your data and from the 1000 Genomes.**
 ```bash
@@ -244,10 +273,10 @@ plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $F
 plink --bfile $FILE_1K.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build.rem
 ```
 
-## Merge outdata with 1000 Genomes Data
+## Merge HapMap data with 1000 Genomes Data
 
 ```bash
-plink --bfile $FILE_QC.extract.rem --bmerge $FILE_1K.geno.mind.maf.extract.build.rem.bed $FILE_1K.geno.mind.maf.extract.build.rem.bim $FILE_1K.geno.mind.maf.extract.build.rem.fam --allow-no-sex --make-bed --out MDS_merge2
+plink --bfile $FILE_QC.extract.rem --bmerge $FILE_1K.geno.mind.maf.extract.build.rem --allow-no-sex --make-bed --out MDS_merge2
 ```
 ## Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
 
