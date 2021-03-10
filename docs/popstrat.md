@@ -402,15 +402,15 @@ cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
 
 !!! note
 
-    You must install the ADMIXTURE software [here](http://dalexander.github.io/admixture/download.html). If       you are running on a conda environment you can install the admixture software using the following command:
+    You must install the ADMIXTURE software [here](http://dalexander.github.io/admixture/download.html). If you are running on a conda environment you can install the admixture software using the following command:
     ```bash 
     conda install -c bioconda admixture
     ```
 **Concatenate racefiles.**
 ```bash
 awk '{print$1,$2,"-"}' $FILE_QC.extract.rem.fam > racefile_own.txt
-awk '{print$1,$1,$2}' 20100804.ALL.panel > race_1kG.txt
-cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' > MDS_merge2.pop
+#awk '{print$1,$1,$3}' 20100804.ALL.panel > race_1kG.txt
+cat racefile_own.txt race_1kG14.txt | sed -e '1i\FID IID race' > MDS_merge2.pop
 sed -i -e "1d" MDS_merge2.pop
 cut -d " " -f 3- MDS_merge2.pop >temp.txt
 ```
@@ -421,14 +421,19 @@ mv temp.txt MDS_merge2.pop
 
 **run admixture script**
 ```bash
-qsub -cwd -pe smp 8 -l mem_free=32G -l scratch=100G -l h_rt=40:20:00 ad.sh
-admixture --supervised ./MDS_merge2.bed 12 > log_merge_admixture.out
+admixture --supervised ./MDS_merge2.bed 5 > log_merge_admixture.out
 ```
 
 !!! warning
 
     This step can take a very long time. Running overnight may be neccessary. 
-    
+
+After *admixture* is done running 
+```bash
+#pip install pong
+cp MDS_merge2.pop ind2pop.txt
+pong -m pong_filemap -i ind2pop.txt 
+```
 === "Performed in R"
 
 ```{r}
@@ -460,17 +465,38 @@ barplot(t(as.matrix(subset(ordered, select=c("V3" , "V4" , "V6" , "V7"  ,"V8"  ,
 dev.off()
 ```
 ![Admixture example](img/Admix.png)
-> An example bar plot generated using script in `admixtureplot.R` 
+> An example plot generated using pong software. The code above can also make a plot but it does not directly label the groups like pong does. 
 
-The output of this script prints out a text file **europeans.txt** with a list of all the individuals that are found to be 80% or more European. 
-
+The output of this script prints out a text file **europeans.txt** with a list of all the individuals that are found to be 80% or more European.
 
 ## Exclude ethnic outliers.
-*Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed thresholds but have to be determined based on the visualization of the first two dimensions. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.*
+*Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed thresholds but have to be determined based on the visualization of the first two PCS. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.*
+
+Find min and max value cut offs for European individuals. 
+
+```R
+data<- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+eigenval<-read.table(file="PCA_MERGE.eigenval",header=F)
+race<- read.table(file="racefile.txt",header=TRUE)
+datafile<- merge(data,race,by=c("IID","FID"))
+datafile=datafile %>% filter(datafile$race %in% c("EUR","ASN","AMR","AFR","OWN"))
+PC1max=max(datafile[datafile$race=='EUR',]$PC1)
+PC1min=min(datafile[datafile$race=='EUR',]$PC1)
+PC2max=max(datafile[datafile$race=='EUR',]$PC2)
+PC2min=min(datafile[datafile$race=='EUR',]$PC2)
+table <- matrix(c(PC1min,PC1max,PC2min,PC2max), ncol=1)
+colnames(table)=c('summary')
+rownames(table) <- c('PC1min', 'PC1max','PC2min', 'PC2max')
+table=data.frame(table)
+table$summary=as.numeric(table$summary)
+write.table(table,'eursum.txt',col.names=F,quote=F)
+```
 
 ```bash
-awk '{ if ($4 <-0.04 && $5 >0.03) print $1,$2 }' MDS_merge2.mds > EUR_MDS_merge2
-plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILE_QC.euro
+file=eursum.txt
+cat "$file" ##to view file
+awk '{ if ($3 > -0.0255362 && $3 < -0.0155058 && $4 > -0.0295579 && $4 < -0.0194123) print $1,$2 }' PCA_MERGE.eigenvec  > EUR_PCA_MERGE 
+plink --bfile $FILE_QC --keep EUR_PCA_MERGE  --make-bed --out $FILE_QC.euro
 ```
 *to exclude ethnic outliers using output from ADMIXTURE use the following script*
 ```bash
@@ -478,7 +504,6 @@ plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILE_QC.euro
 ```
 
 ## Hardy Weinburg equilibrium filter on controls
-
 
 ```bash
 HWE_CONTROL=1e-6
@@ -513,25 +538,18 @@ data_related=data[,c(1,2,3,4)]
 missing <- read.table("plink.imiss", header =TRUE, as.is=T)
 FID1=data_related[,c(1,2)]
 FID2=data_related[,c(3,4)]
-
 FID1$index=row.names(FID1)
 FID2$index=row.names(FID2)
-
 FID1$IID=FID1$IID1
 FID2$IID=FID2$IID2
-
 FID1[,1:2]=c()
 FID2[,1:2]=c()
-
 FID1=merge(FID1,missing,by="IID")
 FID2=merge(FID2,missing,by="IID")
-
 FID1[,4:6]=c()
 FID2[,4:6]=c()
-
 FID1$index=as.numeric(FID1$index)
 FID2$index=as.numeric(FID2$index)
-
 q=c(setdiff(FID2$index, FID1$index), setdiff(FID1$index, FID2$index))
 if (length(q) != 0) {
 FID1=FID1[!(FID1$index==q),]
@@ -563,12 +581,35 @@ write.table(final, 'low_call_rate.txt', append = FALSE, sep = " ", dec = ".",
 ```bash
 plink --bfile $FILE_QC.euro.hwe_control.found --remove low_call_rate.txt --make-bed --out $FILE_QC.euro.hwe_control.found.unrelated
 ```
-## Create covariates based on MDS.
-*Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial*
+## Create covariates based on PCA.
+*Perform an PCA ONLY on QC'd sample data without ethnic outliers*
+
 ```bash	
 plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --extract plink.prune.in --genome --out $FILE_QC.euro.hwe_control.found.unrelated
-plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --read-genome $FILE_QC.euro.hwe_control.found.unrelated.genome --cluster --mds-plot 10 --out $FILE_QC.euro.hwe_control.found.unrelated.MDS
-awk '{print$1, $2, $4, $5, $6, $7,$8,$9,$10,$11,$12,$13}' $FILE_QC.euro.hwe_control.found.unrelated.MDS.mds > covar_mds.txt
+plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --extract plink.prune.in  --make-bed --pca 10 'header' --out $FILE_QC.euro.hwe_control.found.unrelated.PCA
+```
+The values of the PCs that contribute to most of the variance in our samples are subsequently used as covariates in the association analysis in the third tutorial. To determine which PCs should be included in the model, we make a scree plot using the r code below: Note that we are using the eigenavalues from the merged dataset for visualization purposes (if we used the data from only the EUR HapMap set, there is virtually no variability and the eigenvalues are all close to 1)
+
+```R
+library(ggplot2)
+png('scree.png',units="in",width=13,height=7,res=300)
+val=read.table('PCA_MERGE.eigenval')
+val$index=as.numeric(row.names(val)) 
+ggplot(val, aes(x=index, y=V1)) +
+   geom_point() +
+  geom_line()+
+  ggtitle("Screeplot of the first 10 PCs")+
+  ylab('eigenvalue')+
+  xlab('PCs')+
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10))+
+  theme(legend.position = 'none')
+dev.off()
+```
+![Scree example](img/scree.png)
+> An example scree plot
+
+```bash
+awk '{print$1, $2,$3, $4, $5, $6, $7,$8,$9,$10,$11,$12}' $FILE_QC.euro.hwe_control.found.unrelated.PCA.eigenvec > covar_PCs.txt
 ```
 **The values in covar_mds.txt will be used as covariates, to adjust for remaining population stratification, in the third tutorial where we will perform a genome-wide association analysis.**
 
