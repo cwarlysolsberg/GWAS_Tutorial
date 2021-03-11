@@ -267,6 +267,8 @@ rs11687477 T C
 Clearly, flipping strand issues has not aligned the SNPs from both datasets here. Since it only concerns a small number of SNPs, it is the safest to throw them away, rather than spend more time on trying to resolve these remaining alignment issues. **Do we really have to throw all of these away?** 
 
 **3) Remove problematic SNPs from your data and from the 1000 Genomes.**
+Here, we want to remove both SNPs that still don't match between data sets.
+       		
 ```bash
 awk '{print$1}' uncorresponding_SNPs.txt | sort -u > SNPs_for_exclusion.txt
 plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_QC.extract.rem
@@ -275,9 +277,21 @@ plink --bfile $FILE_1K.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.
 
 ## Merge HapMap data with 1000 Genomes Data
 
+ 
 ```bash
-plink --bfile $FILE_QC.extract.rem --bmerge $FILE_1K.geno.mind.maf.extract.build.rem --allow-no-sex --make-bed --out MDS_merge2
+plink --bfile $FILE_QC.extract.rem --bmerge $FILE_1K.geno.mind.maf.extract.build.rem --allow-no-sex --make-bed --out merged
 ```
+
+After merging the data, we want to do a final removal of ambiguous (A/T and G/C) SNPs. A/T and G/C loci are unable to be strand-resolved and for this are routinely removed. We use a script from https://github.com/eatkinson/Post-QC: **find_cg_at_snps.py** with some minor modifications to be compatible with python3. For python2 versions change "open(bimfile)" to file(bimfile).
+
+```bash 
+wget https://github.com/eatkinson/Post-QC/raw/master/find_cg_at_snps.py
+sed -i -e 's/file(bimfile)/open(bimfile)/g' find_cg_at_snps.py ##for compatibility in python3
+sed -i -e 's/ line\[1\]/(line\[1\])/g' find_cg_at_snps.py ##for compatibility in python3
+python find_cg_at_snps.py merged.bim > ATCGsites
+plink --bfile merged --exclude ATCGsites --make-bed --out MDS_merge2
+```
+
 ## Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs
 
 **Download the file with population information of the 1000 genomes dataset.**
@@ -421,17 +435,28 @@ mv temp.txt MDS_merge2.pop
 
 **run admixture script**
 ```bash
-admixture --supervised ./MDS_merge2.bed 5 > log_merge_admixture.out
+admixture --supervised ./MDS_merge2.bed 4 > log_merge_admixture.out
 ```
 
 !!! warning
 
     This step can take a very long time. Running overnight may be neccessary. 
 
-After *admixture* is done running 
+After *admixture* is done running, you can prepare the files for plotting. You need to rename *MDS_merge2.pop* to *ind2pop.txt* and then make the pong_filemap file with the following format:
+
+k4r1  4 locationofQfile/MDS_merge2.12.Q
+
+The first column has the letter "k" denoting clusters and "r" denoting run number. This column can be any unique ID for the run as long as there is at least one letter and one number. 
+
+The second column denotes the number of clusters. 
+
+The third column should have the full path to the Q file output from the admixture command.
+
+
 ```bash
 #pip install pong
 cp MDS_merge2.pop ind2pop.txt
+
 pong -m pong_filemap -i ind2pop.txt 
 ```
 === "Performed in R"
