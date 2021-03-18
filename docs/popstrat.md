@@ -1,29 +1,32 @@
 # Population Stratifacation
-## Obtaining the 1000 genome reference data set
-
 
 In this tutorial, you will learn how to restrict the quality-controlled HapMap data to individuals that are all of the same genetic ancestry. Individuals of European ancestry will be kept. Most genetic research focuses on one ancestry group at the time, as mixing ancestry groups may lead to population stratification confounding the results ``reference?``. Within this reference group, we will compute clusters that can be used to correct for further confounding due to population stratification.
 
-To construct population clusters from the HapMap data, we will need to compare genomes in this dataset to genomes from a reference panel for which ancestry is known. The reference panel we will use is from the 1000 genomes project.
+## Obtaining the 1000 genome reference data set
 
-Note that, while more recently updated data from the 1000 Genomes project is available, we decided to use this data for 2 reasons: 
+To construct population clusters from the HapMap data, we will need to compare genomes in this dataset to genomes from a reference panel for which ancestry is known. The reference panel we will use is the 1000 genomes project.
+
+You can download the 1000 Genomes data we use for this tutorial using the following command:
+
+```bash
+
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz
+
+```
+
+Note that, while more recently updated data from the 1000 Genomes project is available, we decided to use this data for two reasons: 
 
 1. The most recently updated data set is much larger and separated by chromosome, which makes it more computationally intensive and requires an adjustment in the coding to account for the seperate chromosomes. 
 2. We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the [Separated by Chromosome](Additional_considerations.md) section on the Additional Considerations page. 
 
-You can download the 1000 Genomes data using the following command:
 
-```bash
-wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz
-```
-
-The data comes in a zipped vcf format. Note that the download is quite sizeable (~65GB). When working with genetic data, one regularly encounters sizable files. It is good practice to check the validity of the downloaded files, before working with them further. Sometimes, the distributor of the data will provide a hash value for the file of interest, such that you are able to check the integrity of your downloaded file. You can check the hash value for the 1000 genomes data using the Linux-command, after downloading.
+The data comes in a zipped vcf format. Note that the download is quite sizeable (~65GB). When working with genetic data, one regularly encounters sizeable files. It is good practice to check the validity of the downloaded files, before working with them further. Sometimes, the distributor of the data will provide a hash value for the file of interest, such that you are able to check the integrity of your downloaded file. You can check the hash value for the 1000 genomes data using this bash command, after downloading.
 
 ```bash
 md5sum ALL.2of4intersection.20100804.genotypes.vcf.gz
 ```
 
-which should return ``9de60b62a195455359390d4c951d92d4``. If the value for your download is not the same, your download might have been corrupted, and we advise you to download the data again.
+which should return ``9de60b62a195455359390d4c951d92d4``. If the value for your download is not the same, your download might be corrupted, and we advise you to download the data again.
 
 As in tutorial 1, we use PLINK to perform analysis on this dataset. First, the data will be converted into the plink binary format (*.bim,.bed,.fam*) using plink's **--make-bed** flag. There is no need to unzip the vcf file, as plink can read and convert gzipped files directly. 
 
@@ -83,7 +86,7 @@ plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make
 
 ##QC on 1000 Genomes data.
 
-Before we can use our 1000 Genomes data as our reference panel, it is important to perform quality control procedures on this dataset in a similar fashion as outlined in [Tutorial 1](QC.md). We choose the same parameters as in this tutorial for our SNP missingness threshold, individual missingness threshold, and MAF threshold.
+Before we can use the 1000 Genomes data as our reference panel, it is important to perform quality control procedures on this dataset in a similar fashion as outlined in [Tutorial 1](QC.md). We choose the same parameters as in this tutorial for our SNP missingness threshold, individual missingness threshold, and MAF threshold.
 
 ```bash
 FILE_1K=1000genomes_nomissing.genotypes
@@ -95,13 +98,12 @@ plink --bfile $FILE_1K --geno 0.2 --make-bed --out $FILE_1K.geno.temp
 plink --bfile $FILE_1K.geno.temp --mind 0.2 --allow-no-sex --make-bed --out $FILE_1K.geno.mind.temp
 plink --bfile $FILE_1K.geno.mind.temp --geno $GENO --make-bed --out $FILE_1K.geno
 plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILE_1K.geno.mind
-
 plink --bfile $FILE_1K.geno.mind --maf $MAF --make-bed --out $FILE_1K.geno.mind.maf
 ```
 5,808,310 variants and all 629 people pass filters and QC.
 
-**Extract the variants present in our dataset from the 1000 genomes dataset**
-Our reference panel and our dataset of interest (e.g. the cleaned HapMap data) must consist of the same set of SNPs. For the remainder of this tutorial, we will set the environmental variable **FILE_QC** to refer to the clean HapMap data (see [Tutorial 1](QC.md)). The *awk '{print$2}* command selects the second column of the bim file to save the rsid values in a text file. We will then use the **--extract** flag in plink to extract only the SNPs in the 1000 genomes data that are also present in the HapMap data, and vice versa.
+**Extract the variants present in HapMap from the 1000 genomes dataset**
+Our reference panel and our dataset of interest (e.g. the cleaned HapMap data) must consist of the same set of SNPs. For the remainder of this tutorial, we will set the environmental variable **FILE_QC** to refer to the clean HapMap data (see [Tutorial 1](QC.md)). The ``awk '{print$2}'`` command selects the second column of the bim file to save the rsid values in a text file. We will then use the **--extract** flag in plink to extract only the SNPs in the 1000 genomes data that are also present in the HapMap data, and vice versa.
 
 ```bash
 FILE_QC=HapMap_3_r3_1.qcout
@@ -113,12 +115,12 @@ plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC
 
 This results in 1,072,511 SNPs that both datasets have in common.
 
-## Change build on 1000 Genomes data build to match build of HapMap data
+## Change 1000 Genomes data build to match build of HapMap data
 
 Our next goal is to merge the HapMap data with the 1000 genomes data, such that we can compare the (unknown) population clusters of the HapMap data with the (known) population clusters in the 1000 genomes data. Before merging genetic data, however, a couple of steps need to be taken to ensure that the files align. One of these steps is to ensure that both datasets are in the same build. The 1000 genomes data uses the Genome Reference Consortium Human Build 37 (GRCh37), whereas the HapMap data uses the older build 36. This means that, for the same rsids, the base pair position will slightly differ between these two datasets. We will use the **--update-map** flag in plink to change all base pair positions in the 1000 genomes to the positions as given by the HapMap data. 
 
 !!! note
-    Most current genetic datasets use build 37 or 38. If you are working with genetic data that is not into the build of your liking, you may wish to move your dataset to another build entirely at the start of your project. Look at our [Liftover tutorial](Additional_considerations.md) to see how to move data set to another build. 
+    Most current genetic datasets use build 37 or 38. If you are working with genetic data that is not into the build of your liking, you may wish to move your dataset to another build entirely at the start of your project. Look at our [Liftover tutorial](Additional_considerations.md) to see how to move data to another build. 
 
 ```bash 
 awk '{print$2,$4}' $FILE_QC.extract.map > buildmap.txt
@@ -259,7 +261,7 @@ rs11687477 T C
 
 ```
 
-Clearly, flipping strand issues has not aligned the SNPs from both datasets here. Since it only concerns a small number of SNPs, it is the safest to throw them away, rather than spend more time on trying to resolve these remaining alignment issues. **Do we really have to throw all of these away?** 
+Clearly, flipping strand issues has not aligned the SNPs from both datasets here. Since it only concerns a small number of SNPs, it is the safest to throw them away, rather than spend more time on trying to resolve these remaining alignment issues.
 
 **3) Remove problematic SNPs from your data and from the 1000 Genomes.**
 Here, we want to remove both SNPs that still don't match between data sets.
@@ -326,57 +328,6 @@ sed 's/PUR/AMR/g' race_1kG13.txt>race_1kG14.txt
 cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' > racefile.txt
 ```
 
-# Perform MDS
-``Scrap this section?``
-We perform MDS clustering to perform unique clusters of the genomic data that overlap with ancestry information. We only use the list of approximately independent SNPs that was determined using the clumping algorithm in [Tutorial 1](QC.md). In the following two lines of code, the --genome option prepares the data by calculating pairwise identity by state (IBS) for each individual. The resulting file, **MDS_merge2.genome**, is used as input in the next command, where the identity by state is used to calculate 10 MDS clusters.  
-
-=== "Perform MDS Clustering"
-    ```bash 
-    plink --bfile MDS_merge2 --extract plink.prune.in --genome --out MDS_merge2
-    plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2
-    ```
-
-The resulting output, MDS_merge2.mds, gives us the value of the first 10 MDS clusters for each individual in the stacked HapMap and 1K genomes data. 
-
-# Extracting ancestry information from MDS cluster values.
-To understand how values of the MDS clusters map into ancestry information, we plot the first two MDS cluster values against each other, giving datapoints from different population groups a different color.
-
-=== "Create MDS-plot"
-    # Generate population stratification plot.
-    === "Performed in R"
-    
-    ```{r}
-    library(ggplot2)
-    library(gridExtra)
-    
-    data<- read.table(file="MDS_merge2.mds",header=TRUE)
-    race<- read.table(file="racefile.txt",header=TRUE)
-    datafile<- merge(data,race,by=c("IID","FID"))
-    head(datafile)
-    png("MDS.png",units="in",width=13,height=7,res=300)
-    b <- ggplot(datafile, aes(C1, C2, col = race,group=race)) 
-    b <- b + geom_point(size = 2)
-    b <- b + xlab("MDS1") + ylab("MDS2")+
-    theme(text = element_text(size=13),legend.text=element_text(size=13),legend.title = element_blank(),legend.position='top')+guides(color =      guide_legend(override.aes = list(size=8)))
-    c <-ggplot(datafile, aes(C1, C2, col = race,group=race)) 
-    c <-c+ggplot2::stat_ellipse(
-      geom = "path",
-      position = "identity",
-      show.legend = NA,
-      size=2,
-      inherit.aes = TRUE,
-      type = "t",
-      level = 0.95,
-      segments = 51
-    )
-    c <- c + xlab("MDS1") + ylab("MDS2")+
-    theme(text = element_text(size=13),legend.title = element_blank(),legend.position = "none")
-    grid.arrange(b, c, ncol=2)
-    dev.off()
-    ```
-
-    ![MDS example](img/MDS.png)
-
 # Perform PCA 
 We next compute the first 10 principal components of the combined genetic data. These principal components correlate with genetic ancestry. Again, we first clump the data to obtain a set of SNPs that is approximately in linkage equilibrium. The second line in the code below performs the principal component analysis on the extracted set of approximately independent SNPs, calculating the first ten PCs, and adding a `header' to the resulting output file (PCA_MERGE.eigenvec) using the appropriate option.
 
@@ -431,86 +382,140 @@ The resulting plot clearly seperates Europeans, Africans, Americans, and Asians 
 awk '{ if ($3 <-0.005 && $4 <-0.005) print $1,$2 }' PCA_MERGE.eigenvec > EUR_samp_PC.txt
 ```
 
-## Run Admixture algorithm
 
-!!! note
+??? note "Perform MDS"
+    
+    # Perform MDS
+    We perform MDS clustering to perform unique clusters of the genomic data that overlap with ancestry information. We only use the list of      approximately independent SNPs that was determined using the clumping algorithm in [Tutorial 1](QC.md). In the following two lines of         code, the --genome option prepares the data by calculating pairwise identity by state (IBS) for each individual. The resulting file,          **MDS_merge2.genome**, is used as input in the next command, where the identity by state is used to calculate 10 MDS clusters.  
 
-    You must install the ADMIXTURE software [here](http://dalexander.github.io/admixture/download.html). If you are running on a conda environment you can install the admixture software using the following command:
+    === "Perform MDS Clustering"
+        ```bash 
+        plink --bfile MDS_merge2 --extract plink.prune.in --genome --out MDS_merge2
+        plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2
+        ```
+
+    The resulting output, MDS_merge2.mds, gives us the value of the first 10 MDS clusters for each individual in the stacked HapMap and 1K        genomes data. 
+
+    # Extracting ancestry information from MDS cluster values.
+    To understand how values of the MDS clusters map into ancestry information, we plot the first two MDS cluster values against each other,      giving datapoints from different population groups a different color.
+
+    === "Create MDS-plot"
+      # Generate population stratification plot.
+    === "Performed in R"
+      
+    ```{r}
+    library(ggplot2)
+    library(gridExtra)
+    
+    data<- read.table(file="MDS_merge2.mds",header=TRUE)
+    race<- read.table(file="racefile.txt",header=TRUE)
+    datafile<- merge(data,race,by=c("IID","FID"))
+    head(datafile)
+    png("MDS.png",units="in",width=13,height=7,res=300)
+    b <- ggplot(datafile, aes(C1, C2, col = race,group=race)) 
+    b <- b + geom_point(size = 2)
+    b <- b + xlab("MDS1") + ylab("MDS2")+
+    theme(text = element_text(size=13),legend.text=element_text(size=13),legend.title = element_blank(),legend.position='top')+guides(color =      guide_legend(override.aes = list(size=8)))
+    c <-ggplot(datafile, aes(C1, C2, col = race,group=race)) 
+    c <-c+ggplot2::stat_ellipse(
+      geom = "path",
+      position = "identity",
+      show.legend = NA,
+      size=2,
+      inherit.aes = TRUE,
+      type = "t",
+      level = 0.95,
+      segments = 51
+    )
+    c <- c + xlab("MDS1") + ylab("MDS2")+
+    theme(text = element_text(size=13),legend.title = element_blank(),legend.position = "none")
+    grid.arrange(b, c, ncol=2)
+    dev.off()
+    ```
+
+    ![MDS example](img/MDS.png)
+
+??? note "## Run Admixture algorithm"
+
+    !!! note
+
+        You must install the ADMIXTURE software [here](http://dalexander.github.io/admixture/download.html). If you are running on a conda            environment you can install the admixture software using the following command:
+    
     ```bash 
     conda install -c bioconda admixture
     ```
-**Concatenate racefiles.**
-```bash
-awk '{print$1,$2,"-"}' $FILE_QC.extract.rem.fam > racefile_own.txt
-cat racefile_own.txt race_1kG14.txt | sed -e '1i\FID IID race' > MDS_merge2.pop
-sed -i -e "1d" MDS_merge2.pop #removes header
-cut -d " " -f 3- MDS_merge2.pop >temp.txt
-```
-**make popfile for admixture script**
-```bash
-mv temp.txt MDS_merge2.pop
-```
+    **Concatenate racefiles.**
+    ```bash
+    awk '{print$1,$2,"-"}' $FILE_QC.extract.rem.fam > racefile_own.txt
+    cat racefile_own.txt race_1kG14.txt | sed -e '1i\FID IID race' > MDS_merge2.pop
+    sed -i -e "1d" MDS_merge2.pop #removes header
+    cut -d " " -f 3- MDS_merge2.pop >temp.txt
+    ```
+    **make popfile for admixture script**
+    ```bash
+    mv temp.txt MDS_merge2.pop
+    ```
 
-**run admixture script**
-```bash
-admixture --supervised ./MDS_merge2.bed 4 > log_merge_admixture.out
-```
+    **run admixture script**
+    ```bash
+    admixture --supervised ./MDS_merge2.bed 4 > log_merge_admixture.out
+    ```
 
-!!! warning
+    !!! warning
 
-    This step can take a very long time. Running overnight may be neccessary. 
+        This step can take a very long time. Running overnight may be neccessary. 
 
-After *admixture* is done running, you can prepare the files for plotting. You need to rename *MDS_merge2.pop* to *ind2pop.txt* and then make the pong_filemap file with the following format:
+    After *admixture* is done running, you can prepare the files for plotting. You need to rename *MDS_merge2.pop* to *ind2pop.txt* and then      make the pong_filemap file with the following format:
 
-k4r1  4 locationofQfile/MDS_merge2.12.Q
+    k4r1  4 locationofQfile/MDS_merge2.12.Q
 
-The first column has the letter "k" denoting clusters and "r" denoting run number. This column can be any unique ID for the run as long as there is at least one letter and one number. 
+    The first column has the letter "k" denoting clusters and "r" denoting run number. This column can be any unique ID for the run as long as     there is at least one letter and one number. 
+  
+    The second column denotes the number of clusters. 
 
-The second column denotes the number of clusters. 
-
-The third column should have the full path to the Q file output from the admixture command.
+    The third column should have the full path to the Q file output from the admixture command.
 
 
-```bash
-#pip install pong (requires python 2.7, not 3.7)
-cp MDS_merge2.pop ind2pop.txt
+    ```bash
+    #pip install pong (requires python 2.7, not 3.7)
+    cp MDS_merge2.pop ind2pop.txt
 
-pong -m pong_filemap -i ind2pop.txt 
-```
-=== "Performed in R"
+    pong -m pong_filemap -i ind2pop.txt 
+    ```
+    === "Performed in R"
+  
+    ```{r}
+    R
+    tbl=read.table("MDS_merge2.12.Q")
+    popGroups = read.table("MDS_merge2.pop")
+    fam=read.table("MDS_merge2.fam")
+    mergedAdmWithPopGroups = cbind(tbl, popGroups)
+    ordered = mergedAdmWithPopGroups
+    #ceu v5
+    #tsi v12
+    #fin v2
+    #gbr v1
+    ordered$EUR=ordered$V5+ordered$V12+ordered$V2+ordered$V1
+    fam$race=ordered$EUR
+    ids1=fam$V1[which(fam$race>0.8)]
+    ids=data.frame(ids1)
+    ids$ids2=fam$V2[which(fam$race>0.8)]
+    ##list of europeans to extract from files
+    write.table(ids,'europeans.txt',quote = FALSE,row.names = FALSE,col.names=FALSE)
+    ordered$V5=c()
+    ordered$V12=c()
+    ordered$V2=c()
+    ordered$V1=c()
+    ordered=ordered[order(-ordered$EUR),]
+    #barplot(t(as.matrix(subset(ordered, select=c("YRI","ASW","CHB","CHS","EUR","JPT","LWK","MXL","PUR")))), col=rainbow(12),         border=NA,names.arg=popnew, las=2,cex.names=0.1)
+    pdf('admixture.pdf')
+    barplot(t(as.matrix(subset(ordered, select=c("V3" , "V4" , "V6" , "V7"  ,"V8"  ,"V9" ,"V10", "V11","EUR")))), col=rainbow(9), border=NA,      las=2,ylab="Percent Pop",xaxt="n",xlab='<---- Direction of more European')
+    dev.off()
+    ```
+    ![Admixture example](img/Admix.png)
+    > An example plot generated using pong software. The code above can also make a plot but it does not directly label the groups like pong      does. 
 
-```{r}
-R
-tbl=read.table("MDS_merge2.12.Q")
-popGroups = read.table("MDS_merge2.pop")
-fam=read.table("MDS_merge2.fam")
-mergedAdmWithPopGroups = cbind(tbl, popGroups)
-ordered = mergedAdmWithPopGroups
-#ceu v5
-#tsi v12
-#fin v2
-#gbr v1
-ordered$EUR=ordered$V5+ordered$V12+ordered$V2+ordered$V1
-fam$race=ordered$EUR
-ids1=fam$V1[which(fam$race>0.8)]
-ids=data.frame(ids1)
-ids$ids2=fam$V2[which(fam$race>0.8)]
-##list of europeans to extract from files
-write.table(ids,'europeans.txt',quote = FALSE,row.names = FALSE,col.names=FALSE)
-ordered$V5=c()
-ordered$V12=c()
-ordered$V2=c()
-ordered$V1=c()
-ordered=ordered[order(-ordered$EUR),]
-#barplot(t(as.matrix(subset(ordered, select=c("YRI","ASW","CHB","CHS","EUR","JPT","LWK","MXL","PUR")))), col=rainbow(12), border=NA,names.arg=popnew, las=2,cex.names=0.1)
-pdf('admixture.pdf')
-barplot(t(as.matrix(subset(ordered, select=c("V3" , "V4" , "V6" , "V7"  ,"V8"  ,"V9" ,"V10", "V11","EUR")))), col=rainbow(9), border=NA, las=2,ylab="Percent Pop",xaxt="n",xlab='<---- Direction of more European')
-dev.off()
-```
-![Admixture example](img/Admix.png)
-> An example plot generated using pong software. The code above can also make a plot but it does not directly label the groups like pong does. 
-
-The output of this script prints out a text file **europeans.txt** with a list of all the individuals that are found to be 80% or more European.
+    The output of this script prints out a text file **europeans.txt** with a list of all the individuals that are found to be 80% or more      European.
 
 ## Exclude ethnic outliers.
 *Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed thresholds but have to be determined based on the visualization of the first two PCS. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.*

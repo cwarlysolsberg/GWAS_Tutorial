@@ -163,12 +163,12 @@ plink -bfile $FILESET --missing
       - **N_GENO**: Number of non-obligatory missing genotypes
       - **F_MISS**: Proportion of sample missing for this SNP
 
-### Generate istogram to view missingness. 
+### Generate Histogram to view missingness. 
 
 To summarize the extent of missing data, we load both files into R, and generate histograms to visualize the proportion of missingness in the data, per individual and per SNP, respectively.
 
 === "Performed in R"
-
+Rsc
 ```{r}
 indmiss<-read.table(file="plink.imiss", header=TRUE)
 snpmiss<-read.table(file="plink.lmiss", header=TRUE)
