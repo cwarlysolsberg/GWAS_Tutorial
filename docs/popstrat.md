@@ -1,4 +1,4 @@
-# Population Stratifacation
+# Population Stratification
 
 In this tutorial, you will learn how to restrict the quality-controlled HapMap data to individuals that are all of the same genetic ancestry. Individuals of European ancestry will be kept. Most genetic research focuses on one ancestry group at the time, as mixing ancestry groups may lead to population stratification confounding the results ``reference?``. Within this reference group, we will compute clusters that can be used to correct for further confounding due to population stratification.
 
@@ -108,9 +108,9 @@ Our reference panel and our dataset of interest (e.g. the cleaned HapMap data) m
 ```bash
 FILE_QC=HapMap_3_r3_1.qcout
 awk '{print$2}' "$FILE_QC.bim"> QCFILE_SNPs.txt
-plink --bfile $FILE_1K.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --recode --out $FILE_1K.geno.mind.maf.extract
+plink --bfile $FILE_1K.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --out $FILE_1K.geno.mind.maf.extract
 awk '{print$2}' $FILE_1K.geno.mind.maf.extract.bim > 1kG_SNPs.txt
-plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $FILE_QC.extract
+plink --bfile $FILE_QC --extract 1kG_SNPs.txt --make-bed --out $FILE_QC.extract
 ```
 
 This results in 1,072,511 SNPs that both datasets have in common.
@@ -123,7 +123,7 @@ Our next goal is to merge the HapMap data with the 1000 genomes data, such that 
     Most current genetic datasets use build 37 or 38. If you are working with genetic data that is not into the build of your liking, you may wish to move your dataset to another build entirely at the start of your project. Look at our [Liftover tutorial](Additional_considerations.md) to see how to move data to another build. 
 
 ```bash 
-awk '{print$2,$4}' $FILE_QC.extract.map > buildmap.txt
+awk '{print$2,$4}' $FILE_QC.extract.bim > buildmap.txt
 # buildmap.txt contains one SNP-id and physical position per line.
 plink --bfile $FILE_1K.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build
 ```

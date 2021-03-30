@@ -1,10 +1,3 @@
-#!/bin/bash
-#SBATCH -t 12:00:00 ## WALL CLOCK TIME
-#SBATCH -N 1 -c 1 ## REQUEST NODES AND CORES (ONLY STAGING NODES CAN REQUEST SINGLE CORES)
-#SBATCH -p normal ## NODE TYPE: normal, fat, gpu, short, staging
-#SBATCH --mem=32G  
-
-
 FILESET=HapMap_3_r3_1
 GENO=0.02 
 MIND=0.02 
