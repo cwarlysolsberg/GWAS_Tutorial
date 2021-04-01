@@ -26,7 +26,7 @@ All these analyses are performed M times, for each SNP. As a result, conventiona
 The **--logistic** method performs logistic analysis and allows you to include covariates in your association analysis. We include sex as a covariate (which is recommended for many phenotypes), adding sex to the **--logistic** flag as shown below. Sex will be inferred from the .fam file. We will be using 10 principal components as covariates in this logistic analysis. We use the PCA components calculated from the previous tutorial: covar_PCA.txt. In that tutorial, we showed in the scree plot that the first two PCs should in principal be sufficient to control for population stratification. Nonetheless, we add the first 10 as this is considered the minimum in the literature and controlling for too many PCs is unlikely to have a large effect on the overall results (Price et al., 2006). We use the option **hide-covar** to only show the additive results of the SNPs in the output file. 
 
     ```bash
-    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results
+    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --adjust --out logistic_results
     ```
     **Remove NA values, those might give problems generating plots in later steps.**
     ```bash 
