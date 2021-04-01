@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>6. Additional Considerations - Basic Tutorial for Genome Wide Association Analysis</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link href="../css/extra.css" rel="stylesheet" />
+  <link href="../css/details.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "6. Additional Considerations";
+    var mkdocs_page_input_path = "Additional_considerations.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script> 
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-145068952-1', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Basic Tutorial for Genome Wide Association Analysis</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../QC/">1. Quality Control of GWAS Data</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../popstrat/">2. Population Stratification</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../assoc/">3. Association Analyses</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../plink/">PLINK</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../plink_visual/">4. Visualizing association results</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="" href="../assocdive.md">5. Deep dive into underpinnings of associations</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">6. Additional Considerations</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#liftover">Liftover</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#imputation">Imputation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#meta-analysis-using-metal-software">Meta-Analysis using METAL software</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#separated-by-chromosome">Separated by Chromosome</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../prs/">7.PRS</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Basic Tutorial for Genome Wide Association Analysis</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>6. Additional Considerations</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/Additional_considerations.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h1>
+<p>While this tutorial is intended to be as robust as possible, there are some additional processes and considerations that may be needed for individual datasets. This section serves to provide examples of when and how to incorportant various tools and commands that were not necessary for our example HapMap dataset, but are likely to come up in other analyses. </p>
+<h2 id="liftover">Liftover<a class="headerlink" href="#liftover" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This section is neccessary when the build of your own dataset is different from the reference set used for annotation or population stratification anchoring. While the update-map tool can be used (as demonstrated in the Population Stratification section),  Liftover is also useful when performing a meta-analysis to ensure all individual datasets are in the same build prior to combining summary statistics. The commands outlined here will provide an example for downloading Liftover and neccessary associated files to convert a data set from build hg38 to hg19. </p>
+</div>
+<p>You can install Liftover and its dependencies with the following commands:</p>
+<pre class="highlight"><code class="language-bash">wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
+##replace the following chain file to match your desired build conversion
+wget https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz
+wget https://raw.githubusercontent.com/Shicheng-Guo/GscPythonUtility/master/liftOverPlink.py
+chmod +x liftOverPlink.py
+chmod +x liftOver</code></pre>
+<p>Once you have downloaded the necessary filesets and changed the permissions to facilitate running the python code you can declare your starting fileset: 
+<pre class="highlight"><code class="language-bash">fileset=startingfileset</code></pre></p>
+<p>Next you need to change from space delimiter to tab delimiter with the '--recode tab' handle.  </p>
+<pre class="highlight"><code class="language-bash">plink --bfile $fileset --recode tab --out $fileset.tab</code></pre>
+<p>Finally, you can run liftover to change your fileset build and then convert back to plink format. </p>
+<pre class="highlight"><code class="language-bash">./liftOverPlink.py -m $fileset.tab.map -p  $fileset.tab.ped -o $fileset.hg19 -c hg38ToHg19.over.chain.gz -e ./liftOver
+plink --ped $fileset.hg19.ped --map $fileset.hg19.map --make-bed --out $fileset.final.hg19</code></pre>
+<p>To confirm your file was appropriately lifted over, it is good practice to choose a few snps from your bim file and confirm on <a href="https://www.ncbi.nlm.nih.gov/gap/">dbgap</a> whether your snpid appropriately matches with the corresponding chr:bp positions presented. </p>
+<p><img alt="Buildcheck example" src="../img/buildcheck.png" /></p>
+<p>Here, we see we appropriately lifted-over to build hg19 (GRCh37)</p>
+<h2 id="imputation">Imputation<a class="headerlink" href="#imputation" title="Permanent link">&para;</a></h2>
+<h2 id="meta-analysis-using-metal-software">Meta-Analysis using METAL software<a class="headerlink" href="#meta-analysis-using-metal-software" title="Permanent link">&para;</a></h2>
+<h2 id="separated-by-chromosome">Separated by Chromosome<a class="headerlink" href="#separated-by-chromosome" title="Permanent link">&para;</a></h2>
+<p>Here, we demonstrate how to perform population stratification using the much larger updated 1000 Genomes data set that is separated by chromosome. The steps here are not only useful for the purpose of population stratification but also to teach users how to handle any data set separated by chromosome (common for large datasets)</p>
+<p>First, we can download the data set using a <em>wget</em> command:</p>
+<p><pre class="highlight"><code class="language-bash">gr=_GRCh38
+for chr in {1..22}; do \
+wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/GRCh38_positions/ALL.chr$chr$gr.genotypes.20170504.vcf.gz
+wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/GRCh38_positions/ALL.chr$chr$gr.genotypes.20170504.vcf.gz.tbi
+done  </code></pre>
+This loop takes a long time to run. You may want to let it sit over night if you have the option to. </p>
+<p>for chr in {1..11}; do \
+plink --vcf ALL.chr<span class="arithmatex">\(chr\)</span>gr.genotypes.20170504.vcf.gz --make-bed --vcf-half-call m --out chr_$chr.GRCh38
+done</p>
+<p>for chr in {12..22}; do \</p>
+<h1 id="plink-bfile-chr_chrgrch38-exclude-1000genomes_hg38-mergemissnp-allow-extra-chr-make-bed-out-chrchrexclude">plink --bfile chr_<span class="arithmatex">\(chr.GRCh38 --exclude 1000genomes_hg38-merge.missnp --allow-extra-chr --make-bed --out chr\)</span>chr.exclude<a class="headerlink" href="#plink-bfile-chr_chrgrch38-exclude-1000genomes_hg38-mergemissnp-allow-extra-chr-make-bed-out-chrchrexclude" title="Permanent link">&para;</a></h1>
+<p>plink --bfile chr_<span class="arithmatex">\(chr.GRCh38 --allow-extra-chr --make-bed --out chr\)</span>chr
+done
+ls <em>.exclude.bed</em> &gt;allfiles.txt
+sed 's/..<span class="arithmatex">\(//' &lt; allfiles.txt &gt; test
+sed 's/..\)</span>//' &lt; test &gt; allfiles.txt
+plink --bfile chr_10 --merge-list allfiles.txt --allow-extra-chr --make-bed -out 1000genomes_hg38</p>
+<h2 id="cluster-computing">Cluster computing<a class="headerlink" href="#cluster-computing" title="Permanent link">&para;</a></h2>
+<h2 id="admixture">Admixture<a class="headerlink" href="#admixture" title="Permanent link">&para;</a></h2>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../prs/" class="btn btn-neutral float-right" title="7.PRS">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../plink_visual/" class="btn btn-neutral" title="4. Visualizing association results"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/choishingwan/PRS-Tutorial/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../plink_visual/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../prs/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+      <script src="../javascripts/details.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
