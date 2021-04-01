@@ -608,8 +608,8 @@ FID1=data_related[,c(1,2)]
 FID2=data_related[,c(3,4)]
 FID1$index=row.names(FID1)
 FID2$index=row.names(FID2)
-FID1$IID=FID1$IID1
-FID2$IID=FID2$IID2
+FID1$IID=FID1$ID1
+FID2$IID=FID2$ID2
 FID1[,1:2]=c()
 FID2[,1:2]=c()
 FID1=merge(FID1,missing,by="IID")
@@ -686,7 +686,7 @@ mv $FILE_QC.euro.hwe_control.found.unrelated.bed ./popstratout.bed
 mv $FILE_QC.euro.hwe_control.found.unrelated.bim ./popstratout.bim
 mv $FILE_QC.euro.hwe_control.found.unrelated.fam ./popstratout.fam
 cp popstratout* ../3_Association_GWAS
-cp covar_mds.txt ../3_Association_GWAS
+cp covar_PCs.txt ../3_Association_GWAS
 cd ../3_Association_GWAS
 ```
 

@@ -1,19 +1,30 @@
 # Performing Association Analyses 
 
-*For the association analyses, we use the files generated in the previous tutorial (population stratification), named: popstratout (with .bed, .bim, and .fam. extensions) and covar_pca.txt*
+In this tutorial, you will learn how to use the HapMap files generated in the [previous tutorial](popstrat.md) named: popstratout (with .bed, .bim, and .fam. extensions) and covar_pca.txt to perform association analysis on a simulated phenotype. 
 
 ##We only need to define a few variables for this section of the analysis##
+Before we start, we define two variable. **FILE_GWAS** refers to the dataset to perform the association analysis on and **FILE_COV** to the dataset with the relevant covariates (Principal components).
 
-We want to redefine the **FILE_GWAS** variable, the QC'd output file from the last section, and the **FILE_COV** variable, the covariates files. 
 ```bash
 FILE_GWAS=popstratout
-FILE_COV=covar_pca.txt
+FILE_COV=covar_PCs.txt
 ```
 
 ## Perform Association Analyses:
+We will use Plink to perform association analyses. These types of analyses run M individual regressions, with M the number of SNPs in the .bim file. For case/control data, the simples form of association analysis is performed using the **--assoc** flag. However, running multivariable regression analyses, one for each SNP, is an attractive way of estimating SNPs associations, correcting for a multitude of control variables. The **--linear** flag is used for linear regression (apropriate for quantitative traits and possibly binary traits), the **--logistic** flag for logistic regression (appropriate for binary traits). Below, we show how to perform each of these three types of association analyses on a binary, simulated phenotype (stored in the 6th column of the .fam file).  
+
+All these analyses are performed M times, for each SNP. As a result, conventional p-values need to be adjusted for multiple hypothesis testing. The **--adjust** flag performs this correction, and will add different types of multiple hypothesis corrected p-values to the output.
+
+=== "--assoc"
+    !!! note 
+    the --assoc option does not allow to correct covariates such as principal components (PC's) MDS components, or other variables such as sex     and age. We therefore do not recommend to use this type of anlysis, as results will be vulnerable to confounding by population    stratification.
+    ```bash
+    plink --bfile $FILE_GWAS --assoc --adjust --out assoc_results
+    ```
 
 === "logistic" 
-    The **--logistic** method will allow you to include covariates in your association analysis. To include sex as a covariate (which is recommended for many phenotypes), add sex to the command as shown below. We will be using 10 principal components as covariates in this logistic analysis. Please not  We use the PCA components calculated from the previous tutorial: covar_PCA.txt. We use the option **hide-covar** to only show the additive results of the SNPs in the output file. We use the **sex** flag to include sex as a covaraite in the model. 
+The **--logistic** method performs logistic analysis and allows you to include covariates in your association analysis. We include sex as a covariate (which is recommended for many phenotypes), adding sex to the **--logistic** flag as shown below. Sex will be inferred from the .fam file. We will be using 10 principal components as covariates in this logistic analysis. We use the PCA components calculated from the previous tutorial: covar_PCA.txt. In that tutorial, we showed in the scree plot that the first two PCs should in principal be sufficient to control for population stratification. Nonetheless, we add the first 10 as this is considered the minimum in the literature and controlling for too many PCs is unlikely to have a large effect on the overall results (Price et al., 2006). We use the option **hide-covar** to only show the additive results of the SNPs in the output file. 
+
     ```bash
     plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results
     ```
@@ -21,15 +32,9 @@ FILE_COV=covar_pca.txt
     ```bash 
     awk '!/'NA'/' logistic_results.assoc.logistic > logistic_results.assoc_2.logistic
     ```
-=== "--assoc"
-    !!! note 
-        the --assoc option does not allow to correct covariates such as principal components (PC's)/ MDScomponents, which makes it less suited for association analyses.
-    ```bash
-    plink --bfile $FILE_GWAS --assoc --out assoc_results
-    ```
 
 === "--linear"
-    In case of a quantitative outcome measure the option --logistic should be replaced by --linear. The use of the --assoc option is also possible for quantitative outcome measures (as metioned previously, this option does not allow the use of covariates). 
+    In case of a quantitative outcome measure the option --logistic should be replaced by **--linear** as to perform linear regression analysis. The use of the --assoc option is also possible for quantitative outcome measures (as metioned previously, this option does not allow the use of covariates). 
    
 
 ## Account for Multiple testing

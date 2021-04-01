@@ -162,6 +162,8 @@ wc -l uncorresponding_SNPs.txt
 awk '{print$1}' uncorresponding_SNPs.txt | sort -u > SNPs_for_exclusion.txt
 plink --bfile $TARGETSET.out.ref.strand --exclude SNPs_for_exclusion.txt --make-bed --out $TARGETSET.def
 ```
+###LDSC to assess SNP-based heritability and confounding in GWAS summary statistics. 
+
 ####GCTA to estimate SNP-based heritability
 Before constructing a PGS on the target data, it is useful to estimate the SNP-based heritability of the phenotype of interest using gcta. Due to measurement error in the PRS weights, the share of explained variance that the PRS can explain in a linear regression is lower than the overall SNP-based heritability. Therefore, estimation of SNP-based heritability gives us a reasonable expectation of the upper bound that we can expect from the predictiveness of the PRSs that we will construct. Genome-based restricted maximum likelihood (GREML) estiamtes the degree of variance explained in the phenotype that is explained by all SNPs in the target data. This is often referred to as SNP-based heritability. GCTA is a software package used to conduct such GREML analyses. It is similar to PLINK in the sense that it is operated through bash commands, using flags to guide the analysis of interest.  
 
@@ -257,7 +259,9 @@ Overall computational time: 0.09 sec.
 
 The output shows four estimates of interest: V(G), the amount of variance in the phenotype that can be attributed to variance in the SNPs, V(e), the remaining variance that can be attributed to environmental factors, their sum Vp, and estimated SNP-based heritability: V(G) over Vp. The estimated SNP-based heritability is very high: 0.85. However, as expected, the standard error around this estimate (~0.7) is so large that even very low heritabilities can not be ruled out. In sum, the sample size is too small to derive any conclusions about SNP based heritability.
 
-####Create a PRS using PLINK (clumpig and thresholding): 
+####Create a PRS using PLINK (clumpig and thresholding):
+Compare to repository: https://www.pgscatalog.org/trait/EFO_0000249/
+
 `Use PRSIce or comment on different thresholds`
 We are now ready to estimate our PRS. For each individual, we multiply their reference allele count at each SNP with a SNP weight estimated from the GWAS summary statistics. However, the GWAS coefficients as estimated in GWAS summary data are not corrected for linkage disequilibrium. Constructing a PRS without any correction for LD essentially leads to an overweighting of SNPs that are in dense LD-regions compared to SNPs that are not, resulting in lower predictability of the PRS. One method to deal with this is clumping. Clumping is a form of informed pruning: The R-squared between SNPs that reside within a given kb-window is computed, and one of the SNPs is thrown out of the R-squared is higher than a given threshold. The algorithm differs from pruning because it sorts all SNPs within a window increasingly by p-value, to ensure that SNPs with the lowest p-value are kept. 
 
