@@ -69,17 +69,13 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#obtaining-the-1000-genome-reference-data-set">Obtaining the 1000 genome reference data set</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#define-variables-to-be-used-in-this-section">Define Variables to be used in this section</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#qc-on-1000-genomes-data">QC on 1000 Genomes data.</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#extract-the-variants-present-in-1000-genomes-dataset-from-your-dataset">Extract the variants present in 1000 Genomes dataset from your dataset.</a>
+    <li class="toctree-l2"><a class="reference internal" href="#change-1000-genomes-data-build-to-match-build-of-hapmap-data">Change 1000 Genomes data build to match build of HapMap data</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#change-build-on-1000-genomes-data-build-to-match-build-of-hapmap-data">Change build on 1000 Genomes data build to match build of HapMap data</a>
+    <li class="toctree-l2"><a class="reference internal" href="#merge-the-hapmap-and-1000-genomes-data-sets">Merge the HapMap and 1000 Genomes data sets</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#merge-the-map-and-1000-genomes-data-sets">Merge the Map and 1000 Genomes data sets</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data</a>
+    <li class="toctree-l2"><a class="reference internal" href="#merge-hapmap-data-with-1000-genomes-data">Merge HapMap data with 1000 Genomes Data</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#perform-mds-and-pca-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs</a>
     </li>
@@ -103,11 +99,11 @@
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../liftover/">liftover</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../Additional_considerations/">6. Additional Considerations</a>
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../prs/">PRS</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../prs/">7.PRS</a>
                     </li>
                 </ul>
       </div>
@@ -145,122 +141,223 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="population-stratifacation">Population Stratifacation<a class="headerlink" href="#population-stratifacation" title="Permanent link">&para;</a></h1>
+                <h1 id="population-stratification">Population Stratification<a class="headerlink" href="#population-stratification" title="Permanent link">&para;</a></h1>
+<p>In this tutorial, you will learn how to restrict the quality-controlled HapMap data to individuals that are all of the same genetic ancestry. Individuals of European ancestry will be kept. Most genetic research focuses on one ancestry group at the time, as mixing ancestry groups may lead to population stratification confounding the results <code>reference?</code>. Within this reference group, we will compute clusters that can be used to correct for further confounding due to population stratification.</p>
 <h2 id="obtaining-the-1000-genome-reference-data-set">Obtaining the 1000 genome reference data set<a class="headerlink" href="#obtaining-the-1000-genome-reference-data-set" title="Permanent link">&para;</a></h2>
-<p>We will be using data from the 1000 Genomes Project for the population stratification step.</p>
-<p>You can download using the following command </p>
-<p><pre class="highlight"><code class="language-bash">wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz</code></pre>
-The data will need to be converted into plink format with unique indentifiers created for each the SNPs with a missing rs-identifier:</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You will need <code>plink</code> in this section, which can be download from <a href="https://www.cog-genomics.org/plink/1.9/">here</a>.</p>
-<p>Install the program <code>plink</code> and include its location in your PATH directory, which allows us to use <code>plink</code> instead of <code>./plink</code> in the commands below. If PLINK is not in your PATH directory and is instead in your working directory, replace all instances of <code>plink</code> in the tutorial with <code>./plink</code>.</p>
-</div>
-<pre class="highlight"><code class="language-bash">plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000genomes.genotypes
-plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make-bed --out 1000genomes_nomissing.genotypes</code></pre>
-<h2 id="define-variables-to-be-used-in-this-section">Define Variables to be used in this section<a class="headerlink" href="#define-variables-to-be-used-in-this-section" title="Permanent link">&para;</a></h2>
-<p><strong>input files and variables</strong>
-<pre class="highlight"><code class="language-bash">FILE_1K=1000genomes_nomissing.genotypes #1000 genomes file
-FILE_QC=qcout #file from qc tab
-FILE_PRUNEIN=plink.prune.in #snps in approximate linkage equilibrium 
-GENO=0.02 #snp missingness filter
-INDV=0.02 #individual missingness filter
-MAF=0.05 #minor allele frequency filter
-HWE_CONTROL=1e-6 #hardy weinburg equilibrium filter</code></pre></p>
-<p><strong>define general file tags</strong></p>
-<pre class="highlight"><code class="language-bash">sep="_"
-tagbed=".bed"
-tagbim=".bim"
-tagfam=".fam"
-tagmap=".map"
-taggenome=".genome"
-tag_dot_mds=".mds"</code></pre>
-<p><strong>tags for filtering 1000genome data</strong>
-<pre class="highlight"><code class="language-bash">TAG_1kG="1KG"
-TAG_GENO="geno"
-OUT1="$TAG_1kG$sep$TAG_GENO$sep$GENO"
-TAG_MIND="mind"
-OUT2="$OUT1$sep$TAG_MIND$sep$INDV"
-TAG_MAF="maf"
-OUT3=$OUT2$sep$TAG_MAF$sep$MAF
-TAG_extract="extract"
-OUT4=$OUT3$sep$TAG_extract
-TAG_BUILD="samebuild"
-OUT5=$OUT4$sep$TAG_BUILD
-TAG_REM="removeproblem"
-OUT6=$OUT5$sep$TAG_REM</code></pre></p>
-<p><strong>tags for filtering QCed data</strong>
-<pre class="highlight"><code class="language-bash">TAG_QC="QCin"
-OUT1_QC=$TAG_QC$sep$TAG_extract
-OUT2_QC=$OUT1_QC$sep$TAG_REM
-tag_euro="euro"
-FILEQCEURO=$FILE_QC$sep$tag_euro
-TAG_HWE_CONTROL="hwe_control"
-OUTQCEURO=$FILEQCEURO$sep$TAG_HWE_CONTROL$sep$HWE_CONTROL
-found="founder"
-lowcover="unrelated"
-OUTCOVER=$lowcover
-tag_mds="MDS"
-POPSTRATOUT=$OUTCOVER$sep$tag_mds
-tag_pca="PCA"
-INPCA=$OUTCOVER</code></pre></p>
+<p>To construct population clusters from the HapMap data, we will need to compare genomes in this dataset to genomes from a reference panel for which ancestry is known. The reference panel we will use is the 1000 genomes project.</p>
+<p>You can download the 1000 Genomes data we use for this tutorial using the following command:</p>
+<pre class="highlight"><code class="language-bash">
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/ALL.2of4intersection.20100804.genotypes.vcf.gz
+</code></pre>
+<p>Note that, while more recently updated data from the 1000 Genomes project is available, we decided to use this data for two reasons: </p>
+<ol>
+<li>The most recently updated data set is much larger and separated by chromosome, which makes it more computationally intensive and requires an adjustment in the coding to account for the seperate chromosomes. </li>
+<li>We are able to sufficiently parse out European samples and account for population stratification using this data set. For details on how to use the most updated set see the <a href="../Additional_considerations/">Separated by Chromosome</a> section on the Additional Considerations page. </li>
+</ol>
+<p>The data comes in a zipped vcf format. Note that the download is quite sizeable (~65GB). When working with genetic data, one regularly encounters sizeable files. It is good practice to check the validity of the downloaded files, before working with them further. Sometimes, the distributor of the data will provide a hash value for the file of interest, such that you are able to check the integrity of your downloaded file. You can check the hash value for the 1000 genomes data using this bash command, after downloading.</p>
+<pre class="highlight"><code class="language-bash">md5sum ALL.2of4intersection.20100804.genotypes.vcf.gz</code></pre>
+<p>which should return <code>9de60b62a195455359390d4c951d92d4</code>. If the value for your download is not the same, your download might be corrupted, and we advise you to download the data again.</p>
+<p>As in tutorial 1, we use PLINK to perform analysis on this dataset. First, the data will be converted into the plink binary format (<em>.bim,.bed,.fam</em>) using plink's <strong>--make-bed</strong> flag. There is no need to unzip the vcf file, as plink can read and convert gzipped files directly. </p>
+<pre class="highlight"><code class="language-bash">plink --vcf ALL.2of4intersection.20100804.genotypes.vcf.gz --make-bed --out 1000genomes.genotypes</code></pre>
+<details class="note"><summary>Inspect the resulting .fam and .bim files</summary><pre class="highlight"><code class="language-bash">head 1000genomes.genotypes.fam
+HG00098 HG00098 0 0 0 -9
+HG00100 HG00100 0 0 0 -9
+HG00106 HG00106 0 0 0 -9
+HG00112 HG00112 0 0 0 -9
+HG00114 HG00114 0 0 0 -9
+HG00116 HG00116 0 0 0 -9
+HG00117 HG00117 0 0 0 -9
+HG00118 HG00118 0 0 0 -9
+HG00119 HG00119 0 0 0 -9
+HG00120 HG00120 0 0 0 -9
+
+head 1000genomes.genotypes.bim
+1       rs112750067     0       10327   C       T
+1       rs117577454     0       10469   G       C
+1       rs55998931      0       10492   T       C
+1       rs58108140      0       10583   A       G
+1       .       0       11508   A       G
+1       .       0       11565   T       G
+1       .       0       12783   G       A
+1       .       0       13116   G       T
+1       .       0       13327   C       G
+1       .       0       13980   C       T</code></pre>
+</details>
+<p>One thing to note from the .fam file is that sex ids are missing, plink will read these as ambiguous observations. The head of the .bim file further shows that some SNPs have no assigned rs-id. We use plink to assign unique identifiers to these SNPs, using the <strong>--set-missing-var-ids</strong> flag. You are free to construct your own ids, but ensure that they are unique. We build our id using the chromosome number (@), a colon, base-pair position (#), the build (b37), the reference allele, a comma, and the alternative allele. The 1000 genomes data uses the Genome Reference Consortium Human Build 37 (GRCh37). It is important to note that if you are using a different build you will need to adjust the <em>[b37]</em> accordingly. </p>
+<pre class="highlight"><code class="language-bash">plink --bfile 1000genomes.genotypes --set-missing-var-ids @:#[b37]\$1,\$2 --make-bed --out 1000genomes_nomissing.genotypes</code></pre>
+<details class="note"><summary>Our .bim file now looks as follows:</summary><pre class="highlight"><code class="language-bash">head 1000genomes_nomissing.genotypes.bim
+1       rs112750067     0       10327   C       T
+1       rs117577454     0       10469   G       C
+1       rs55998931      0       10492   T       C
+1       rs58108140      0       10583   A       G
+1       1:11508[b37]A,G 0       11508   A       G
+1       1:11565[b37]G,T 0       11565   T       G
+1       1:12783[b37]A,G 0       12783   G       A
+1       1:13116[b37]G,T 0       13116   G       T
+1       1:13327[b37]C,G 0       13327   C       G
+1       1:13980[b37]C,T 0       13980   C       T</code></pre>
+</details>
 <h2 id="qc-on-1000-genomes-data">QC on 1000 Genomes data.<a class="headerlink" href="#qc-on-1000-genomes-data" title="Permanent link">&para;</a></h2>
-<p><strong>Remove variants based on missing genotype data.</strong>
-<pre class="highlight"><code class="language-bash">plink --bfile $FILE_1K --geno $GENO --make-bed --out $OUT1</code></pre>
-<strong>Remove individuals based on missing genotype data</strong>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUT1 --mind $INDV --allow-no-sex --make-bed --out $OUT2</code></pre>
-<strong>Remove variants based on MAF</strong>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUT2 --maf $MAF --make-bed --out $OUT3</code></pre>
-<strong>Extract the variants present in our dataset from the 1000 genomes dataset</strong>
-<pre class="highlight"><code class="language-bash">awk '{print$2}' "$FILE_QC$tagbim"&gt; QCFILE_SNPs.txt
-awk '{print$2}' "$OUT3$tagbim"&gt; 1kG_temp.bim
-plink --bfile $OUT3 --extract QCFILE_SNPs.txt --make-bed --recode --out $OUT4</code></pre></p>
-<h2 id="extract-the-variants-present-in-1000-genomes-dataset-from-your-dataset">Extract the variants present in 1000 Genomes dataset from your dataset.<a class="headerlink" href="#extract-the-variants-present-in-1000-genomes-dataset-from-your-dataset" title="Permanent link">&para;</a></h2>
-<p><pre class="highlight"><code class="language-bash">awk '{print$2}' $OUT4$tagbim &gt; 1kG_SNPs.txt
-plink --bfile $FILE_QC --extract 1kG_SNPs.txt --recode --make-bed --out $OUT1_QC</code></pre>
-<em>The datasets now contain the exact same variants.</em></p>
-<h2 id="change-build-on-1000-genomes-data-build-to-match-build-of-hapmap-data">Change build on 1000 Genomes data build to match build of HapMap data<a class="headerlink" href="#change-build-on-1000-genomes-data-build-to-match-build-of-hapmap-data" title="Permanent link">&para;</a></h2>
+<p>Before we can use the 1000 Genomes data as our reference panel, it is important to perform quality control procedures on this dataset in a similar fashion as outlined in <a href="../QC/">Tutorial 1</a>. We choose the same parameters as in this tutorial for our SNP missingness threshold, individual missingness threshold, and MAF threshold.</p>
+<p><pre class="highlight"><code class="language-bash">FILE_1K=1000genomes_nomissing.genotypes
+GENO=0.02
+INDV=0.02
+MAF=0.05
+
+plink --bfile $FILE_1K --geno 0.2 --make-bed --out $FILE_1K.geno.temp
+plink --bfile $FILE_1K.geno.temp --mind 0.2 --allow-no-sex --make-bed --out $FILE_1K.geno.mind.temp
+plink --bfile $FILE_1K.geno.mind.temp --geno $GENO --make-bed --out $FILE_1K.geno
+plink --bfile $FILE_1K.geno --mind $INDV --allow-no-sex --make-bed --out $FILE_1K.geno.mind
+plink --bfile $FILE_1K.geno.mind --maf $MAF --make-bed --out $FILE_1K.geno.mind.maf</code></pre>
+5,808,310 variants and all 629 people pass filters and QC.</p>
+<p><strong>Extract the variants present in HapMap from the 1000 genomes dataset</strong>
+Our reference panel and our dataset of interest (e.g. the cleaned HapMap data) must consist of the same set of SNPs. For the remainder of this tutorial, we will set the environmental variable <strong>FILE_QC</strong> to refer to the clean HapMap data (see <a href="../QC/">Tutorial 1</a>). The <code>awk '{print$2}'</code> command selects the second column of the bim file to save the rsid values in a text file. We will then use the <strong>--extract</strong> flag in plink to extract only the SNPs in the 1000 genomes data that are also present in the HapMap data, and vice versa.</p>
+<pre class="highlight"><code class="language-bash">FILE_QC=HapMap_3_r3_1.qcout
+awk '{print$2}' "$FILE_QC.bim"&gt; QCFILE_SNPs.txt
+plink --bfile $FILE_1K.geno.mind.maf --extract QCFILE_SNPs.txt --make-bed --out $FILE_1K.geno.mind.maf.extract
+awk '{print$2}' $FILE_1K.geno.mind.maf.extract.bim &gt; 1kG_SNPs.txt
+plink --bfile $FILE_QC --extract 1kG_SNPs.txt --make-bed --out $FILE_QC.extract</code></pre>
+<p>This results in 1,072,511 SNPs that both datasets have in common.</p>
+<h2 id="change-1000-genomes-data-build-to-match-build-of-hapmap-data">Change 1000 Genomes data build to match build of HapMap data<a class="headerlink" href="#change-1000-genomes-data-build-to-match-build-of-hapmap-data" title="Permanent link">&para;</a></h2>
+<p>Our next goal is to merge the HapMap data with the 1000 genomes data, such that we can compare the (unknown) population clusters of the HapMap data with the (known) population clusters in the 1000 genomes data. Before merging genetic data, however, a couple of steps need to be taken to ensure that the files align. One of these steps is to ensure that both datasets are in the same build. The 1000 genomes data uses the Genome Reference Consortium Human Build 37 (GRCh37), whereas the HapMap data uses the older build 36. This means that, for the same rsids, the base pair position will slightly differ between these two datasets. We will use the <strong>--update-map</strong> flag in plink to change all base pair positions in the 1000 genomes to the positions as given by the HapMap data. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Look at <a href="../liftover/">Liftover tutorial</a> to see how to move data set to another build. </p>
+<p>Most current genetic datasets use build 37 or 38. If you are working with genetic data that is not into the build of your liking, you may wish to move your dataset to another build entirely at the start of your project. Look at our <a href="../Additional_considerations/">Liftover tutorial</a> to see how to move data to another build. </p>
 </div>
-<pre class="highlight"><code class="language-bash">awk '{print$2,$4}' $OUT1_QC$tagmap &gt; buildmap.txt
+<pre class="highlight"><code class="language-bash">awk '{print$2,$4}' $FILE_QC.extract.bim &gt; buildmap.txt
 # buildmap.txt contains one SNP-id and physical position per line.
-plink --bfile $OUT4 --update-map buildmap.txt --make-bed --out $OUT5</code></pre>
-<h2 id="merge-the-map-and-1000-genomes-data-sets">Merge the Map and 1000 Genomes data sets<a class="headerlink" href="#merge-the-map-and-1000-genomes-data-sets" title="Permanent link">&para;</a></h2>
-<details class="note"><summary>Prior to merging 1000 Genomes data with the data we want to make sure that the files are mergeable, for this we conduct 3 steps:</summary><p>1) Make sure the reference genome is similar in your data and the 1000 Genomes Project datasets </p>
+plink --bfile $FILE_1K.geno.mind.maf.extract --update-map buildmap.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build</code></pre>
+<p>??? note: "The resulting output:"</p>
+<pre class="highlight"><code>```bash
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to 1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.log.
+Options in effect:
+--bfile 1000genomes_nomissing.genotypes.geno.mind.maf.extract
+--make-bed
+--out 1000genomes_nomissing.genotypes.geno.mind.maf.extract.build
+--update-map buildmap.txt
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1072511 variants loaded from .bim file.
+629 people (0 males, 0 females, 629 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.nosex .
+--update-map: 1072511 values updated.
+Warning: Base-pair positions are now unsorted!
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 629 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.999412.
+1072511 variants and 629 people pass filters and QC.
+Note: No phenotypes present.
+--make-bed to 1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.bed +
+1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.bim +
+1000genomes_nomissing.genotypes.geno.mind.maf.extract.build.fam ... done.
+```
+</code></pre>
+<h2 id="merge-the-hapmap-and-1000-genomes-data-sets">Merge the HapMap and 1000 Genomes data sets<a class="headerlink" href="#merge-the-hapmap-and-1000-genomes-data-sets" title="Permanent link">&para;</a></h2>
+<details class="note"><summary>Prior to merging 1000 Genomes data with the data we want to make sure that the files are mergeable, for this we conduct 3 steps:</summary><p>1) Make sure the reference allele is similar in the HapMap data and the 1000 Genomes Project datasets </p>
 <p>2) Resolve strand issues. </p>
 <p>3) Remove the SNPs which after the previous two steps still differ between datasets</p>
 </details>
-<p><strong>1) set reference genome</strong>
-<pre class="highlight"><code class="language-bash">awk '{print$2,$5}' $OUT5$tagbim &gt; 1kg_ref-list.txt
-plink --bfile $OUT1_QC --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
-# The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.</code></pre></p>
-<p><strong>2) Resolve strand issues</strong>
-<pre class="highlight"><code class="language-bash">awk '{print$2,$5,$6}' $OUT5$tagbim &gt; 1kGMDS_strand_tmp
+<p><strong>1) set reference allele</strong>
+The .bim file records the reference allele and the alternative allele at each SNP. These are not necessarily the same in both datasets. In the following commands, we use the --reference-allele flag in PLINK to ensure that the reference alleles in the HapMap data are the same as the reference alleles in 1K genomes. </p>
+<pre class="highlight"><code class="language-bash">awk '{print$2,$5}' $FILE_1K.geno.mind.maf.extract.build.bim &gt; 1kg_ref-list.txt
+plink --bfile $FILE_QC.extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
+# The 1kG_MDS6 and the HapMap-adj have the same reference genome for all SNPs.</code></pre>
+<p>??? The resulting output: "</p>
+<pre class="highlight"><code>plink --bfile $FILE_QC.
+extract --reference-allele 1kg_ref-list.txt --make-bed --out Map-adj
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to Map-adj.log.
+Options in effect:
+  --a1-allele 1kg_ref-list.txt
+  --bfile HapMap_3_r3_1.qcout.extract
+  --make-bed
+  --out Map-adj
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1072511 variants loaded from .bim file.
+160 people (77 males, 83 females) loaded from .fam.
+108 phenotype values loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 108 founders and 52 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.99815.
+Warning: Impossible A1 allele assignment for variant rs11488462.
+Warning: Impossible A1 allele assignment for variant rs4648786.
+Warning: Impossible A1 allele assignment for variant rs12748433.
+Warning: Impossible A1 allele assignment for variant rs28635343.
+Warning: Impossible A1 allele assignment for variant rs28456011.
+Warning: Impossible A1 allele assignment for variant rs6604981.
+Warning: Impossible A1 allele assignment for variant rs4074196.
+[...]
+--a1-allele: 1072511 assignments made.
+1072511 variants and 160 people pass filters and QC.
+Among remaining phenotypes, 54 are cases and 54 are controls.  (52 phenotypes
+are missing.)
+--make-bed to Map-adj.bed + Map-adj.bim + Map-adj.fam ... done.
+```
+</code></pre>
+<p><strong>2) Resolve strand issues</strong></p>
+<p>Note that PLINK warns us that some A1 allele assignments are impossible. We can use grep on both files to see why one of these SNPs looks different in both files:</p>
+<pre class="highlight"><code class="language-bash">  grep rs11488462 $FILE_1K.geno.mind.maf.extract.build.bim
+  1       rs11488462      0       1343243 C       T
+  grep rs11488462 $FILE_QC.extract.bim
+  1       rs11488462      0       1343243 G       A</code></pre>
+<p>It is clear that in these cases, flipping the allele in the HapMap data from G to A is of no use, since the reference allele at this SNP in the 1K genomes is C. How could a given SNP have a different reference allele as well as a different alternative allele? These differences are due to strand issues. The reference allele is represented by a nucleotide, but each nucleotide has an underlying complement that is present on the other DNA strand, where C complements G and T complements A. Hence, if different strands were genotyped in different samples, the same reference allele could be labelled by a C (T) in the one sample, and by a G (A) in the other. In the example above, the issue is easily resolved by flipping the reference and alternative allele in the HapMap data to their complimentary nucleotides: G to C and A to T, thus aligning this particular SNP with the 1K data. We resolve these strand issues for all SNPs in which PLINK could not align reference alleles using the --flip flag in PLINK, which will flip a given list of rsids towards its complimentary strand. </p>
+<p>Before we can use the --flip flag in PLINK, we have to create a list of SNP rsids that consists only of the conflicting strands that need flipping. We do this in the first three lines of the following code, where we use ``sort | uniq'' to extract only those lines that are not the same in the .bim files of HapMap and 1K Genomes in terms of the combination of rsid, reference allele, and alternative alleles. In the fourth line, we keep only the rsid, and keep each rsid once to obtain the list of rsid's which strands we have to flip in the HapMap data.</p>
+<pre class="highlight"><code class="language-bash">awk '{print$2,$5,$6}' $FILE_1K.geno.mind.maf.extract.build.bim &gt; 1kGMDS_strand_tmp
 awk '{print$2,$5,$6}' Map-adj.bim &gt; Map-adj_tmp
-sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u &gt; all_differences.txt</code></pre></p>
-<p><em>Flip SNPs for resolving strand issues</em>
-<pre class="highlight"><code class="language-bash">awk '{print$1}' all_differences.txt | sort -u &gt; flip_list.txt
-plink --bfile Map-adj --flip flip_list.txt --reference-allele 1kg_ref-list.txt --make-bed --out corrected_map</code></pre></p>
+sort 1kGMDS_strand_tmp Map-adj_tmp |uniq -u &gt; all_differences.txt
+awk '{print$1}' all_differences.txt | sort -u &gt; flip_list.txt
+plink --bfile Map-adj --flip flip_list.txt --reference-allele 1kg_ref-list.txt --make-bed --out corrected_map</code></pre>
 <p><em>Check for SNPs which are still problematic after they have been flipped.</em>
+Are both datasets fully aligned now? Unfortunately not. Let's again extract SNPs that are not the same in terms of their rsid, reference allele, and alternative allele in .bim files of both the HapMap data and the 1K genomes data. </p>
 <pre class="highlight"><code class="language-bash">awk '{print$2,$5,$6}' corrected_map.bim &gt; corrected_map_tmp
-sort 1kGMDS_strand_tmp corrected_map_tmp |uniq -u  &gt; uncorresponding_SNPs.txt</code></pre></p>
+sort 1kGMDS_strand_tmp corrected_map_tmp |uniq -u  &gt; uncorresponding_SNPs.txt
+wc -l uncorresponding_SNPs.txt</code></pre>
+<p>There are still 53 SNPs that do not have the same reference allele and alternative allele in both datasets. Let's again look at one of these SNPs in both .bim files to get a sense of what is going on.</p>
+<pre class="highlight"><code class="language-bash">head uncorresponding_SNPs.txt
+
+rs10060593 A G
+rs10060593 A T
+rs10083559 T C
+rs10083559 T G
+rs10116901 C A
+rs10116901 C T
+rs11524965 T C
+rs11524965 T G
+rs11687477 A C
+rs11687477 T C
+</code></pre>
+<p>Clearly, flipping strand issues has not aligned the SNPs from both datasets here. Since it only concerns a small number of SNPs, it is the safest to throw them away, rather than spend more time on trying to resolve these remaining alignment issues.</p>
 <p><strong>3) Remove problematic SNPs from your data and from the 1000 Genomes.</strong>
+Here, we want to remove both SNPs that still don't match between data sets.</p>
 <pre class="highlight"><code class="language-bash">awk '{print$1}' uncorresponding_SNPs.txt | sort -u &gt; SNPs_for_exclusion.txt
-plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $OUT2_QC
-plink --bfile $OUT5 --exclude SNPs_for_exclusion.txt --make-bed --out $OUT6</code></pre></p>
-<h2 id="merge-outdata-with-1000-genomes-data">Merge outdata with 1000 Genomes Data<a class="headerlink" href="#merge-outdata-with-1000-genomes-data" title="Permanent link">&para;</a></h2>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUT2_QC --bmerge $OUT6$tagbed $OUT6$tagbim $OUT6$tagfam --allow-no-sex --make-bed --out MDS_merge2</code></pre>
+plink --bfile corrected_map --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_QC.extract.rem
+plink --bfile $FILE_1K.geno.mind.maf.extract.build --exclude SNPs_for_exclusion.txt --make-bed --out $FILE_1K.geno.mind.maf.extract.build.rem</code></pre>
+<h2 id="merge-hapmap-data-with-1000-genomes-data">Merge HapMap data with 1000 Genomes Data<a class="headerlink" href="#merge-hapmap-data-with-1000-genomes-data" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC.extract.rem --bmerge $FILE_1K.geno.mind.maf.extract.build.rem --allow-no-sex --make-bed --out merged</code></pre>
+<p>After merging the data, we want to do a final removal of ambiguous (A/T and G/C) SNPs. A/T and G/C loci are unable to be strand-resolved and for this are routinely removed. We use a script from https://github.com/eatkinson/Post-QC: <strong>find_cg_at_snps.py</strong> with some minor modifications to be compatible with python3. For python2 versions change "open(bimfile)" to file(bimfile).</p>
+<pre class="highlight"><code class="language-bash">wget https://github.com/eatkinson/Post-QC/raw/master/find_cg_at_snps.py
+sed -i -e 's/file(bimfile)/open(bimfile)/g' find_cg_at_snps.py ##for compatibility in python3
+sed -i -e 's/ line\[1\]/(line\[1\])/g' find_cg_at_snps.py ##for compatibility in python3
+python find_cg_at_snps.py merged.bim &gt; ATCGsites
+plink --bfile merged --exclude ATCGsites --make-bed --out MDS_merge2</code></pre>
 <h2 id="perform-mds-and-pca-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps">Perform MDS and PCA on Map-CEU data anchored by 1000 Genomes data using a set of pruned SNPs<a class="headerlink" href="#perform-mds-and-pca-on-map-ceu-data-anchored-by-1000-genomes-data-using-a-set-of-pruned-snps" title="Permanent link">&para;</a></h2>
+<p>Our next goal is to perform a cluster analysis on the merged dataset, and determine which clusters belong to which underlying ancestry group. To this end, we need to know the population to which 1000 genomes individuals belong, which is stored in the .PANEL file that we download here:</p>
 <p><strong>Download the file with population information of the 1000 genomes dataset.</strong>
 <pre class="highlight"><code class="language-bash">wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20100804/20100804.ALL.panel</code></pre>
 <em>The file 20130502.ALL.panel contains population codes of the individuals of 1000 genomes.</em></p>
 <p><strong>Convert population codes into superpopulation codes (i.e., AFR,AMR,ASN, and EUR).</strong>
-<pre class="highlight"><code class="language-bash">awk '{print$1,$1,$2}' 20100804.ALL.panel &gt; race_1kG.txt</code></pre></p>
+The .PANEL file contains information on the population that each 1K genomes individual belongs too. We extract family ID and individual ID (which are the same for 1K genomes). and population into a seperate file. For the HapMap data we create a similar file, but we substitute the population info with a flag labeled "OWN", as population information for HapMap individuals is unknown. We next change the detailed 1K genomes population categories to less precise superpopulation codes <code>reference?</code>, using sed, a bash command which let's you search and replace text. The last line in this block of code concatenates (using cat) the ``superpopulated'' 1K genomes racefile with the HapMap racefile, for which race is flagged as unknown, and adds a header using sed.  </p>
+<pre class="highlight"><code class="language-bash">awk '{print$1,$1,$2}' 20100804.ALL.panel &gt; race_1kG.txt</code></pre>
 <p><strong>Create a racefile of your own data.</strong>
-<pre class="highlight"><code class="language-bash">awk '{print$1,$2,"OWN"}' $OUT2_QC$tagfam &gt; racefile_own.txt</code></pre>
-<strong>make txt file of concatenated racefiles</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$1,$2,"OWN"}' $FILE_QC.extract.rem.fam &gt; racefile_own.txt</code></pre>
+<strong>make txt file of concatenated racefiles</strong></p>
 <pre class="highlight"><code class="language-bash">sed 's/JPT/ASN/g' race_1kG.txt&gt;race_1kG2.txt
 sed 's/ASW/AFR/g' race_1kG2.txt&gt;race_1kG3.txt
 sed 's/CEU/EUR/g' race_1kG3.txt&gt;race_1kG4.txt
@@ -274,103 +371,118 @@ sed 's/GBR/EUR/g' race_1kG10.txt&gt;race_1kG11.txt
 sed 's/FIN/EUR/g' race_1kG11.txt&gt;race_1kG12.txt
 sed 's/CHS/ASN/g' race_1kG12.txt&gt;race_1kG13.txt
 sed 's/PUR/AMR/g' race_1kG13.txt&gt;race_1kG14.txt
-cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' &gt; racefile.txt</code></pre></p>
-<h1 id="perform-mds">Perform MDS<a class="headerlink" href="#perform-mds" title="Permanent link">&para;</a></h1>
-<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Perform MDS Clustering</label><div class="tabbed-content">
-<pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --extract $FILE_PRUNEIN --genome --out MDS_merge2
-plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</code></pre>
-</div>
-<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Create MDS-plot</label><div class="tabbed-content">
-<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
-</div>
-<pre class="highlight"><code>data&lt;- read.table(file="MDS_merge2.mds",header=TRUE)
-race&lt;- read.table(file="racefile.txt",header=TRUE)
-datafile&lt;- merge(data,race,by=c("IID","FID"))
-head(datafile)
-
-pdf("MDS.pdf",width=7,height=7)
-for (i in 1:nrow(datafile))
-{
-if (datafile[i,14]=="EUR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="green")}
-par(new=T)
-if (datafile[i,14]=="ASN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="red")}
-par(new=T)
-if (datafile[i,14]=="AMR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col=470)}
-par(new=T)
-if (datafile[i,14]=="AFR") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=1,cex=0.5,col="blue")}
-par(new=T)
-if (datafile[i,14]=="OWN") {plot(datafile[i,4],datafile[i,5],type="p",xlim=c(-0.1,0.2),ylim=c(-0.15,0.1),xlab="MDS Component 1",ylab="MDS Component 2",pch=3,cex=0.7,col="black")}
-par(new=T)
-}
-
-abline(v=-0.035,lty=3)
-abline(h=0.035,lty=3)
-legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red",470,"blue","black"),bty="o",cex=1)
-dev.off()</code></pre>
-<p><img alt="MDS example" src="../img/MDS.png" /></p>
-<blockquote>
-<p>An example bar plot generated using script in <code>MDS_merged.R</code>    </p>
-</blockquote>
-</div>
-</div>
+cat race_1kG14.txt racefile_own.txt | sed -e '1i\FID IID race' &gt; racefile.txt</code></pre>
 <h1 id="perform-pca">Perform PCA<a class="headerlink" href="#perform-pca" title="Permanent link">&para;</a></h1>
-<div class="tabbed-set" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Perform PCA Clustering</label><div class="tabbed-content">
+<p>We next compute the first 10 principal components of the combined genetic data. These principal components correlate with genetic ancestry. Again, we first clump the data to obtain a set of SNPs that is approximately in linkage equilibrium. The second line in the code below performs the principal component analysis on the extracted set of approximately independent SNPs, calculating the first ten PCs, and adding a `header' to the resulting output file (PCA_MERGE.eigenvec) using the appropriate option.</p>
+<h1 id="extracting-ancestry-information-from-principal-components-values">Extracting ancestry information from principal components values.<a class="headerlink" href="#extracting-ancestry-information-from-principal-components-values" title="Permanent link">&para;</a></h1>
+<p>To understand how values of the PCs map into ancestry information, we plot the first two PC values against each other, giving datapoints from different population groups a different color.</p>
+<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Perform PCA Clustering</label><div class="tabbed-content">
 <pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --indep-pairwise 50 5 0.5 
 plink --bfile MDS_merge2 --extract plink.prune.in  --make-bed --pca 10 'header' --out PCA_MERGE</code></pre>
 </div>
-<input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><label for="__tabbed_3_2">Create PCA-plot</label><div class="tabbed-content">
-<div class="tabbed-set" data-tabs="4:1"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Performed in R</label><div class="tabbed-content"></div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Create PCA-plot</label><div class="tabbed-content">
+<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
-<p><pre class="highlight"><code>data&lt;- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+<p><pre class="highlight"><code>library(dplyr)
+data&lt;- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+eigenval&lt;-read.table(file="PCA_MERGE.eigenval",header=F)
+race&lt;- read.table(file="racefile.txt",header=TRUE)
+datafile&lt;- merge(data,race,by=c("IID","FID"))
+datafile=datafile %&gt;% filter(datafile$race %in% c("EUR","ASN","AMR","AFR","OWN"))
+head(datafile)
+pve = eigenval/sum(eigenval)*100
+library(ggplot2)
+library(gridExtra)
+png("pcagg.png",units="in",width=13,height=7,res=300)
+b &lt;- ggplot(datafile, aes(PC1, PC2, col = race,group=race)) 
+b &lt;- b+ geom_point(size = 2)
+b &lt;-b + xlab(paste0("PC1 (", signif(pve[1,1],3), "%)")) + ylab(paste0("PC2 (", signif(pve[2,1], 3), "%)"))+
+theme(text = element_text(size=13),legend.text=element_text(size=13),legend.title = element_blank(),legend.position='top')+guides(color = guide_legend(override.aes = list(size=8)))
+c &lt;-ggplot(datafile, aes(PC1, PC2, col = race,group=race)) 
+c &lt;-c+ggplot2::stat_ellipse(
+  geom = "path",
+  position = "identity",
+  show.legend = NA,
+  size=2,
+  inherit.aes = TRUE,
+  type = "t",
+  level = 0.95,
+  segments = 51
+)
+c &lt;- c + xlab(paste0("PC1 (", signif(pve[1,1],3), "%)")) + ylab(paste0("PC2 (", signif(pve[2,1], 3), "%)"))+
+theme(text = element_text(size=13),legend.title = element_blank(),legend.position = "none")
+grid.arrange(b, c, ncol=2)
+dev.off()</code></pre>
+<img alt="PCA example" src="../img/pcagg.png" /></p>
+</div>
+</div>
+<p>The resulting plot clearly seperates Europeans, Africans, Americans, and Asians load differently on the first two PCs. The HapMap data that we use here clearly corresponds with the European ancestry cluster, but when using your own datasets you may find that your own dataset overlaps with multiple ancestry cluster from 1K genomes, and filter your data accordingly. As a last step, we filter on the observed values in which Europeans fall to get a list of European sample ids.</p>
+<pre class="highlight"><code class="language-bash">awk '{ if ($3 &lt;-0.005 &amp;&amp; $4 &lt;-0.005) print $1,$2 }' PCA_MERGE.eigenvec &gt; EUR_samp_PC.txt</code></pre>
+<details class="note"><summary>Perform MDS</summary><h1 id="perform-mds">Perform MDS<a class="headerlink" href="#perform-mds" title="Permanent link">&para;</a></h1>
+<p>We perform MDS clustering to perform unique clusters of the genomic data that overlap with ancestry information. We only use the list of      approximately independent SNPs that was determined using the clumping algorithm in <a href="../QC/">Tutorial 1</a>. In the following two lines of         code, the --genome option prepares the data by calculating pairwise identity by state (IBS) for each individual. The resulting file,          <strong>MDS_merge2.genome</strong>, is used as input in the next command, where the identity by state is used to calculate 10 MDS clusters.  </p>
+<div class="tabbed-set" data-tabs="3:1"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Perform MDS Clustering</label><div class="tabbed-content">
+<pre class="highlight"><code class="language-bash">plink --bfile MDS_merge2 --extract plink.prune.in --genome --out MDS_merge2
+plink --bfile MDS_merge2 --read-genome MDS_merge2.genome --cluster --mds-plot 10 --out MDS_merge2</code></pre>
+</div>
+</div>
+<p>The resulting output, MDS_merge2.mds, gives us the value of the first 10 MDS clusters for each individual in the stacked HapMap and 1K        genomes data. </p>
+<h1 id="extracting-ancestry-information-from-mds-cluster-values">Extracting ancestry information from MDS cluster values.<a class="headerlink" href="#extracting-ancestry-information-from-mds-cluster-values" title="Permanent link">&para;</a></h1>
+<p>To understand how values of the MDS clusters map into ancestry information, we plot the first two MDS cluster values against each other,      giving datapoints from different population groups a different color.</p>
+<div class="tabbed-set" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Create MDS-plot</label><div class="tabbed-content"></div>
+<input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><label for="__tabbed_4_2">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<pre class="highlight"><code>library(ggplot2)
+library(gridExtra)
+
+data&lt;- read.table(file="MDS_merge2.mds",header=TRUE)
 race&lt;- read.table(file="racefile.txt",header=TRUE)
 datafile&lt;- merge(data,race,by=c("IID","FID"))
 head(datafile)
-
-pdf("pca.pdf",width=7,height=7)
-for (i in 1:nrow(datafile))
-{
-if (datafile[i,13]=="EUR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="green")}
-par(new=T)
-if (datafile[i,13]=="ASN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="red")}
-par(new=T)
-if (datafile[i,13]=="AMR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="orange")}
-par(new=T)
-if (datafile[i,13]=="AFR") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=1,cex=0.5,col="blue")}
-par(new=T)
-if (datafile[i,13]=="OWN") {plot(datafile[i,3],datafile[i,4],type="p",xlim=c(-0.05,0.1),ylim=c(-0.1,0.1),xlab="PC Component 1",ylab="PC Component 2",pch=3,cex=0.7,col="black")}
-par(new=T)
-}
-
-abline(v=-0.005,lty=3)
-abline(h=-0.005,lty=3)
-legend("topright", pch=c(1,1,1,1,3),c("EUR","ASN","AMR","AFR","OWN"),col=c("green","red","orange","blue","black"),bty="o",cex=1)
-dev.off()
-
-## awk '{ if ($3 &lt;-0.005 &amp;&amp; $4 &gt;-0.005) print $1,$2 }' PCA_MERGE.eigenvec &gt; EUR_samp.txt</code></pre>
-<img alt="PCA example" src="../img/pca.png" /></p>
-</div>
-</div>
-<h2 id="run-admixture-algorithm">Run Admixture algorithm<a class="headerlink" href="#run-admixture-algorithm" title="Permanent link">&para;</a></h2>
-<div class="admonition note">
+png("MDS.png",units="in",width=13,height=7,res=300)
+b &lt;- ggplot(datafile, aes(C1, C2, col = race,group=race)) 
+b &lt;- b + geom_point(size = 2)
+b &lt;- b + xlab("MDS1") + ylab("MDS2")+
+theme(text = element_text(size=13),legend.text=element_text(size=13),legend.title = element_blank(),legend.position='top')+guides(color =      guide_legend(override.aes = list(size=8)))
+c &lt;-ggplot(datafile, aes(C1, C2, col = race,group=race)) 
+c &lt;-c+ggplot2::stat_ellipse(
+  geom = "path",
+  position = "identity",
+  show.legend = NA,
+  size=2,
+  inherit.aes = TRUE,
+  type = "t",
+  level = 0.95,
+  segments = 51
+)
+c &lt;- c + xlab("MDS1") + ylab("MDS2")+
+theme(text = element_text(size=13),legend.title = element_blank(),legend.position = "none")
+grid.arrange(b, c, ncol=2)
+dev.off()</code></pre>
+<p><img alt="MDS example" src="../img/MDS.png" /></p>
+</details>
+<details class="note"><summary>## Run Admixture algorithm</summary><div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You must install the ADMIXTURE software <a href="http://dalexander.github.io/admixture/download.html">here</a>. If       you are running on a conda environment you can install the admixture software using the following command:
-<pre class="highlight"><code class="language-bash">conda install -c bioconda admixture</code></pre></p>
+<p>You must install the ADMIXTURE software <a href="http://dalexander.github.io/admixture/download.html">here</a>. If you are running on a conda            environment you can install the admixture software using the following command:</p>
 </div>
-<p><strong>Concatenate racefiles.</strong>
-<pre class="highlight"><code class="language-bash">awk '{print$1,$2,"-"}' $OUT2_QC$tagfam &gt; racefile_own.txt
-awk '{print$1,$1,$2}' 20100804.ALL.panel &gt; race_1kG.txt
-cat racefile_own.txt race_1kG.txt| sed -e '1i\FID IID race' &gt; MDS_merge2.pop
-sed -i -e "1d" MDS_merge2.pop
+<p><pre class="highlight"><code class="language-bash">conda install -c bioconda admixture</code></pre>
+<strong>Concatenate racefiles.</strong>
+<pre class="highlight"><code class="language-bash">awk '{print$1,$2,"-"}' $FILE_QC.extract.rem.fam &gt; racefile_own.txt
+cat racefile_own.txt race_1kG14.txt | sed -e '1i\FID IID race' &gt; MDS_merge2.pop
+sed -i -e "1d" MDS_merge2.pop #removes header
 cut -d " " -f 3- MDS_merge2.pop &gt;temp.txt</code></pre>
 <strong>make popfile for admixture script</strong>
 <pre class="highlight"><code class="language-bash">mv temp.txt MDS_merge2.pop</code></pre></p>
 <p><strong>run admixture script</strong>
-<pre class="highlight"><code class="language-bash">qsub -cwd -pe smp 8 -l mem_free=32G -l scratch=100G -l h_rt=40:20:00 ad.sh
-##admixture --supervised ./MDS_merge2.bed 12 &gt; log_merge_admixture.out</code></pre></p>
+<pre class="highlight"><code class="language-bash">admixture --supervised ./MDS_merge2.bed 4 &gt; log_merge_admixture.out</code></pre></p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This step can take a very long time. Running overnight may be neccessary. </p>
 </div>
+<p>After <em>admixture</em> is done running, you can prepare the files for plotting. You need to rename <em>MDS_merge2.pop</em> to <em>ind2pop.txt</em> and then      make the pong_filemap file with the following format:</p>
+<p>k4r1  4 locationofQfile/MDS_merge2.12.Q</p>
+<p>The first column has the letter "k" denoting clusters and "r" denoting run number. This column can be any unique ID for the run as long as     there is at least one letter and one number. </p>
+<p>The second column denotes the number of clusters. </p>
+<p>The third column should have the full path to the Q file output from the admixture command.</p>
 <div class="tabbed-set" data-tabs="5:1"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><label for="__tabbed_5_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <p><pre class="highlight"><code>R
@@ -395,51 +507,84 @@ ordered$V12=c()
 ordered$V2=c()
 ordered$V1=c()
 ordered=ordered[order(-ordered$EUR),]
-#barplot(t(as.matrix(subset(ordered, select=c("YRI","ASW","CHB","CHS","EUR","JPT","LWK","MXL","PUR")))), col=rainbow(12), border=NA,names.arg=popnew, las=2,cex.names=0.1)
+#barplot(t(as.matrix(subset(ordered, select=c("YRI","ASW","CHB","CHS","EUR","JPT","LWK","MXL","PUR")))), col=rainbow(12),         border=NA,names.arg=popnew, las=2,cex.names=0.1)
 pdf('admixture.pdf')
-barplot(t(as.matrix(subset(ordered, select=c("V3" , "V4" , "V6" , "V7"  ,"V8"  ,"V9" ,"V10", "V11","EUR")))), col=rainbow(9), border=NA, las=2,ylab="Percent Pop",xaxt="n",xlab='&lt;---- Direction of more European')
+barplot(t(as.matrix(subset(ordered, select=c("V3" , "V4" , "V6" , "V7"  ,"V8"  ,"V9" ,"V10", "V11","EUR")))), col=rainbow(9), border=NA,      las=2,ylab="Percent Pop",xaxt="n",xlab='&lt;---- Direction of more European')
 dev.off()</code></pre>
 <img alt="Admixture example" src="../img/Admix.png" /></p>
 <blockquote>
-<p>An example bar plot generated using script in <code>admixtureplot.R</code> </p>
+<p>An example plot generated using pong software. The code above can also make a plot but it does not directly label the groups like pong      does. </p>
 </blockquote>
-<p>The output of this script prints out a text file <strong>europeans.txt</strong> with a list of all the individuals that are found to be 80% or more European. </p>
+<p>The output of this script prints out a text file <strong>europeans.txt</strong> with a list of all the individuals that are found to be 80% or more      European.</p>
+</details>
 <h2 id="exclude-ethnic-outliers">Exclude ethnic outliers.<a class="headerlink" href="#exclude-ethnic-outliers" title="Permanent link">&para;</a></h2>
-<p><em>Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed thresholds but have to be determined based on the visualization of the first two dimensions. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.</em></p>
-<p><pre class="highlight"><code class="language-bash">awk '{ if ($4 &lt;-0.04 &amp;&amp; $5 &gt;0.03) print $1,$2 }' MDS_merge2.mds &gt; EUR_MDS_merge2
-plink --bfile $FILE_QC --keep EUR_MDS_merge2 --make-bed --out $FILEQCEURO</code></pre>
-<em>to exclude ethnic outliers using output from ADMIXTURE use the following script</em>
-<pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC --keep europeans.txt --make-bed --out $FILEQCEURO</code></pre></p>
-<h2 id="hardy-weinburg-equilibrium-filter-on-controls">Hardy weinburg equilibrium filter on controls<a class="headerlink" href="#hardy-weinburg-equilibrium-filter-on-controls" title="Permanent link">&para;</a></h2>
-<pre class="highlight"><code class="language-bash">plink --bfile $FILEQCEURO --hwe $HWE_CONTROL --make-bed --out $OUTQCEURO</code></pre>
-<h2 id="remove-all-relatedness-from-dataset">Remove all 'relatedness' from dataset<a class="headerlink" href="#remove-all-relatedness-from-dataset" title="Permanent link">&para;</a></h2>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUTQCEURO --filter-founders --make-bed --out $OUTQCEURO$sep$found</code></pre>
-<div class="tabbed-set" data-tabs="6:1"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><label for="__tabbed_6_1">Performed in R</label><div class="tabbed-content"></div>
-</div>
-<pre class="highlight"><code>data&lt;- read.table(file="kin.txt",header=TRUE)
+<p><em>Select individuals in your own data below cut-off thresholds. The cut-off levels are not fixed thresholds but have to be determined based on the visualization of the first two PCS. To exclude ethnic outliers, the thresholds need to be set around the cluster of population of interest.</em></p>
+<p>Find min and max value cut offs for European individuals. </p>
+<pre class="highlight"><code class="language-R">data&lt;- read.table(file="PCA_MERGE.eigenvec",header=TRUE)
+eigenval&lt;-read.table(file="PCA_MERGE.eigenval",header=F)
+race&lt;- read.table(file="racefile.txt",header=TRUE)
+datafile&lt;- merge(data,race,by=c("IID","FID"))
+datafile=datafile %&gt;% filter(datafile$race %in% c("EUR","ASN","AMR","AFR","OWN"))
+PC1max=max(datafile[datafile$race=='EUR',]$PC1)
+PC1min=min(datafile[datafile$race=='EUR',]$PC1)
+PC2max=max(datafile[datafile$race=='EUR',]$PC2)
+PC2min=min(datafile[datafile$race=='EUR',]$PC2)
+table &lt;- matrix(c(PC1min,PC1max,PC2min,PC2max), ncol=1)
+colnames(table)=c('summary')
+rownames(table) &lt;- c('PC1min', 'PC1max','PC2min', 'PC2max')
+table=data.frame(table)
+table$summary=as.numeric(table$summary)
+write.table(table,'eursum.txt',col.names=F,quote=F)</code></pre>
+<pre class="highlight"><code class="language-bash">file=eursum.txt
+cat "$file" ##to view file
+awk '{ if ($3 &gt; -0.0255362 &amp;&amp; $3 &lt; -0.0155058 &amp;&amp; $4 &gt; -0.0295579 &amp;&amp; $4 &lt; -0.0194123) print $1,$2 }' PCA_MERGE.eigenvec  &gt; EUR_PCA_MERGE 
+plink --bfile $FILE_QC --keep EUR_PCA_MERGE  --make-bed --out $FILE_QC.euro</code></pre>
+<h2 id="exclude-ethnic-outliers_1">Exclude ethnic outliers<a class="headerlink" href="#exclude-ethnic-outliers_1" title="Permanent link">&para;</a></h2>
+<p>We use plink to only include those that were marked as Europeans, as confirmed by the PC analysis. The variable $FILE_Euro could also be used to define a European sample resulting from an admixture or MDS analysis.</p>
+<pre class="highlight"><code class="language-bash">FILE_Euro=EUR_samp_PC.txt
+plink --bfile $FILE_QC --keep $FILE_Euro--make-bed --out $FILE_QC.euro</code></pre>
+<h2 id="hardy-weinburg-equilibrium-filter-on-controls">Hardy Weinburg equilibrium filter on controls<a class="headerlink" href="#hardy-weinburg-equilibrium-filter-on-controls" title="Permanent link">&para;</a></h2>
+<p>Now that we have restricted our dataset to Europeans only, we can finalize an import quality control step that was not included in tutorial 1. Namely, we filter out all SNPs that are not in Hardy-Weinberg equilibrium. SNPs that significantly deviate from HWE might be under evolutionary pressure, but also often point to genotyping errors. We suggest to exclude all SNPs that deviate from HWE with a p-value smaller than 1e-6. Note that SNPs which are under pressure of evolutionary selection may be of interest, for example when looking for markers associated with lethal disease. When investigating such binary phenotypes, a lower (i.e. less conservative) HWE threshold could be chosen in cases, but not in controls.    </p>
+<pre class="highlight"><code class="language-bash">HWE_CONTROL=1e-6
+plink --bfile $FILE_QC.euro --hwe $HWE_CONTROL --make-bed --out $FILE_QC.euro.hwe_control</code></pre>
+<p>All SNPs in the HapMap data are already in HWE. No SNPs were excluded.</p>
+<h2 id="filter-founders-from-dataset">Filter founders from dataset<a class="headerlink" href="#filter-founders-from-dataset" title="Permanent link">&para;</a></h2>
+<p>This excludes all samples with at least one known parental ID in the current analysis
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC.euro.hwe_control --filter-founders --make-bed --out $FILE_QC.euro.hwe_control.found</code></pre></p>
+<p>52 individuals are removed. 108 remain.</p>
+<h2 id="check-for-cryptic-relatedness-with-plink2">Check for cryptic relatedness with plink2<a class="headerlink" href="#check-for-cryptic-relatedness-with-plink2" title="Permanent link">&para;</a></h2>
+<p>We use KING's method (implemented in Plink2) to filter out individuals that are more closely related than third cousins. KING's method is not available in plink, but is available in plink2 (which is still in alpha). The flag --make-king-table makes a table with kinship estimations between all individuals within the dataset. First degree relations (parent-child or siblings) have an expected kinship value of 0.25 using KING's method. Second-degree relations have a value of 0.125, third-degree relations a value of 0.0625, etc. The flag --king-table-filter can be used to only maintain relationships within the data that surpass a certain kinship threshold. We want to exclude one individual from each pair that is second-degree related or more. Therefore, we set our filter at 0.0884: The geometric mean between second and third degree relations.</p>
+<pre class="highlight"><code class="language-bash">#http://s3.amazonaws.com/plink2-assets/alpha2/plink2_linux_x86_64.zip
+#unzip plink2_linux_x86_64.zip
+./plink2 --bfile $FILE_QC.euro.hwe_control.found --make-king-table --king-table-filter 0.0884
+sed 's/^#//' plink2.kin0 &gt; kin.txt #Replaces the hashtag in the header of the king-table so R can read it easily.</code></pre>
+<p>??? note: "The resulting output:"
+<pre class="highlight"><code>cat kin.txt
+FID1    ID1     FID2    ID2     NSNP    HETHET  IBS0    KINSHIP
+1454    NA12813 13291   NA07045 1176687 0.189994        0.0174787       0.236928</code></pre>
+These two individuals are first-degree relatives, as their estimated kinship is close to 0.25, but were not identified as such in the data. We will remove one of these individuals. We could do this at random, but a better approach is to remove the individual with most missing SNPs.</p>
+<p><pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC.euro.hwe_control.found --missing</code></pre>
+In R, run the following script to remove the individuals with the highest amount of missingness in each related pair. 
+<pre class="highlight"><code>=== "Performed in R"
+
+```{r}
+data&lt;- read.table(file="kin.txt",header=TRUE)
 data_related=data[,c(1,2,3,4)]
 missing &lt;- read.table("plink.imiss", header =TRUE, as.is=T)
 FID1=data_related[,c(1,2)]
 FID2=data_related[,c(3,4)]
-
 FID1$index=row.names(FID1)
 FID2$index=row.names(FID2)
-
-FID1$IID=FID1$IID1
-FID2$IID=FID2$IID2
-
+FID1$IID=FID1$ID1
+FID2$IID=FID2$ID2
 FID1[,1:2]=c()
 FID2[,1:2]=c()
-
 FID1=merge(FID1,missing,by="IID")
 FID2=merge(FID2,missing,by="IID")
-
 FID1[,4:6]=c()
 FID2[,4:6]=c()
-
 FID1$index=as.numeric(FID1$index)
 FID2$index=as.numeric(FID2$index)
-
 q=c(setdiff(FID2$index, FID1$index), setdiff(FID1$index, FID2$index))
 if (length(q) != 0) {
 FID1=FID1[!(FID1$index==q),]
@@ -452,6 +597,7 @@ FID2=FID2[order(FID2[,2]),]
 ##this binds the FIDs,IIDs,missingness for all pairs
 bind=cbind(FID1,FID2)
 bind$index=c()
+bind$index=c()
 ##this displays just the values for missingness for each pair
 bindval=cbind(FID1$F_MISS,FID2$F_MISS)
 colnames(bindval)=c(1,2)
@@ -462,21 +608,39 @@ bind1=bind[cbind(seq_along(max*3-1), max*3-1)]
 bind2=bind[cbind(seq_along(max*3-2), max*3-2)]
 final=cbind(bind1,bind2)
 final=unique(final)
-write.table(final, '0.2_low_call_rate.txt', append = FALSE, sep = " ", dec = ".",
-            row.names = FALSE, col.names = FALSE,quote=FALSE)</code></pre>
+write.table(final, 'low_call_rate.txt', append = FALSE, sep = " ", dec = ".",
+            row.names = FALSE, col.names = FALSE,quote=FALSE)</code></pre></p>
 <p><strong>remove individual with higher missingness</strong>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUTQCEURO$sep$found --remove 0.2_low_call_rate.txt --make-bed --out $OUTCOVER</code></pre></p>
-<h2 id="create-covariates-based-on-mds">Create covariates based on MDS.<a class="headerlink" href="#create-covariates-based-on-mds" title="Permanent link">&para;</a></h2>
-<p><em>Perform an MDS ONLY on qccase data without ethnic outliers. The values of the 10 MDS dimensions are subsequently used as covariates in the association analysis in the third tutorial</em>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUTCOVER --extract plink.prune.in --genome --out $OUTCOVER
-plink --bfile $OUTCOVER --read-genome $OUTCOVER$taggenome --cluster --mds-plot 10 --out $POPSTRATOUT
-awk '{print$1, $2, $4, $5, $6, $7,$8,$9,$10,$11,$12,$13}' $POPSTRATOUT$tag_m$tag_dot_mds &gt; covar_mds.txt</code></pre>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC.euro.hwe_control.found --remove low_call_rate.txt --make-bed --out $FILE_QC.euro.hwe_control.found.unrelated</code></pre></p>
+<h2 id="create-covariates-based-on-pca">Create covariates based on PCA.<a class="headerlink" href="#create-covariates-based-on-pca" title="Permanent link">&para;</a></h2>
+<p><em>Perform an PCA ONLY on QC'd sample data without ethnic outliers</em></p>
+<p><pre class="highlight"><code class="language-bash">plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --extract plink.prune.in --genome --out $FILE_QC.euro.hwe_control.found.unrelated
+plink --bfile $FILE_QC.euro.hwe_control.found.unrelated --extract plink.prune.in  --make-bed --pca 10 'header' --out $FILE_QC.euro.hwe_control.found.unrelated.PCA</code></pre>
+The values of the PCs that contribute to most of the variance in our samples are subsequently used as covariates in the association analysis in the third tutorial. To determine which PCs should be included in the model, we make a scree plot using the r code below: Note that we are using the eigenavalues from the merged dataset for visualization purposes (if we used the data from only the EUR HapMap set, there is virtually no variability and the eigenvalues are all close to 1)</p>
+<p><pre class="highlight"><code class="language-R">library(ggplot2)
+png('scree.png',units="in",width=13,height=7,res=300)
+val=read.table('PCA_MERGE.eigenval')
+val$index=as.numeric(row.names(val)) 
+ggplot(val, aes(x=index, y=V1)) +
+   geom_point() +
+  geom_line()+
+  ggtitle("Screeplot of the first 10 PCs")+
+  ylab('eigenvalue')+
+  xlab('PCs')+
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10))+
+  theme(legend.position = 'none')
+dev.off()</code></pre>
+<img alt="Scree example" src="../img/scree.png" /></p>
+<blockquote>
+<p>An example scree plot</p>
+</blockquote>
+<p><pre class="highlight"><code class="language-bash">awk '{print$1, $2,$3, $4, $5, $6, $7,$8,$9,$10,$11,$12}' $FILE_QC.euro.hwe_control.found.unrelated.PCA.eigenvec &gt; covar_PCs.txt</code></pre>
 <strong>The values in covar_mds.txt will be used as covariates, to adjust for remaining population stratification, in the third tutorial where we will perform a genome-wide association analysis.</strong></p>
-<pre class="highlight"><code class="language-bash">mv $OUTCOVER$tagbed ./popstratout.bed
-mv $OUTCOVER$tagbim ./popstratout.bim
-mv $OUTCOVER$tagfam ./popstratout.fam
+<pre class="highlight"><code class="language-bash">mv $FILE_QC.euro.hwe_control.found.unrelated.bed ./popstratout.bed
+mv $FILE_QC.euro.hwe_control.found.unrelated.bim ./popstratout.bim
+mv $FILE_QC.euro.hwe_control.found.unrelated.fam ./popstratout.fam
 cp popstratout* ../3_Association_GWAS
-cp covar_mds.txt ../3_Association_GWAS
+cp covar_PCs.txt ../3_Association_GWAS
 cd ../3_Association_GWAS</code></pre>
               
             </div>

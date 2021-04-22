@@ -63,29 +63,33 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">1. Quality Control of GWAS Data</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#obtaining-and-visualizing-missingness-in-the-hapmap-data-files">Obtaining and visualizing missingness in the HapMap data files</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#reading-the-genotype-data-file-and-produce-missingness-data">Reading the genotype data file and produce missingness data:</a>
+    <li class="toctree-l2"><a class="reference internal" href="#obtaining-hapmap-data">Obtaining HapMap data</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#generate-histogram-to-view-missingness">Generate Histogram to View Missingness.</a>
+    <li class="toctree-l2"><a class="reference internal" href="#reading-the-genotype-data-file">Reading the genotype data file:</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#visualizing-and-correcting-for-missingness">Visualizing and correcting for missingness</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#generate-histogram-to-view-missingness">Generate Histogram to view missingness.</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#filter-on-missingness">Filter on missingness</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#filtering-steps">Filtering steps</a>
+    <li class="toctree-l2"><a class="reference internal" href="#check-for-sex-discrepancies">Check for Sex Discrepancies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#limit-data-to-autosomal-snps-only">Limit data to autosomal SNPs only</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#perform-maf-check-and-filter-by-maf-threshold">Perform MAF check and filter by MAF Threshold</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#view-heterozygosity-distribution-and-remove-outliers">View heterozygosity distribution and remove outliers</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#filter-on-missingness">Filter on missingness</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#check-for-sex-discrepancies">Check for Sex Discrepancies</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#limit-data-to-autosomal-snps-only">Limit data to autosomal SNPs only</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#perform-maf-check-and-filter-by-maf-threshold">Perform MAF check and filter by MAF Threshold</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#view-heterozygosity-distribution-and-remove-outliers">View heterozygosity distribution and remove outliers</a>
+    <li class="toctree-l3"><a class="reference internal" href="#generate-a-pruned-subset-of-snps-that-are-in-approximate-linkage-equilibrium">Generate a pruned subset of SNPs that are in approximate linkage equilibrium.</a>
     </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#transfer-files-to-use-for-population-stratification">Transfer files to use for population stratification</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#further-tips-and-further-reading">Further tips and further reading</a>
     </li>
     </ul>
                     </li>
@@ -111,11 +115,11 @@
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../liftover/">liftover</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../Additional_considerations/">6. Additional Considerations</a>
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../prs/">PRS</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../prs/">7.PRS</a>
                     </li>
                 </ul>
       </div>
@@ -154,62 +158,104 @@
             <div class="section">
               
                 <h1 id="qc-of-hapmap3-data">QC of HapMap3 data<a class="headerlink" href="#qc-of-hapmap3-data" title="Permanent link">&para;</a></h1>
-<h2 id="obtaining-and-visualizing-missingness-in-the-hapmap-data-files">Obtaining and visualizing missingness in the HapMap data files<a class="headerlink" href="#obtaining-and-visualizing-missingness-in-the-hapmap-data-files" title="Permanent link">&para;</a></h2>
-<p>The first step in GWAS analyses is to generate or obtain the genotype or sequencing data. Ideally these will be in Plink format (.bim,.bed,.fam)</p>
-<p>You can download the HapMap example data <a href="https://drive.google.com/drive/folders/1TNRwAxWx_itjjt3dbtsR0CrUgkKk5yxw?usp=sharing">here</a> 
-You <strong>MUST</strong> download and unzip the R folder from <a href="https://drive.google.com/drive/folders/1TNRwAxWx_itjjt3dbtsR0CrUgkKk5yxw?usp=sharing">here</a> as well to run downstream scripts. </p>
+<p>In this tutorial, you will learn how to perform all quality control steps that one typically takes before analyzing their genetic data further. The tutorial is based on <code>insert download link for code</code>. This code-file forms a pipeline that performs all quality control steps taken here in tandem. The code can easily be adjusted such that it works with any genetic dataset, and is a good starting point to perform your own analyses. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Due to limitation to bandwidth, we are currently using google drive to host the files, which doesn't allow the use of wget or curl to download the file. Please download the files manually.</p>
+<p>You will need <code>plink</code> in this section, which can be download from <a href="https://www.cog-genomics.org/plink/1.9/">here</a>.</p>
+<p>Install the program <code>plink</code> and include its location in your PATH directory, which allows us to use <code>plink</code> instead of <code>./plink</code> in the commands below. If PLINK is not in your PATH directory and is instead in your working directory, replace all instances of <code>plink</code> in the tutorial with <code>./plink</code>.</p>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>/ ))</p>
-</div>
-<h3 id="reading-the-genotype-data-file-and-produce-missingness-data">Reading the genotype data file and produce missingness data:<a class="headerlink" href="#reading-the-genotype-data-file-and-produce-missingness-data" title="Permanent link">&para;</a></h3>
-<p>We will set a fileset variable to make it easier to adjust all downstream code and then produce SNP and individual missingness data:</p>
+<h2 id="obtaining-hapmap-data">Obtaining HapMap data<a class="headerlink" href="#obtaining-hapmap-data" title="Permanent link">&para;</a></h2>
+<p>The first step in GWAS analyses is to generate or obtain the genotype or sequencing data. In this tutorial, we will store this data in binary PLINK format. Binary PLINK datasets consist of three corresponding files: *.bim, *.bed, and *.fam. A *.fam file contains information on the individuals in the dataset, whereas the *.bim file contains information on the genetic markers that are included. The *.bed file is typically the largest and contains the genotypes. As it is written in binary, it is not in readable format for humans.</p>
+<p>You can download the HapMap example data <a href="https://drive.google.com/drive/folders/1TNRwAxWx_itjjt3dbtsR0CrUgkKk5yxw?usp=sharing">here</a> </p>
+<h2 id="reading-the-genotype-data-file">Reading the genotype data file:<a class="headerlink" href="#reading-the-genotype-data-file" title="Permanent link">&para;</a></h2>
+<p>We will set a <strong>FILESET</strong> variable to refer to our raw genotype datafile throughout this tutorial. This makes it easier to adjust the code used here for analyses on your own data, as you only need to change the <strong>FILESET</strong> variable towards the name of your own datafile, provided that it is stored in the .bim/.bed/.fam format. Next, we will set our working directory towards the directory in which we have stored the HapMap data. Furthermore, ensure that the PLINK application is in your working directory. You can use the bash command <strong>ls</strong> to check whether your working directory holds all the necessary files.  </p>
 <pre class="highlight"><code class="language-bash">FILESET=HapMap_3_r3_1
-plink -bfile $FILESET --missing </code></pre>
-<p>This will print a <strong>plink.imiss</strong> and <strong>plink.lmiss</strong> output file with the individual and SNP missingness data, respectively.  </p>
-<p>The <strong>plink.imiss</strong> file contains the following columns:</p>
-<table>
-<thead>
-<tr>
-<th align="center">FID</th>
-<th align="center">IID</th>
-<th align="center">MISS_PHENO</th>
-<th align="center">N_MISS</th>
-<th align="center">N_GENO</th>
-<th align="center">F_MISS</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center">1328</td>
-<td align="center">NA06989</td>
-<td align="center">N</td>
-<td align="center">4203</td>
-<td align="center">1457897</td>
-<td align="center">0.002883</td>
-</tr>
-<tr>
-<td align="center">1377</td>
-<td align="center">NA11891</td>
-<td align="center">N</td>
-<td align="center">20787</td>
-<td align="center">1457897</td>
-<td align="center">0.01426</td>
-</tr>
-<tr>
-<td align="center">1349</td>
-<td align="center">NA11843</td>
-<td align="center">N</td>
-<td align="center">1564</td>
-<td align="center">1457897</td>
-<td align="center">0.001073</td>
-</tr>
-</tbody>
-</table>
+cd HOME/{user}/{path/folder containing your files}
+ls </code></pre>
+<details class="note"><summary>Check whether all files are stored in your working directory:</summary><pre class="highlight"><code class="language-bash">$ ls
+HapMap_3_r3_1.bed  HapMap_3_r3_1.bim  HapMap_3_r3_1.fam  plink</code></pre>
+</details>
+<p>Before we start performing QC on the HapMap data, ensure that you familiarize yourself with the format in which the datafiles are stored. Use the <strong>head</strong> command to see the beginning of a file.</p>
+<pre class="highlight"><code class="language-bash">head HapMap_3_r3_1.fam
+head HapMap_3_r3_1.bim</code></pre>
+<details class="note"><summary>This results in the following output:</summary><pre class="highlight"><code class="language-bash">$ head HapMap_3_r3_1.fam
+1328 NA06989 0 0 2 2
+1377 NA11891 0 0 1 2
+1349 NA11843 0 0 1 1
+1330 NA12341 0 0 2 2
+1444 NA12739 NA12748 NA12749 1 -9
+1344 NA10850 0 NA12058 2 -9
+1328 NA06984 0 0 1 2
+1463 NA12877 NA12889 NA12890 1 -9
+1418 NA12275 0 0 2 1
+13291 NA06986 0 0 1 1
+
+$ head HapMap_3_r3_1.bim
+1       rs2185539       0       556738  T       C
+1       rs11510103      0       557616  G       A
+1       rs11240767      0       718814  T       C
+1       rs3131972       0       742584  A       G
+1       rs3131969       0       744045  A       G  
+1       rs1048488       0       750775  C       T
+1       rs12562034      0       758311  A       G
+1       rs12124819      0       766409  G       A
+1       rs4040617       0       769185  G       A
+1       rs2905036       0       782343  C       T</code></pre>
+</details>
+<p>These files have no headers but are always structured the same. The structure of a .fam file is as follows:</p>
+<ul>
+<li><strong>Column 1</strong> contains the family id</li>
+<li><strong>Column 2</strong> contains the Within-family id</li>
+<li><strong>Column 3</strong> contains the Within-family id of the father ('0' if the father is not included in the data)</li>
+<li><strong>Column 4</strong> contains the Within-family id of the mother ('0' if the mother is not included in the data)</li>
+<li><strong>Column 5</strong> contains the individual's sex ('1' for male, '2' for female '0' if unknown)</li>
+<li><strong>Column 6</strong> contains the value of the phenotype ('1' for cases, '2' for controls. Missing data points are often stored as '-9', '0', or a non-numeric character)</li>
+</ul>
+<p>The structure of a .bim file is as follows:</p>
+<ul>
+<li><strong>Column 1</strong> contains the chromosome code (integer, 'X'/'Y'/'XY'/'MT', or '0' if unknown), or the chromosome name</li>
+<li><strong>Column 2</strong> contains the identifier of the genetic variant</li>
+<li><strong>Column 3</strong> contains the position in morgans or centimorgans, but this value is usually set to '0'.</li>
+<li><strong>Column 4</strong> contains the base-pair coordinate.</li>
+<li><strong>Column 5</strong> contains the reference allele (Allele 1), which is usually the minor allele.</li>
+<li><strong>Column 6</strong> contains the alternative allele (Allele 2), which is usually the major allele.</li>
+</ul>
+<p>One could run the command <strong>head HapMap_3_r3_1.bed</strong> as well, but this would result in gibberish: the .bed file is not legible to humans.</p>
+<h2 id="visualizing-and-correcting-for-missingness">Visualizing and correcting for missingness<a class="headerlink" href="#visualizing-and-correcting-for-missingness" title="Permanent link">&para;</a></h2>
+<p>As a first step in our QC, we evoke PLINK to produce SNP and individual missingness data. The <strong>plink</strong> command in bash will start the PLINK program. The option <strong>-bfile</strong> is used to read the data (in binary PLINK format), the option <strong>--missing</strong> creates a <strong>plink.imiss</strong> and <strong>plink.lmiss</strong> output file with the individual and SNP missingness data, respectively.   </p>
+<pre class="highlight"><code class="language-bash">plink -bfile $FILESET --missing</code></pre>
+<details class="note"><summary>PLINK gives us the following output:</summary><pre class="highlight"><code class="language-bash">PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to plink.log.
+Options in effect:
+  --bfile HapMap_3_r3_1
+  --missing
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1457897 variants loaded from .bim file.
+165 people (80 males, 85 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 53 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 225 het. haploid genotypes present (see plink.hh ); many commands
+treat these as missing. 
+Total genotyping rate is 0.997378.
+--missing: Sample missing data report written to plink.imiss, and variant-based
+missing data report written to plink.lmiss.</code></pre>
+</details>
+<details class="note"><summary>Inspect plink.imiss and plink.lmiss</summary><pre class="highlight"><code class="language-bash">head plink.imiss
+
+FID       IID MISS_PHENO   N_MISS   N_GENO   F_MISS
+1328   NA06989          N     4203  1457897 0.002883
+1377   NA11891          N    20787  1457897  0.01426
+1349   NA11843          N     1564  1457897 0.001073
+1330   NA12341          N     6218  1457897 0.004265
+1444   NA12739          Y    29584  1457897  0.02029
+1344   NA10850          Y     2631  1457897 0.001805
+1328   NA06984          N     9638  1457897 0.006611
+1463   NA12877          Y     3788  1457897 0.002598
+1418   NA12275          N     5349  1457897 0.003669</code></pre>
 <p>The column headers correspond to the following: </p>
 <ul>
 <li><strong>FID</strong>: Family ID</li>
@@ -219,129 +265,506 @@ plink -bfile $FILESET --missing </code></pre>
 <li><strong>N_GENO</strong>: Number of non-obligatory missing genotypes</li>
 <li><strong>F_MISS</strong>: Proportion of missing SNPs</li>
 </ul>
-<h3 id="generate-histogram-to-view-missingness">Generate Histogram to View Missingness.<a class="headerlink" href="#generate-histogram-to-view-missingness" title="Permanent link">&para;</a></h3>
+<pre class="highlight"><code class="language-bash">head plink.lmiss
+CHR         SNP   N_MISS   N_GENO   F_MISS
+1   rs2185539        0      165        0
+1  rs11510103        4      165  0.02424
+1  rs11240767        0      165        0
+1   rs3131972        0      165        0
+1   rs3131969        0      165        0
+1   rs1048488        1      165 0.006061
+1  rs12562034        0      165        0
+1  rs12124819        1      165 0.006061
+1   rs4040617        0      165        0</code></pre>
+<p>The column headers correspond to the following: </p>
+<ul>
+<li><strong>CHR</strong>: Chromosome</li>
+<li><strong>SNP</strong>: SNP rsID</li>
+<li><strong>N_MISS</strong>:  Number of individuals for which this SNP is missing</li>
+<li><strong>N_GENO</strong>: Number of non-obligatory missing genotypes</li>
+<li><strong>F_MISS</strong>: Proportion of sample missing for this SNP</li>
+</ul>
+</details>
+<h3 id="generate-histogram-to-view-missingness">Generate Histogram to view missingness.<a class="headerlink" href="#generate-histogram-to-view-missingness" title="Permanent link">&para;</a></h3>
+<p>To summarize the extent of missing data, we load both files into R, and generate histograms to visualize the proportion of missingness in the data, per individual and per SNP, respectively.</p>
 <div class="tabbed-set" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
+<p>Rsc
 <pre class="highlight"><code>indmiss&lt;-read.table(file="plink.imiss", header=TRUE)
 snpmiss&lt;-read.table(file="plink.lmiss", header=TRUE)
 # read data into R 
 
-png("histimiss.png") #indicates pdf format and gives title to file
+png("histimiss.png") #indicates png format and gives title to file
 hist(indmiss[,6],main="Histogram individual missingness") #selects column 6, names header of file
 dev.off()
+
 png("histlmiss.png")
 hist(snpmiss[,5],main="Histogram SNP missingness")  
-dev.off() # shuts down the current device</code></pre>
+dev.off() # shuts down the current device</code></pre></p>
 <p><img alt="Example Bar Plot" src="../img/histimiss.png" />
 <img alt="Example Bar Plot" src="../img/histlmiss.png" /></p>
-<blockquote>
-<p>An example bar plot generated using script in <code>hist_miss.R</code>    </p>
-</blockquote>
-<h2 id="filtering-steps">Filtering steps<a class="headerlink" href="#filtering-steps" title="Permanent link">&para;</a></h2>
-<h4 id="filter-on-missingness">Filter on missingness<a class="headerlink" href="#filter-on-missingness" title="Permanent link">&para;</a></h4>
-<p>We want to begin performing quality control filtering on the data.</p>
-<p>We begin with organizing our file naming convention and define our starting filter values. </p>
-<p><pre class="highlight"><code class="language-bash">sep="_"
-TAG_GENO="geno"
-GENO=0.02 
-TAG_MIND="mind"
-MIND=0.02 
-OUT="$FILESET$sep$TAG_GENO"
-OUT1="$FILESET$sep$TAG_GENO$sep$TAG_MIND"</code></pre>
-In is <strong>important</strong> to filter on SNP missingness (--geno) prior to filtering on individual missingness (--mind). </p>
-<pre class="highlight"><code class="language-bash">plink --bfile $FILESET --geno $GENO --make-bed --out $OUT
-plink --bfile $OUT --mind $MIND --make-bed --out $OUT1</code></pre>
-<h4 id="check-for-sex-discrepancies">Check for Sex Discrepancies<a class="headerlink" href="#check-for-sex-discrepancies" title="Permanent link">&para;</a></h4>
+<p>Most individuals have next to no missing SNP data, although some individuals have missing data at 2% or even more of all SNP loci. Similarily, most SNPs are available in virtually all individuals in our dataset, although some SNPs are missing with considerable frequency, i.e. in 2% or even up to 5% of all individuals.</p>
+<h3 id="filter-on-missingness">Filter on missingness<a class="headerlink" href="#filter-on-missingness" title="Permanent link">&para;</a></h3>
+<p>As a first step of the quality control process, we will drop SNPs that are missing with considerable frequency from our data. Furthermore, we will drop individuals who frequently have missing genotype calls.</p>
+<p>We begin with defining our starting filter values. We recommend a missing genotype threshold of 2% (MIND) for each individual, as well as a missingness threshold of 2% (GENO) for each SNP. Again, defining these values as a seperate variable makes them easier to change when using this code for different analyses.</p>
+<p><pre class="highlight"><code class="language-bash">GENO=0.02 
+MIND=0.02 </code></pre>
+In the following plink commands, the <strong>--make-bed</strong> flag instructs plink to convert the data back into the PLINK binary format after the filtering has been performed. The <strong>--out</strong> flag is used to name the resulting output file. It is <strong>important</strong> to filter on SNP missingness (<strong>--geno</strong>) prior to filtering on individual missingness (<strong>--mind</strong>). Furtermore, we recommend to filter for missingness in two steps: once with a very lenient missingness threshold (i.e. 20%), and next with the missingness threshold you set (i.e. 2%). This two-step approach shields you from bad scenarios where, for example, many SNPs would fall above the missingness threshold if a subset of individuals have extremely high rates of missingness. Note, however, that most high quality genetic datasets should not have any SNPs or individuals with missingness &gt;20%, and if this is the case, it should give reason to worry about whether the data was pre-processed correctly.</p>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILESET --geno 0.2 --make-bed --out $FILESET.geno.temp
+plink --bfile $FILESET.geno.temp --mind 0.2 --make-bed --out $FILESET.mind.temp
+plink --bfile $FILESET.mind.temp --geno $GENO --make-bed --out $FILESET.geno
+plink --bfile $FILESET.geno --mind $MIND --make-bed --out $FILESET.mind</code></pre>
+<details class="note"><summary>This results in the following output:</summary><pre class="highlight"><code class="language-bash">$ plink --bfile $FILESET --geno 0.2 --make-bed --out $FILESET.geno.temp
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.geno.temp.log.
+Options in effect:
+  --bfile HapMap_3_r3_1
+  --geno 0.2
+  --make-bed
+  --out HapMap_3_r3_1.geno.temp
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1457897 variants loaded from .bim file.
+165 people (80 males, 85 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 53 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 225 het. haploid genotypes present (see HapMap_3_r3_1.geno.temp.hh );
+many commands treat these as missing.
+Total genotyping rate is 0.997378.
+0 variants removed due to missing genotype data (--geno).
+1457897 variants and 165 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (53 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.geno.temp.bed + HapMap_3_r3_1.geno.temp.bim +
+HapMap_3_r3_1.geno.temp.fam ... done.
+
+$plink --bfile $FILESET.geno.temp --mind 0.2 --make-bed --out $FILESET.mind.temp
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.mind.temp.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.geno.temp
+  --make-bed
+  --mind 0.2
+  --out HapMap_3_r3_1.mind.temp
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1457897 variants loaded from .bim file.
+165 people (80 males, 85 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+0 people removed due to missing genotype data (--mind).
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 53 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 225 het. haploid genotypes present (see HapMap_3_r3_1.mind.temp.hh );
+many commands treat these as missing.
+Total genotyping rate is 0.997378.
+1457897 variants and 165 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (53 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.mind.temp.bed + HapMap_3_r3_1.mind.temp.bim +
+HapMap_3_r3_1.mind.temp.fam ... done.
+$ plink         --bfile $FILESET.mind.temp --geno $GENO --make-bed --out $FILESET.geno
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.geno.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.mind.temp
+  --geno 0.02
+  --make-bed
+  --out HapMap_3_r3_1.geno
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1457897 variants loaded from .bim file.
+165 people (80 males, 85 females) loaded from .fam.
+112 phenotype values loaded from .fam. 
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 53 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 225 het. haploid genotypes present (see HapMap_3_r3_1.geno.hh ); many
+commands treat these as missing.
+Total genotyping rate is 0.997378.
+27454 variants removed due to missing genotype data (--geno).
+1430443 variants and 165 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (53 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.geno.bed + HapMap_3_r3_1.geno.bim +
+HapMap_3_r3_1.geno.fam ... done.
+
+$ plink --bfile $FILESET.geno --mind $MIND --make-bed --out $FILESET.mind
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.mind.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.geno
+  --make-bed
+  --mind 0.02
+  --out HapMap_3_r3_1.mind
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1430443 variants loaded from .bim file.
+165 people (80 males, 85 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+0 people removed due to missing genotype data (--mind).
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 53 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 179 het. haploid genotypes present (see HapMap_3_r3_1.mind.hh ); many
+commands treat these as missing.
+Total genotyping rate is 0.997899.
+1430443 variants and 165 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (53 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.mind.bed + HapMap_3_r3_1.mind.bim +
+HapMap_3_r3_1.mind.fam ... done.</code></pre>
+</details>
+<p>As expected, In the first step, 0 variants and 0 individuals were removed from the data. When subsequently filtering on the stricter threshold of 0.02, 27454 SNPs were removed from the data, leaving 1430443 SNPs. Finally, 0 people were removed due to missing genotype data, leaving 165 individuals. </p>
+<h2 id="check-for-sex-discrepancies">Check for Sex Discrepancies<a class="headerlink" href="#check-for-sex-discrepancies" title="Permanent link">&para;</a></h2>
+<p>We check whether each individual's assigned sex corresponds with their genotype. The <strong>--check-sex</strong> flag in PLINK tests this by calculating X chromosome homozygosity. Males should have an X chromosome homozygosity estimate &gt;0.8. Females should have a value &lt; 0.2. Subjects who do not fulfill these requirements are flagged as a "PROBLEM" by PLINK.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>if you have not already done so, YOU MUST use the split-x command to remove the psuedo autosomal region</p>
+<p>The <strong>--check-sex</strong> flag supposes that the x chromosome has been split. This means that in the .bim file you           should    see SNPs assigned to a 25th chromosome. This chromosome represents the SNPs lying on the                     pseudoautosomal region of the X chromosome. If you have not already done so, YOU MUST use the <strong>--split-x</strong> flag       to seperate the pseudoautosomal region in this fashion.</p>
 </div>
+<p>First, we want to visualize the F-values and check for discrepencies.
+<pre class="highlight"><code class="language-bash">plink --bfile $FILESET.mind --check-sex </code></pre></p>
+<details class="note"><summary>This results in the following output:</summary><pre class="highlight"><code class="language-bash">PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to plink.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.mind
+  --check-sex
+
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1430443 variants loaded from .bim file.
+165 people (80 males, 85 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 53 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 179 het. haploid genotypes present (see plink.hh ); many commands
+treat these as missing.
+Total genotyping rate is 0.997899.
+1430443 variants and 165 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (53 phenotypes
+are missing.)
+--check-sex: 23424 Xchr and 0 Ychr variant(s) scanned, 1 problem detected.
+Report written to plink.sexcheck .</code></pre>
+<p>Plink reports that one individual has a different sex as determined by the X chromosome, compared to sex assigned in the pedigree file.</p>
+</details>
+<details class="note"><summary>Inspect plink.sexcheck:</summary><pre class="highlight"><code class="language-bash">head plink.sexcheck
+    FID       IID       PEDSEX       SNPSEX       STATUS            F
+   1328   NA06989            2            2           OK     -0.01184
+   1377   NA11891            1            1           OK            1
+   1349   NA11843            1            1           OK            1
+   1330   NA12341            2            2           OK     -0.01252
+   1444   NA12739            1            1           OK            1
+   1344   NA10850            2            2           OK      0.01496
+   1328   NA06984            1            1           OK            1
+   1463   NA12877            1            1           OK            1
+   1418   NA12275            2            2           OK      -0.1028</code></pre>
+<p>The column headers correspond to the following </p>
+<ul>
+<li><strong>FID</strong>:     Family ID</li>
+<li><strong>IID</strong>:     Individual ID</li>
+<li><strong>PEDSEX</strong>:  Sex as determined in pedigree file (1=male, 2=female)</li>
+<li><strong>SNPSEX</strong>:  Sex as determined by X chromosome</li>
+<li><strong>STATUS</strong>:  Displays "PROBLEM" or "OK" for each individual</li>
+<li><strong>F</strong>:       The actual X chromosome inbreeding (homozygosity) estimate</li>
+</ul>
+</details>
+<p>We now visualize the estimated X chromosome homozygosity for assigned males and females in R:</p>
 <div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <pre class="highlight"><code>gender &lt;- read.table("plink.sexcheck", header=T,as.is=T)
 
-pdf("Gender_check.pdf")
+png("Gender_check.png")
 hist(gender[,6],main="Gender", xlab="F")
 dev.off()
 
-pdf("Men_check.pdf")
+png("Men_check.png")
 male=subset(gender, gender$PEDSEX==1)
 hist(male[,6],main="Men",xlab="F")
 dev.off()
 
-pdf("Women_check.pdf")
+png("Women_check.png")
 female=subset(gender, gender$PEDSEX==2)
 hist(female[,6],main="Women",xlab="F")
 dev.off()</code></pre>
-<p><img alt="Example Bar Plot" src="../img/gender.png" /></p>
-<p>Remove SNPS that do not pass the sex check. </p>
-<pre class="highlight"><code class="language-bash">rem="rem"
-OUT2=$OUT1$sep$rem
-# This command generates a list of individuals with the status ?PROBLEM?.
-grep "PROBLEM" plink.sexcheck| awk '{print$1,$2}'&gt; sex_discrepancy.txt
-plink --bfile $OUT1 --remove sex_discrepancy.txt --make-bed --out $OUT2</code></pre>
-<h4 id="limit-data-to-autosomal-snps-only">Limit data to autosomal SNPs only<a class="headerlink" href="#limit-data-to-autosomal-snps-only" title="Permanent link">&para;</a></h4>
-<p>We wll generate a txt file with all the SNPS on the autosomes so that we can remove all SNPS that are on the sex chromosomes or in mitochondrial DND. 
-<pre class="highlight"><code class="language-bash">BIM=".bim"
-AUTOSOME="autosome"
-OUT3=$OUT2$sep$AUTOSOME
+<p><img alt="Example Bar Plot" src="../img/Gender_check.png" />
+<img alt="Example Bar Plot" src="../img/Men_check.png" />
+<img alt="Example Bar Plot" src="../img/Women_check.png" /></p>
+<p>The third histogram shows where the problem lies: one individual is marked as female in the pedigree file, but is male according to the X chromosome. PLINK has marked this case as ``PROBLEM'' in column 5 of plink.sexcheck. We will use grep and awk to print the FID and IID of this person, and remove this person from our data using the <strong>--remove</strong> flag in PLINK.</p>
+<pre class="highlight"><code class="language-bash">grep "PROBLEM" plink.sexcheck| awk '{print$1,$2}'&gt; sex_discrepancy.txt
+plink --bfile $FILESET.mind --remove sex_discrepancy.txt --make-bed --out $FILESET.rem</code></pre>
+<h2 id="limit-data-to-autosomal-snps-only">Limit data to autosomal SNPs only<a class="headerlink" href="#limit-data-to-autosomal-snps-only" title="Permanent link">&para;</a></h2>
+<p>Most genetic analysis focuses solely on autosomal SNPs, ignoring the sex chromosome or mitochondrial DNA. We will use the <strong>--extract</strong> flag in PLINK to extract only such SNPs. Before using this flag, we will generate a list of RSids that lie on the autosome (chromosome 1-22), using the awk command. </p>
+<pre class="highlight"><code class="language-bash">awk '{ if ($1 &gt;= 1 &amp;&amp; $1 &lt;= 22) print $2 }' $FILESET.rem.bim &gt; snp_1_22.txt
+plink --bfile $FILESET.rem --extract snp_1_22.txt --make-bed --out $FILESET.autosome</code></pre>
+<h2 id="perform-maf-check-and-filter-by-maf-threshold">Perform MAF check and filter by MAF Threshold<a class="headerlink" href="#perform-maf-check-and-filter-by-maf-threshold" title="Permanent link">&para;</a></h2>
+<p>Next, we will check the minor allele frequency (MAF) of each SNP. SNPs with a low MAF are rare. As a result, power to detect their associations with a given phenotype is low. Furthermore, such SNPs are more prone to genotyping errors. The <strong>--freq</strong> flag in PLINK is used to calculate MAFs. </p>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILESET.autosome --freq --out MAF_check</code></pre>
+<details class="note"><summary>PLINK reports the following output: </summary><pre class="highlight"><code class="language-bash">$ plink --bfile $FILESET.rem --extract snp_1_22.txt --make-bed --out $FILESET.autosome
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.autosome.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.rem
+  --extract snp_1_22.txt
+  --make-bed
+  --out HapMap_3_r3_1.autosome
 
-awk '{ if ($1 &gt;= 1 &amp;&amp; $1 &lt;= 23) print $2 }' $OUT2$BIM &gt; snp_1_22.txt
-plink --bfile $OUT2 --extract snp_1_22.txt --make-bed --out $OUT3</code></pre></p>
-<h4 id="perform-maf-check-and-filter-by-maf-threshold">Perform MAF check and filter by MAF Threshold<a class="headerlink" href="#perform-maf-check-and-filter-by-maf-threshold" title="Permanent link">&para;</a></h4>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUT2 --freq --out MAF_check</code></pre>
+12574 MB RAM detected; reserving 6287 MB for main workspace.
+1430443 variants loaded from .bim file.
+164 people (80 males, 84 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+--extract: 1398544 variants remaining.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 52 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.998052.
+1398544 variants and 164 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.autosome.bed + HapMap_3_r3_1.autosome.bim +
+HapMap_3_r3_1.autosome.fam ... done.</code></pre>
+</details>
+<p>This creates the file MAF_check.frq. </p>
+<details class="note"><summary>Inspect MAF_check.frq:</summary><pre class="highlight"><code class="language-bash">head MAF_check.frq
+ CHR         SNP   A1   A2          MAF  NCHROBS
+   1   rs2185539    T    C            0      224
+   1  rs11240767    T    C            0      224
+   1   rs3131972    A    G       0.1652      224
+   1   rs3131969    A    G       0.1339      224
+   1   rs1048488    C    T       0.1667      222
+   1  rs12562034    A    G       0.1027      224
+   1  rs12124819    G    A       0.2902      224
+   1   rs4040617    G    A       0.1295      224
+   1   rs2905036    C    T            0      224</code></pre>
+</details>
+<p>Again, use R to visualize the MAF distribution.</p>
 <div class="tabbed-set" data-tabs="3:1"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <p><pre class="highlight"><code>maf_freq &lt;- read.table("MAF_check.frq", header =TRUE, as.is=T)
-pdf("MAF_distribution.pdf")
+png("MAF_distribution.png")
 hist(maf_freq[,5],main = "MAF distribution", xlab = "MAF")
 dev.off()</code></pre>
 <img alt="Example" src="../img/MAF.png" /></p>
-<p>Now we want to filter out any SNPS with a MAF&lt;0.05 for a small data set or 0.1 for a larger data set. </p>
-<pre class="highlight"><code class="language-bash">TAG_MAF="maf"
-OUT3=$OUT2$sep$TAG_MAF
-MAF=0.05
-plink --bfile $OUT2 --maf $MAF --make-bed --out $OUT3</code></pre>
-<h4 id="view-heterozygosity-distribution-and-remove-outliers">View heterozygosity distribution and remove outliers<a class="headerlink" href="#view-heterozygosity-distribution-and-remove-outliers" title="Permanent link">&para;</a></h4>
-<p><strong>Generate a pruned subset of SNPs that are in approximate linkage equilibrium.</strong>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUT3 --indep-pairwise 50 5 0.5</code></pre>
-<strong>Compute method-of-moments F coefficient estimates</strong></p>
-<p>The --het flag in Plink computes observed and expected autosomal homozygous genotype counts for each sample, and reports method-of-moments F coefficient estimates (i.e. (<observed hom. count> - <expected count>) / (<total observations> - <expected count>)) to R_check.het. </p>
-<pre class="highlight"><code class="language-bash">plink --bfile $OUT3 --extract plink.prune.in --het --out R_check </code></pre>
-<div class="tabbed-set" data-tabs="4:1"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Plot of the heterozygosity rate distribution generated in R</label><div class="tabbed-content"></div>
+<p>Now, we want to filter any SNPs with a low MAF. The larger your dataset, the higher your power, such that you can set a less conservative MAF threshold. We recommend to throw out all SNPs with MAF &lt; 0.05 for a small data set such as the current one. For a larger dataset <code>What is larger?</code>, this threshold can be relaxed to 0.01.</p>
+<p>The <strong>--maf</strong> flag in PLINK filters out SNPs that fall below the given threshold.</p>
+<pre class="highlight"><code class="language-bash">MAF=0.05
+plink --bfile $FILESET.autosome --maf $MAF --make-bed --out $FILESET.maf</code></pre>
+<details class="note"><summary>PLINK reports the following output: </summary><p>```bash
+$ plink --bfile $FILESET.autosome --maf $MAF --make-bed --out $FILESET.maf
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.maf.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.autosome
+  --maf 0.05
+  --make-bed
+  --out HapMap_3_r3_1.maf</p>
+<p>12574 MB RAM detected; reserving 6287 MB for main workspace.
+1398544 variants loaded from .bim file.
+164 people (80 males, 84 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 52 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.998052.
+325318 variants removed due to minor allele threshold(s)
+(--maf/--max-maf/--mac/--max-mac).
+1073226 variants and 164 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.maf.bed + HapMap_3_r3_1.maf.bim +
+HapMap_3_r3_1.maf.fam ... done
+  ``` </p>
+</details>
+<p>PLINK removed 325,318 SNPs, leaving 1,073,226 variants.</p>
+<h2 id="view-heterozygosity-distribution-and-remove-outliers">View heterozygosity distribution and remove outliers<a class="headerlink" href="#view-heterozygosity-distribution-and-remove-outliers" title="Permanent link">&para;</a></h2>
+<p>We next check heterozygosity rates for all individuals within the sample. Excessively high or low heterozygosity rates could indicate sample contamination or inbreeding. </p>
+<h3 id="generate-a-pruned-subset-of-snps-that-are-in-approximate-linkage-equilibrium">Generate a pruned subset of SNPs that are in approximate linkage equilibrium.<a class="headerlink" href="#generate-a-pruned-subset-of-snps-that-are-in-approximate-linkage-equilibrium" title="Permanent link">&para;</a></h3>
+<p>Heterozygosity must be computed in a set of independent SNPs. SNPs that are in linkage disequilibrium violate the independence assumption. Hence, we perform a procedure called ``variant pruning'' to reduce our dataset towards a set of SNPs that are in approximate linkage equilibrium with one another. The <strong>--indep-pairwise</strong> flag in PLINK performs the pruning procedure. Its syntax is --indep-pairwise <window size>['kb'] <step size (variant ct)> <r^2 threshold>. Within each window, PLINK computes the pairwise r^2 between each SNP, removes one of the SNPs (the one with the lowest MAF) if the pairwise r^2 is larger than the r^2 threshold, and repeats until no SNPs within the window have an r^2 above the given threshold. The algorithm will then shift its window, as given by the step size argument, and repeat. We recommend to set a window of 50kb, a step size of 5, and an r^2 threshold of 0.5.  </p>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILESET.maf --indep-pairwise 50 5 0.5</code></pre>
+<details class="note"><summary>PLINK reports the following output: </summary><p>```bash
+plink --bfile $FILESET.maf --indep-pairwise 50 5 0.5
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3<br />
+Logging to plink.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.maf
+  --indep-pairwise 50 5 0.5</p>
+<p>12574 MB RAM detected; reserving 6287 MB for main workspace.
+1073226 variants loaded from .bim file.
+164 people (80 males, 84 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 52 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.998039.
+1073226 variants and 164 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+are missing.)
+Pruned 67124 variants from chromosome 1, leaving 20596.
+Pruned 69461 variants from chromosome 2, leaving 20337.
+Pruned 57330 variants from chromosome 3, leaving 17532.
+Pruned 50485 variants from chromosome 4, leaving 15644.
+Pruned 52786 variants from chromosome 5, leaving 16231.
+Pruned 55187 variants from chromosome 6, leaving 16566.
+Pruned 44767 variants from chromosome 7, leaving 14337.
+Pruned 45018 variants from chromosome 8, leaving 13625.
+Pruned 37678 variants from chromosome 9, leaving 12654.
+Pruned 43374 variants from chromosome 10, leaving 13851.
+Pruned 42449 variants from chromosome 11, leaving 12835.
+Pruned 39534 variants from chromosome 12, leaving 13031.
+Pruned 30539 variants from chromosome 13, leaving 9951.
+Pruned 26275 variants from chromosome 14, leaving 8869.
+Pruned 23752 variants from chromosome 15, leaving 8256.
+Pruned 24630 variants from chromosome 16, leaving 9189.
+Pruned 20966 variants from chromosome 17, leaving 8152.
+Pruned 23347 variants from chromosome 18, leaving 8308.
+Pruned 13565 variants from chromosome 19, leaving 6097.
+Pruned 20631 variants from chromosome 20, leaving 7317.
+Pruned 11312 variants from chromosome 21, leaving 4170.
+Pruned 10938 variants from chromosome 22, leaving 4530.
+Pruning complete.  811148 of 1073226 variants removed.
+Marker lists written to plink.prune.in and plink.prune.out 
+  ```</p>
+</details>
+<p>The list of SNP rsIDs kept by the pruning procedure is given by plink.prune.in. The SNPs that are removed (811,148 of 1,073,226 variants), as they were in linkage disequilibrium with one or more of the SNPs in plink.prune.in, are listed in plink.prune.out</p>
+<details class="note"><summary>Inspect plink.prune.in: </summary><pre class="highlight"><code class="language-bash">head plink.prune.in
+rs1048488
+rs12562034
+rs12124819
+rs4970383
+rs1806509
+rs28576697
+rs13303106
+rs13303010
+rs2341354
+rs35940137</code></pre>
+</details>
+<p><strong>Compute method-of-moments F coefficient estimates</strong></p>
+<p>The <strong>--het</strong> flag in PLINK computes observed and expected autosomal homozygous genotype counts for each sample, and reports method-of-moments F coefficient estimates (i.e. (observed hom. count - expected count) / (total observations - expected count)) in the output file. We compute these statistics on the pruned SNPs only. </p>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILESET.maf --extract plink.prune.in --het --out R_check </code></pre>
+<details class="note"><summary>Show PLINK output: </summary><p>```bash
+  $ plink --bfile $FILESET
+  .maf --extract plink.prune.in --het --out R_check
+  PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+  (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+  Logging to R_check.log.
+  Options in effect:
+ --bfile HapMap_3_r3_1.maf
+ --extract plink.prune.in
+ --het
+ --out R_check</p>
+<p>12574 MB RAM detected; reserving 6287 MB for main workspace.
+1073226 variants loaded from .bim file.
+164 people (80 males, 84 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+--extract: 262078 variants remaining.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 112 founders and 52 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.997962.
+262078 variants and 164 people pass filters and QC.
+Among remaining phenotypes, 56 are cases and 56 are controls.  (52 phenotypes
+are missing.)
+--het: 262078 variants scanned, report written to R_check.het .
+```</p>
+</details>
+<details class="note"><summary>Inspect R_check.het</summary><p><code>bash 
+head R_check.het
+  FID       IID       O(HOM)       E(HOM)        N(NM)            F
+ 1328   NA06989       172125    1.727e+05       261511    -0.006857
+ 1377   NA11891       170744    1.711e+05       259125    -0.004518
+ 1349   NA11843       172346     1.73e+05       261907    -0.007276
+ 1330   NA12341       170768    1.725e+05       261235     -0.01998
+ 1444   NA12739       170563    1.704e+05       257944      0.00224
+ 1344   NA10850       173379    1.729e+05       261734     0.005574
+ 1328   NA06984       171767    1.722e+05       260670    -0.004437
+ 1463   NA12877       172550    1.728e+05       261603    -0.002632
+ 1418   NA12275       171259    1.726e+05       261348      -0.0153</code></p>
+<p>The column headers correspond to the following </p>
+<ul>
+<li><strong>FID</strong>:    Family ID</li>
+<li><strong>IID</strong>:    Within-family ID</li>
+<li><strong>O(HOM)</strong>: Observed number of homozygotes</li>
+<li><strong>E(HOM)</strong>: Expected number of homozygotes</li>
+<li><strong>N(NM)</strong>:  Number of non-missing autosomal genotypes</li>
+<li><strong>F</strong>:  Method-of-moments F coefficient estimate</li>
+</ul>
+</details>
+<p>Let's visualize the heterozygosity distribution in a histogram:</p>
+<div class="tabbed-set" data-tabs="4:1"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <p><pre class="highlight"><code>het &lt;- read.table("R_check.het", head=TRUE)
-pdf("heterozygosity.pdf")
+png("heterozygosity.png")
 het$HET_RATE = (het$"N.NM." - het$"O.HOM.")/het$"N.NM."
 hist(het$HET_RATE, xlab="Heterozygosity Rate", ylab="Frequency", main= "Heterozygosity Rate")
 dev.off()</code></pre>
 <img alt="Example" src="../img/het.png" /></p>
-<div class="tabbed-set" data-tabs="5:1"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><label for="__tabbed_5_1">list of individuals who deviate more than 3 standard deviations from the heterozygosity rate mean generated in R</label><div class="tabbed-content"></div>
+<p>Next, let's create a list of individuals who deviate more than 3 standard deviations from the mean heterozygosity rate.</p>
+<div class="tabbed-set" data-tabs="5:1"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><label for="__tabbed_5_1">Performed in R</label><div class="tabbed-content"></div>
 </div>
 <pre class="highlight"><code>het &lt;- read.table("R_check.het", head=TRUE)
 het$HET_RATE = (het$"N.NM." - het$"O.HOM.")/het$"N.NM."
 het_fail = subset(het, (het$HET_RATE &lt; mean(het$HET_RATE)-3*sd(het$HET_RATE)) | (het$HET_RATE &gt; mean(het$HET_RATE)+3*sd(het$HET_RATE)));
 het_fail$HET_DST = (het_fail$HET_RATE-mean(het$HET_RATE))/sd(het$HET_RATE);
 write.table(het_fail, "fail-het-qc.txt", row.names=FALSE)</code></pre>
-<p>The command above generates the <strong>fail-het-qc.txt</strong> file and the command below saves the first two rows to a new file named <strong>het_fail_ind.txt</strong></p>
+<details class="note"><summary>Inspect <strong>fail-het-qc.txt</strong>: </summary><p><code>bash
+  cat fail-het-qc.txt
+"FID" "IID" "O.HOM." "E.HOM." "N.NM." "F" "HET_RATE" "HET_DST"
+1330 "NA12342" 174790 172100 260519 0.0308 0.329070048633689 -4.69408664581716
+1459 "NA12874" 175863 173000 261854 0.03269 0.328392921246191 -4.93949187693739
+1340 "NA06994" 168357 171300 259327 -0.03301 0.350792628611753 3.17863399503596</code></p>
+</details>
+<p>Three individuals have an excessively low heterozygosity rate. We will remove these heterozygous outliers from the genetic data using PLINK. First, we save the first two columns of <strong>fail-het-qc.txt</strong> in a seperate file (sed 's/"// g' is used to remove the quotations marks, such that the file, which was created in R in R becomes compatible with PLINK). Next, we use <strong>--remove</strong> in PLINK to remove the outliers.</p>
 <p><pre class="highlight"><code class="language-bash">sed 's/"// g' fail-het-qc.txt | awk '{print$1, $2}' &gt; het_fail_ind.txt</code></pre>
 <strong>remove individuals that are heterozygous outliers</strong>
-<pre class="highlight"><code class="language-bash">HET="het_fix"
-OUT4=$OUT3$sep$HET
-plink --bfile $OUT3 --remove het_fail_ind.txt --make-bed --out $OUT4</code></pre></p>
+<pre class="highlight"><code class="language-bash">plink --bfile $FILESET.maf --remove het_fail_ind.txt --make-bed --out $FILESET.het_fix</code></pre></p>
+<details class="note"><summary>The resulting output:</summary><p>```bash
+plink --bfile $FILESET.maf --remove het_fail_ind.txt --make-bed --out $FILESET.het_fix
+PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to HapMap_3_r3_1.het_fix.log.
+Options in effect:
+  --bfile HapMap_3_r3_1.maf
+  --make-bed
+  --out HapMap_3_r3_1.het_fix
+  --remove het_fail_ind.txt</p>
+<p>12574 MB RAM detected; reserving 6287 MB for main workspace.
+1073226 variants loaded from .bim file.
+164 people (80 males, 84 females) loaded from .fam.
+112 phenotype values loaded from .fam.
+--remove: 161 people remaining.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 109 founders and 52 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate in remaining samples is 0.998098.
+1073226 variants and 161 people pass filters and QC.
+Among remaining phenotypes, 55 are cases and 54 are controls.  (52 phenotypes
+are missing.)
+--make-bed to HapMap_3_r3_1.het_fix.bed + HapMap_3_r3_1.het_fix.bim +
+HapMap_3_r3_1.het_fix.fam ... done.
+  ```</p>
+</details>
 <h2 id="transfer-files-to-use-for-population-stratification">Transfer files to use for population stratification<a class="headerlink" href="#transfer-files-to-use-for-population-stratification" title="Permanent link">&para;</a></h2>
+<p>Congratulations! You have finished the first tutorial on quality control of genetic data. We will use the cleaned data in the next tutorial to diagnose and correct for population stratification. To set up the data file you created for the next tutorial, create a new directory, and move the final .bim/.bed/.fam files towards. We will also Also make sure PLINK is copied towards this new directory. </p>
 <p><strong>rename files and copy to population stratification folder</strong> 
 <pre class="highlight"><code class="language-bash">mkdir ../2_Population_stratification
-bed=".bed"
-fam=".fam"
-bim=".bim"
-mv $OUT4$bed ./qcout.bed
-mv $OUT4$bim ./qcout.bim
-mv $OUT4$fam ./qcout.fam
-cp qcout* ../2_Population_stratification
-cp plink.prune.in ../2_Population_stratification</code></pre>
+
+cp $FILESET.het_fix.bed ../2_Population_stratification/$FILESET.qcout.bed
+cp $FILESET.het_fix.bim ../2_Population_stratification/$FILESET.qcout.bim
+cp $FILESET.het_fix.fam ../2_Population_stratification/$FILESET.qcout.fam
+cp plink.prune.in ../2_Population_stratification
+cp plink ../2_Population_stratification</code></pre>
 <strong>change directory into population stratification folder</strong>
 <pre class="highlight"><code class="language-bash">cd ../2_Population_stratification</code></pre></p>
+<h2 id="further-tips-and-further-reading">Further tips and further reading<a class="headerlink" href="#further-tips-and-further-reading" title="Permanent link">&para;</a></h2>
               
             </div>
           </div>

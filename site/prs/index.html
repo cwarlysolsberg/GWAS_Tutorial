@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>PRS - Basic Tutorial for Genome Wide Association Analysis</title>
+  <title>7.PRS - Basic Tutorial for Genome Wide Association Analysis</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,7 +19,7 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "PRS";
+    var mkdocs_page_name = "7.PRS";
     var mkdocs_page_input_path = "prs.md";
     var mkdocs_page_url = null;
   </script>
@@ -85,13 +85,43 @@
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../liftover/">liftover</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../Additional_considerations/">6. Additional Considerations</a>
                     </li>
                 </ul>
                 <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="./">PRS</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">7.PRS</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#background">Background</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#qc-of-gwas-summary-data">QC of GWAS summary data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#remove-duplicate-snps-from-gwas-summary-statistics">Remove duplicate SNPs from GWAS summary statistics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#further-cleaning-of-gwas-summary-statistics">Further cleaning of GWAS summary statistics</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#matching-cleaned-gwas-summary-statistics-with-target-data">Matching cleaned GWAS summary statistics with target data.</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ldsc-to-assess-snp-based-heritability-and-confounding-in-gwas-summary-statistics">LDSC to assess SNP-based heritability and confounding in GWAS summary statistics.</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#gcta-to-estimate-snp-based-heritability">GCTA to estimate SNP-based heritability</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#create-a-prs-using-plink-clumpig-and-thresholding">Create a PRS using PLINK (clumpig and thresholding):</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#create-a-prs-using-ldpred">Create a PRS using LDPred</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#notes-on-power">Notes on power:</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#notes-on-confouding-within-family-analysis-etc">Notes on confouding, within-family analysis, etc.</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#notes-on-downward-bias-due-to-measurement-error-genetic-iv">Notes on downward bias due to measurement error: Genetic IV?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#further-topics-genetic-correlations-genomic-sem">Further topics? Genetic correlations, Genomic SEM</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#references">References</a>
     </li>
     </ul>
                     </li>
@@ -117,7 +147,7 @@
     
       
     
-    <li>PRS</li>
+    <li>7.PRS</li>
     <li class="wy-breadcrumbs-aside">
       
         <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/prs.md"
@@ -133,14 +163,295 @@
               
                 <h1 id="calculating-and-analysing-prs">Calculating and Analysing PRS<a class="headerlink" href="#calculating-and-analysing-prs" title="Permanent link">&para;</a></h1>
 <h2 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h2>
-<p>In this section of the tutorial you will use four different software programs to compute PRS from the base and target data that you QC'ed in the previous two sections. </p>
-<p>The programs are</p>
-<ul>
-<li><a href="../plink/">PLINK</a></li>
-<li><a href="../prsice/">PRSice-2</a></li>
-<li><a href="ldpred.md">LDPred-2</a></li>
-<li><a href="lassosum.md">lassosum</a></li>
-</ul>
+<p>In this section of the tutorial you will learn how to construct a Polygenic Risk Score (PRS) for Alzheimer's disease, using PLINK and ldpred, and use this PRS to predict the likelihood of late-onset alzheimer's disease. As part of this analysis, you will estimate the heritability of alzheimer's disease using ld score regression on the GWAS summary statistics, and using GCTA on the target dataset. </p>
+<p>Whenever evaluating the predictiveness of a PRS, it is of vital importance that the target data set was not included in the original GWAS analysis. When using GWAS results from previously published work, it is important to check the accompanying article for the data sources that the authors used and ensure that your target data was not included in the study. When this is the case, it is advised to search for GWAS results elsewhere, or to contact the original GWAS authors to see whether it is possible to acquire meta-analysed summary statistics that exclude the target population.</p>
+<p>The target data that we use in this tutorial is a dataset of 176 cases and 188 controls for late-onset alzheimer's disease <code>https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2667989/pdf/main.pdf</code>. We have cleaned this target data according to our quality control protocol as outlined in tutorials <a href="../QC/">1</a> and <a href="../popstrat/">2</a>, after which 341 individuals remain (167 cases and 174 controls). <code>provide download links to cleaned target files</code> </p>
+<p>The GWAS summary statistics that we will use are from the largest and most recently published GWAS for alzheimer's disease (Jansen et al., 2019). Click <a href="https://ctg.cncr.nl/software/summary_statistics">here</a> to download the GWAS summary statistics estimated (AD_sumstats_Jansenetal_2019sept.txt.gz), which you will use as your weights for the polygenic score. Note that this is a GWAS, not on late-onset alzheimer's disease, but on a combination of alzheimer's disease and alzheimer's disease by proxy (i.e. through parental diagnoses). The construction of a PRS on a different, but related phenotype may reduce its overall predictiveness, but is still a useful endaveour as long as the phenotypes in the GWAS and target dataset are genetically related. Phenotypes are often coded differently in GWAS to maximize sample size and harmonize different datasets. One of the uses of a PRS is that they can be applied to study the relationships between genotype and phenotype in a smaller dataset in which phenotypes may be recorded in more detail.</p>
+<p><code>Links to install software here</code> (GCTA,PLINK,LDpred)</p>
+<p>Before you start, make sure the clean target data file in plink binary format (.bed, .bim and .fam) and the GWAS summary statistics (.txt) are in your working directory. We define a TARGETSET and GWASSET variable at the start, to easily refer to our target and GWAS summary data, respectively.</p>
+<pre class="highlight"><code class="language-bash">TARGETSET=adgwas.qcout.clean
+GWASSET=AD_sumstats_Jansenetal_2019sept.txt</code></pre>
+<h3 id="qc-of-gwas-summary-data">QC of GWAS summary data<a class="headerlink" href="#qc-of-gwas-summary-data" title="Permanent link">&para;</a></h3>
+<p>First, let's look at the first 5 lines of the GWAS summary statistics</p>
+<pre class="highlight"><code class="language-bash">head -5 $GWASSET
+uniqID.a1a2     CHR     BP      A1      A2      SNP     Z       P       Nsum    Neff    dir     EAF     BETA    SE
+1:715265_T_C    1       715265  T       C       rs12184267      2.12197306477   0.03384 359856  359856  ??+?    0.0408069       0.0126426452822487      0.0059579668998386
+1:715367_G_A    1       715367  G       A       rs12184277      1.95791489337   0.05024 360230  360230  ??+?    0.0410687       0.0116235111669331      0.00593667845639937
+1:717485_A_C    1       717485  A       C       rs12184279      1.91243829548   0.05582 360257  360257  ??+?    0.0405759       0.0114189092819899      0.0059708641627697
+1:720381_T_G    1       720381  T       G       rs116801199     2.29540369149   0.02171 360980  360980  ??+?    0.042162        0.0134428918549354      0.00585643906767846
+</code></pre>
+<p>The ReadMe of the GWAS summary data clarifies each of these columns. In this tutorial, we will only use the following columns: 
+  - <strong>SNP</strong>: the rsID for each tested SNP
+  - <strong>BP</strong>: the SNP's base position
+  - <strong>A1</strong>: the reference allele
+  - <strong>A2</strong>: the alternative allele
+  - <strong>Z</strong>: The Z-score
+  - <strong>BETA</strong>: the estimated coefficient of the SNP on the diagnosis for alzheimer's disease
+  - <strong>P</strong>: the P-value associatied with BETA
+  - <strong>Nsum</strong> The sample size for the particular SNP. </p>
+<p>We first define some variables such that we can easily to refer to the columns we need in our code:</p>
+<pre class="highlight"><code class="language-bash">BPCOLNO=3
+REFACOLNO=4
+ALTACOLNO=5
+SNPCOLNO=6
+PVALCOLNO=8
+BETACOLNO=13
+ZCOLNO=7
+NCOLNO=9</code></pre>
+<h3 id="remove-duplicate-snps-from-gwas-summary-statistics">Remove duplicate SNPs from GWAS summary statistics<a class="headerlink" href="#remove-duplicate-snps-from-gwas-summary-statistics" title="Permanent link">&para;</a></h3>
+<p>Most GWAS software packages, such as PLINK, do not allow for duplicate SNPs in the GWAS summary data. We will obtain a list of rsIDs using awk, sort these SNPs, and extract the repeated lines using ``uniq -d'', saving these into a new file called duplicate.snp. We next use grep to filter out these duplicate SNPs from our GWAS summary statistics. </p>
+<pre class="highlight"><code class="language-bash">awk -v c1=$SNPCOLNO '{print $c1}' $GWASSET |\
+sort |\
+uniq -d &gt; duplicate.snp 
+grep -vf duplicate.snp $GWASSET &gt; $GWASSET.nodup</code></pre>
+<pre class="highlight"><code class="language-bash">wc -l $GWASSET
+13367300 AD_sumstats_Jansenetal_2019sept.txt
+
+wc -l $GWASSET.nodup
+13336963 AD_sumstats_Jansenetal_2019sept.txt.nodup</code></pre>
+<p>This filtering procedure leaves us with over 13 million SNPs that are non-duplicates. Duplicate SNPs occur, for example, due to coding mistakes, or when SNPs are multiallelic. </p>
+<h3 id="further-cleaning-of-gwas-summary-statistics">Further cleaning of GWAS summary statistics<a class="headerlink" href="#further-cleaning-of-gwas-summary-statistics" title="Permanent link">&para;</a></h3>
+<p>When constructing a PRS, it is of importance to ensure that the SNP weights reported in the GWAS summary statistics are correctly matched with the target data. Any SNPs that are incorrectly matched will be assigned a wrong weight, and thus introduce noise into the PRS. Here, we remove strand ambiguous alleles, as well as indels (here marked by "I'/D"). Furthermore, we only keep columns that have rsIDs. </p>
+<pre class="highlight"><code class="language-bash">awk '!( ($4=="A" &amp;&amp; $5=="T") || ($4=="D" &amp;&amp; $5=="I")  || \
+        ($4=="T" &amp;&amp; $5=="A") || ($4=="I" &amp;&amp; $5=="D") || \
+        ($4=="G" &amp;&amp; $5=="C") || \
+        ($4=="C" &amp;&amp; $5=="G")) {print}' $GWASSET.nodup &gt; $GWASSET.nodup.noambu
+
+awk 'NR==1' $GWASSET.nodup.noambu | awk -v c1=$SNPCOLNO '$c1 ~ /^rs/' $GWASSET.nodup.noambu &gt; $GWASSET.nodup.noambu.rsid </code></pre>
+<pre class="highlight"><code class="language-bash">wc -l $GWASSET.nodup.noambu
+10331009 AD_sumstats_Jansenetal_2019sept.txt.noambu
+
+wc -l $GWASSET.nodup.noambu.rsid
+10227986  AD_sumstats_Jansenetal_2019sept.txt.nodup.noambu.rsid</code></pre>
+<p>Notes on GWAS cleaning: irrelevant here: but don't include X, Y, or MT chromosome. If available, filter on info. </p>
+<h3 id="matching-cleaned-gwas-summary-statistics-with-target-data">Matching cleaned GWAS summary statistics with target data.<a class="headerlink" href="#matching-cleaned-gwas-summary-statistics-with-target-data" title="Permanent link">&para;</a></h3>
+<p>Our next goal is to take our target data, and only keep the SNPs that are present in the GWAS summary statistics. We first count how many SNPs there are in the GWAS summary and target data, respectively. </p>
+<pre class="highlight"><code class="language-bash">###
+wc -l $GWASSET.nodup.noambu.rsid
+10227986 AD_sumstats_Jansenetal_2019sept.txt.nodup.noambu.rsid
+
+wc -l $TARGETSET.bim 
+191069 adgwas.qcout.clean.bim
+</code></pre>
+<p><code>Resolve strand issues, flip alleles</code></p>
+<p>Note that only 191069 SNPs are present in our GWAS summary data (<code>wc -l $TARGETSET.bim</code>), such that we cannot use any of the 10036917 remaining SNPs. We do not need to observe all SNPs from our GWAS summary statistics in our target data to construct a useful PRS. Even the missingness of causal SNPs for alzheimer's disease in the target data is not a big problem as long as we have still genotyped nearby SNPs that are in linkage disequilibrium with such causal SPNs. Nonetheless, the low SNP density in our target dataset will negatively effect the predictive power of our PRS. The GWAS summary results do have a wide SNP coverage, which is of more crucial importance, such that we can attach PRS weights to each SNP in our limited target data set.</p>
+<p>Next, we use awk to get a list of SNP rsIDs and base pair positions from our GWAS summary statistics. We next take our target data, only keep the SNPs that are present in the GWAS summary statistics, and update their base pair positions using the update-map flag in plink. This updates the base pair positions from the build of the target data set (hg36), to the build of the GWAS summary data (hg37) <code>check</code></p>
+<pre class="highlight"><code class="language-bash">awk -v c1=$SNPCOLNO -v c2=$BPCOLNO '{print $c1,$c2}' $GWASSET.nodup.noambu.rsid &gt; gwassnps.txt
+awk -v c1=$SNPCOLNO 'FNR&gt;1{print $c1}' $GWASSET.nodup.noambu.rsid &gt; snplist.txt
+plink --bfile $TARGETSET --extract snplist.txt --update-map gwassnps.txt --make-bed --out $TARGETSET.out</code></pre>
+<pre class="highlight"><code class="language-bash">wc -l $TARGETSET.out.bim
+155949 adgwas.qcout.clean.out.bim</code></pre>
+<p>155,949 SNPs present in our target data set are also present in our GWAS summary data.</p>
+<p>Finally, we use awk  and grep to restrict our gwas summary statistics to the SNPs that are also present in our target data.
+<pre class="highlight"><code class="language-bash">#Use only variables in GWAS summary stats that are also present in genome data. (but keep header of the original summary stats file)
+awk '{print $2}' $TARGETSET.out.bim &gt; $TARGETSET.SNPs.txt
+head -1 $GWASSET.nodup &gt; GWASanalysis.txt &amp;&amp; grep -wFf $TARGETSET.SNPs.txt $GWASSET.nodup &gt;&gt; GWASanalysis.txt
+wc -l GWASanalysis.txt</code></pre></p>
+<p>Finally, we flip reference alleles and resolve any strand issues.
+<pre class="highlight"><code class="language-bash">awk -v c1=$SNPCOLNO -v c2=$REFACOLNO 'FNR&gt;1{print $c1,$c2}' GWASanalysis.txt &gt; gwasreflist.txt
+plink --bfile $TARGETSET.out --reference-allele gwasreflist.txt --make-bed --out $TARGETSET.out.ref
+
+awk -v c1=$SNPCOLNO -v c2=$REFACOLNO -v c3=$ALTACOLNO '{print$c1,$c2,$c3}' GWASanalysis.txt &gt; gwasstrandlist.txt
+awk '{print$2,$5,$6}' $TARGETSET.out.ref.bim &gt; $TARGETSET.strandlist
+sort gwasstrandlist.txt $TARGETSET.strandlist |uniq -u &gt; all_differences.txt
+awk '{print$1}' all_differences.txt | sort -u &gt; flip_list.txt
+plink --bfile $TARGETSET.out.ref --flip flip_list.txt --reference-allele gwasreflist.txt --make-bed --out $TARGETSET.out.ref.strand</code></pre></p>
+<p>Investigate problematic SNPs and throw them out:
+<pre class="highlight"><code class="language-bash">awk '{print$2,$5,$6}' $TARGETSET.out.ref.strand.bim &gt; corrected_map_tmp
+sort gwasstrandlist.txt corrected_map_tmp |uniq -u  &gt; uncorresponding_SNPs.txt
+wc -l uncorresponding_SNPs.txt
+
+awk '{print$1}' uncorresponding_SNPs.txt | sort -u &gt; SNPs_for_exclusion.txt
+plink --bfile $TARGETSET.out.ref.strand --exclude SNPs_for_exclusion.txt --make-bed --out $TARGETSET.def</code></pre></p>
+<h3 id="ldsc-to-assess-snp-based-heritability-and-confounding-in-gwas-summary-statistics">LDSC to assess SNP-based heritability and confounding in GWAS summary statistics.<a class="headerlink" href="#ldsc-to-assess-snp-based-heritability-and-confounding-in-gwas-summary-statistics" title="Permanent link">&para;</a></h3>
+<h4 id="gcta-to-estimate-snp-based-heritability">GCTA to estimate SNP-based heritability<a class="headerlink" href="#gcta-to-estimate-snp-based-heritability" title="Permanent link">&para;</a></h4>
+<p>Before constructing a PGS on the target data, it is useful to estimate the SNP-based heritability of the phenotype of interest using gcta. Due to measurement error in the PRS weights, the share of explained variance that the PRS can explain in a linear regression is lower than the overall SNP-based heritability. Therefore, estimation of SNP-based heritability gives us a reasonable expectation of the upper bound that we can expect from the predictiveness of the PRSs that we will construct. Genome-based restricted maximum likelihood (GREML) estiamtes the degree of variance explained in the phenotype that is explained by all SNPs in the target data. This is often referred to as SNP-based heritability. GCTA is a software package used to conduct such GREML analyses. It is similar to PLINK in the sense that it is operated through bash commands, using flags to guide the analysis of interest.  </p>
+<p>Before using GCTA to estimate SNP-based heritability, it is advisable to conduct a power calculation using the associated power calculator: 
+https://shiny.cnsgenomics.com/gctaPower/. To arrive at reasonable power (&gt;80%), a sample size of 2000 individuals is roughly the minimum that is needed for most traits. The target data set here is notably smaller. With our 174 cases and 167 controls, and assuming a disease risk in the population of 0.1, a trait heritability of 0.5, alpha of 0.05, and the default variance of SNP-derived genetic relationships of 0.00002 gives us a dramatically low power of 0.0806. The standard error that we could expect for our analysis is 0.9760, which is incredibly large, given that a heritability estimate is bounded between 0 and 1 by definition. Hence, in our current data set, the estimation of SNP-based heritability using GREML is a useless endevaour. We nonetheless perform the GREML analysis anyway to illustrate how it is done in a dataset that is sufficiently large.</p>
+<p>In the following lines of code, we first collect the family and individual IDs, and the phenotype data (case or control) into a new file (phenotype.phen). We next invoke gcta to estimate genome-wide relatedness matrix (using the --make-grm flag), which serves as an input to the heritability estimation. The estimation of the GRM is very sensitive to the inclusion of cryptic related individuals. We use the --grm-cutoff flag to throuw out individuals with relatedness value larger than 0.025. This is a more conservative parameter setting than the one included in our QC pipeline.</p>
+<p>We next invoke the --reml flag in gcta64 to estimate the the SNP-based heritability. The necessary inputs are the GRM estimated in the line of code before, using the --grm flag, and the phenotype file using the --pheno flag.</p>
+<pre class="highlight"><code class="language-bash">awk '{print $1,$2,$6}' $TARGETSET.def.fam &gt; phenotype.phen
+
+##To DO: visualize the phenotype here (write R-script)
+
+##Estimate heritability using GCTA (GREML) (GCTA-GREML power calculator?) --&gt; TO DO: Double-check we exclude close relatives. Check Yang et al. (2017). 
+GRMCUT=0.025
+
+gcta64 --bfile $TARGETSET.def --autosome --grm-cutoff $GRMCUT --make-grm --out $TARGETSET.grm
+gcta64 --reml --grm $TARGETSET.grm --pheno phenotype.phen --out greml</code></pre>
+<p>The resulting output:</p>
+<pre class="highlight"><code>*******************************************************************
+* Genome-wide Complex Trait Analysis (GCTA)
+* version 1.93.2 beta Linux
+* (C) 2010-present, Jian Yang, The University of Queensland
+* Please report bugs to Jian Yang &lt;jian.yang.qt@gmail.com&gt;
+*******************************************************************
+Analysis started at 15:54:59 CEST on Mon Mar 29 2021.
+Hostname: int1.bullx
+
+Accepted options:
+--reml
+--grm adgwas.qcout.clean.grm
+--pheno phenotype.phen
+--out greml
+
+Note: This is a multi-thread program. You could specify the number of threads by the --thread-num option to speed up the computation if there are multiple processors in your machine.
+
+Reading IDs of the GRM from [adgwas.qcout.clean.grm.grm.id].
+341 IDs read from [adgwas.qcout.clean.grm.grm.id].
+Reading the GRM from [adgwas.qcout.clean.grm.grm.bin].
+GRM for 341 individuals are included from [adgwas.qcout.clean.grm.grm.bin].
+Reading phenotypes from [phenotype.phen].
+Non-missing phenotypes of 341 individuals are included from [phenotype.phen].
+Assuming a disease phenotype for a case-control study: 167 cases and 174 controls
+Note: you can specify the disease prevalence by the option --prevalence so that GCTA can transform the variance explained to the underlying liability scale.
+341 individuals are in common in these files.
+
+Performing  REML analysis ... (Note: may take hours depending on sample size).
+341 observations, 1 fixed effect(s), and 2 variance component(s)(including residual variance).
+Calculating prior values of variance components by EM-REML ...
+Updated prior values: 0.125147 0.124882
+logL: 62.9277
+Running AI-REML algorithm ...
+Iter.   logL    V(G)    V(e)
+1       62.93   0.15331 0.09642
+2       63.00   0.21404 0.03527
+3       63.06   0.21182 0.03765
+4       63.06   0.21194 0.03754
+5       63.06   0.21193 0.03754
+Log-likelihood ratio converged.
+
+Calculating the logLikelihood for the reduced model ...
+(variance component 1 is dropped from the model)
+Calculating prior values of variance components by EM-REML ...
+Updated prior values: 0.25063
+logL: 62.32649
+Running AI-REML algorithm ...
+Iter.   logL    V(e)
+1       62.33   0.25063
+Log-likelihood ratio converged.
+
+Summary result of REML analysis:
+Source  Variance        SE
+V(G)    0.211931        0.176050
+V(e)    0.037542        0.174494
+Vp      0.249473        0.019152
+V(G)/Vp 0.849515        0.699855
+
+Sampling variance/covariance of the estimates of variance components:
+3.099372e-02    -3.053760e-02
+-3.053760e-02   3.044826e-02
+
+Summary result of REML analysis has been saved in the file [greml.hsq].
+
+Analysis finished at 15:54:59 CEST on Mon Mar 29 2021
+Overall computational time: 0.09 sec.</code></pre>
+<p>The output shows four estimates of interest: V(G), the amount of variance in the phenotype that can be attributed to variance in the SNPs, V(e), the remaining variance that can be attributed to environmental factors, their sum Vp, and estimated SNP-based heritability: V(G) over Vp. The estimated SNP-based heritability is very high: 0.85. However, as expected, the standard error around this estimate (~0.7) is so large that even very low heritabilities can not be ruled out. In sum, the sample size is too small to derive any conclusions about SNP based heritability.</p>
+<h4 id="create-a-prs-using-plink-clumpig-and-thresholding">Create a PRS using PLINK (clumpig and thresholding):<a class="headerlink" href="#create-a-prs-using-plink-clumpig-and-thresholding" title="Permanent link">&para;</a></h4>
+<p>Compare to repository: https://www.pgscatalog.org/trait/EFO_0000249/</p>
+<p><code>Use PRSIce or comment on different thresholds</code>
+We are now ready to estimate our PRS. For each individual, we multiply their reference allele count at each SNP with a SNP weight estimated from the GWAS summary statistics. However, the GWAS coefficients as estimated in GWAS summary data are not corrected for linkage disequilibrium. Constructing a PRS without any correction for LD essentially leads to an overweighting of SNPs that are in dense LD-regions compared to SNPs that are not, resulting in lower predictability of the PRS. One method to deal with this is clumping. Clumping is a form of informed pruning: The R-squared between SNPs that reside within a given kb-window is computed, and one of the SNPs is thrown out of the R-squared is higher than a given threshold. The algorithm differs from pruning because it sorts all SNPs within a window increasingly by p-value, to ensure that SNPs with the lowest p-value are kept. </p>
+<p>The clumping algorithm gives a researcher substantial degrees of freedom when constructing a polygenic score. How to set the optimal parameters? Especially the choice of the p-value threshold has been shown to impact the predictiveness of PRSs, with stark differences in optimal threshold between different traits (Ware et al., 2017). Many researchers optimize over a grid of all possible parameter combinations. Automated tools, such as PRSICE2, are available for this. However, fitting many PRSs and choosing the best in terms of their evaluated predictive value in the target data set comes at the risk of overfitting the data. The smaller the dataset, the larger the risk of overfitting. We strongly suggest researchers to scan the literature first to see whether some consensus on optimal parameter values is available. For alzheimer's disease, many studies suggest that highly restrictive p-value thresholds (such that only the most significant SNPs for alzheimer's disease are included) result in the most predictive polygenic scores. Here, we follow Chaudhury et al. (2019), and set a p-value threshold of 0.000107, a window size of 250 kb, and an r-squared threshold of 0.1. </p>
+<pre class="highlight"><code class="language-bash">plink --bfile $TARGETSET.def  --clump-p1 0.000107 --clump-p2 0.000107 --clump-r2 0.1 --clump-kb 250 --clump GWASanalysis.txt --clump-snp-field SNP \ 
+--clump-field P --out $TARGETSET.clump
+#Extract list of clumped SNPs (no header):
+awk 'NR!=1{print $3}' $TARGETSET.clump.clumped &gt;  $TARGETSET.clump.snp</code></pre>
+<pre class="highlight"><code class="language-bash">wc -l $TARGETSET.clump.snp
+76 adgwas.qcout.clean.clump.snp</code></pre>
+<p>Clumping our target data set using the p-values from gwas summary statistics leaves 76 SNPs in our dataset. We will extract these SNPs from our dataset, and construct a PRS using plink. The --score flag in PLINK next takes the reference allele count of each individual in our target data set, multiplies this value by the coefficient estimated in the GWAS, and sums this result over all included 76 SNPs.  </p>
+<pre class="highlight"><code class="language-bash">awk -v c1=$SNPCOLNO -v c2=$REFACOLNO -v c3=$BETACOLNO 'FNR&gt;1{print $c1,$c2,$c3}' GWASanalysis.txt &gt; score.txt
+plink --bfile $TARGETSET.def --extract $TARGETSET.clump.snp --pheno phenotype.phen --score score.txt --out plink_score</code></pre>
+<p>The output is a .score file, which summarizes the Polygenic score for each individual in the variable ``SCORE'':</p>
+<p>Before evaluating our PRSs by checking their predictability against the phenotype of interest, we estimate the first 10 principal components for each individual in our target data. These will be used as control variables. We also extract sex information from the .fam file as additional covariates in our regressions.</p>
+<pre class="highlight"><code class="language-bash">plink --bfile $TARGETSET.def --pca 10 header --out clusters
+awk '{print $1,$2,$5}' $TARGETSET.def.fam &gt; temp.txt
+awk 'BEGIN{print "FID IID SEX"}1' temp.txt &gt; sex.txt</code></pre>
+<p>We are now ready to load the score file in R, merge with the principal components, and evaluating the predictiveness of the PRSs. We standardize our PRSs such that they have mean 0 and standard deviation 1, and change the coding of our phenotype such that cases are equal to 1 and controls are equal to zero. We first estimate a null model that regresses the phenotype on the first ten PCs and sex, using both a linear probability model and a logit specification. We next estimate four models: a linear probability regressing the phenotype on the PRS only, one with all controls, and two similar specifications using a logit model. </p>
+<div class="tabbed-set" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<pre class="highlight"><code>library(stargazer)
+
+data &lt;- read.table(file="plink_score.profile",header=TRUE)
+
+clusterdata &lt;- read.table(file="clusters.eigenvec",header=TRUE)
+sexdata &lt;- read.table(file="sex.txt",header=TRUE)
+mergedata &lt;- merge(data,clusterdata)
+mergedata &lt;- merge(mergedata,sexdata)
+
+#standardize data
+mergedata$SCORE &lt;- (mergedata$SCORE-mean(mergedata$SCORE))/(sd(mergedata$SCORE))
+mergedata$PHENO &lt;- mergedata$PHENO - 1
+
+nullmodel&lt;-lm(PHENO~PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10+SEX,data=mergedata)
+nullr2&lt;-summary(nullmodel)$r.squared
+
+model&lt;-lm(PHENO~SCORE,data=mergedata)
+modelcontrols&lt;-lm(PHENO~SCORE+PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10+SEX,data=mergedata)
+
+model$IncreaseR2&lt;-round(summary(model)$r.squared,digits=3)
+modelcontrols$IncreaseR2&lt;-round(summary(modelcontrols)$r.squared - nullr2,digits=3)
+
+logitmodel&lt;-glm(PHENO~SCORE,data=mergedata,family="binomial")
+logitmodelcontrols&lt;-glm(PHENO~SCORE+PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10+SEX,data=mergedata,family="binomial")
+
+nullmodellogit&lt;-glm(PHENO~PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10+SEX,data=mergedata,family="binomial")
+nullpseudor2&lt;-round(1-(nullmodellogit$deviance/nullmodellogit$null.deviance),digits=3)
+
+logitmodel$PseudoR2&lt;-round(1-(logitmodel$deviance/logitmodel$null.deviance),digits=3)
+logitmodelcontrols$PseudoR2&lt;-round(1-(logitmodelcontrols$deviance/logitmodelcontrols$null.deviance),digits=3)
+
+logitmodel$IncreaseR2&lt;-logitmodel$PseudoR2
+logitmodelcontrols$IncreaseR2&lt;-logitmodelcontrols$PseudoR2 - nullpseudor2
+
+stargazer(model,modelcontrols,logitmodel,logitmodelcontrols,type="text",
+          out="PLINKScore.txt",keep = c("SCORE"),
+          add.lines = list(c("10 PCs", "No", "Yes", "No", "Yes"),c("Pseudo-R2","","",logitmodel$PseudoR2,logitmodelcontrols$PseudoR2),c("Increase-R2",model$IncreaseR2,modelcontrols$IncreaseR2,logitmodel$IncreaseR2,logitmodelcontrols$IncreaseR2)),
+          star.cutoffs = c(0.05, 0.01, 0.001), float=FALSE)</code></pre>
+<h2 id="create-a-prs-using-ldpred">Create a PRS using LDPred<a class="headerlink" href="#create-a-prs-using-ldpred" title="Permanent link">&para;</a></h2>
+<pre class="highlight"><code class="language-bash">python $PREDPATH coord --rs SNP --A1 A1 --A2 A2 --pos BP --eff_type LINREG --chr CHR --pval P --eff BETA --N $NGWAS --ssf GWASanalysis.txt --gf $TARGETSET.out --out pred.coord
+
+## LDpred recommend radius to be Total number of SNPs in target / 3000 (CHECK!)
+GSize="$(wc -l &lt;"$TARGETSET.out.bim")"
+ldrnum=$(( GSize / 3000 ))
+python $PREDPATH gibbs --cf pred.coord --ldr $ldrnum --ldf pred.ld --out pred.weight --N $NGWAS
+
+echo "python3 $PREDPATH score --gf $FILESET$out --rf test.weight --out test.score --pf phenotype.phen --pf-format LSTANDARD"
+python $PREDPATH score --gf $TARGETSET.out --rf pred.weight --out test.score --pf phenotype.phen --pf-format LSTANDARD --pcs-file clusters.eigenvec
+
+##P+T for reference:
+python $PREDPATH p+t --cf pred.coord --ldr $ldrnum --out PTpred
+
+python $PREDPATH score --gf $TARGETSET.out --rf PTpred --out PTscore.score --pf phenotype.phen --pf-format \
+LSTANDARD --pcs-file clusters.eigenvec</code></pre>
+<div class="tabbed-set" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Performed in R</label><div class="tabbed-content"></div>
+</div>
+<pre class="highlight"><code>library(stargazer)
+
+data &lt;- read.table(file="test.score_LDpred-inf.txt",header=TRUE, sep = ",")
+
+data$PRS &lt;- (data$PRS-mean(data$PRS))/(sd(data$PRS))
+data$true_phens &lt;- data$true_phens - 1
+#data$true_phens &lt;- (data$true_phens-mean(data$true_phens))/(sd(data$true_phens))
+
+model&lt;-lm(true_phens~PRS,data=data)
+logitmodel&lt;-glm(true_phens~PRS,data=data,family="binomial")
+modelcontrols&lt;-lm(true_phens~PRS+PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10,data=data)
+logitmodelcontrols&lt;-glm(true_phens~PRS+PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10,data=data,family="binomial")
+
+logitmodel$PseudoR2&lt;-round(1-(logitmodel$deviance/logitmodel$null.deviance),digits=3)
+logitmodelcontrols$PseudoR2&lt;-round(1-(logitmodelcontrols$deviance/logitmodelcontrols$null.deviance),digits=3)
+stargazer(model,modelcontrols,logitmodel,logitmodelcontrols,
+          out="LDPREDstat.tex",keep = c("PRS"), 
+          add.lines = list(c("10 PCs", "No", "Yes", "No", "Yes"),c("Pseudo-R2","","",logitmodel$PseudoR2,logitmodelcontrols$PseudoR2)), 
+          star.cutoffs = c(0.05, 0.01, 0.001), float=FALSE)</code></pre>
+<h2 id="notes-on-power">Notes on power:<a class="headerlink" href="#notes-on-power" title="Permanent link">&para;</a></h2>
+<p><code>Contrast with some results from a larger dataset (e.g. UKB?)</code></p>
+<h2 id="notes-on-confouding-within-family-analysis-etc">Notes on confouding, within-family analysis, etc.<a class="headerlink" href="#notes-on-confouding-within-family-analysis-etc" title="Permanent link">&para;</a></h2>
+<h2 id="notes-on-downward-bias-due-to-measurement-error-genetic-iv">Notes on downward bias due to measurement error: Genetic IV?<a class="headerlink" href="#notes-on-downward-bias-due-to-measurement-error-genetic-iv" title="Permanent link">&para;</a></h2>
+<h2 id="further-topics-genetic-correlations-genomic-sem">Further topics? Genetic correlations, Genomic SEM<a class="headerlink" href="#further-topics-genetic-correlations-genomic-sem" title="Permanent link">&para;</a></h2>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Chaudhury, S., Brookes, K. J., Patel, T., Fallows, A., Guetta-Baranes, T., Turton, J. C., ... &amp; Thomas, A. J. (2019). Alzheimer's disease polygenic risk score as a predictor of conversion from mild-cognitive impairment. Translational psychiatry, 9(1), 1-7.
+Ware, E. B., Schmitz, L. L., Faul, J., Gard, A., Mitchell, C., Smith, J. A., ... &amp; Kardia, S. L. (2017). Heterogeneity in polygenic scores for common human traits. BioRxiv, 106062.</p>
               
             </div>
           </div>
@@ -149,7 +460,7 @@
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="../liftover/" class="btn btn-neutral" title="liftover"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../Additional_considerations/" class="btn btn-neutral" title="6. Additional Considerations"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -177,7 +488,7 @@
           <a href="https://github.com/choishingwan/PRS-Tutorial/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href="../liftover/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../Additional_considerations/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
     </span>

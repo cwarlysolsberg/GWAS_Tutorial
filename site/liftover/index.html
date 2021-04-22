@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>liftover - Basic Tutorial for Genome Wide Association Analysis</title>
+  <title>Introduction - Basic Tutorial for Genome Wide Association Analysis</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,7 +19,7 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "liftover";
+    var mkdocs_page_name = "Introduction";
     var mkdocs_page_input_path = "liftover.md";
     var mkdocs_page_url = null;
   </script>
@@ -84,44 +84,12 @@
                     <li class="toctree-l1"><a class="" href="../assocdive.md">5. Deep dive into underpinnings of associations</a>
                     </li>
                 </ul>
-                <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="./">liftover</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#installing-ldpred-2">Installing LDpred-2</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#required-data">Required Data</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#0-prepare-workspace">0. Prepare workspace</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#1-read-in-the-phenotype-and-covariate-files">1. Read in the phenotype and covariate files</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#2-obtain-hapmap3-snps">2. Obtain HapMap3 SNPs</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#3-load-and-transform-the-summary-statistic-file">3. Load and transform the summary statistic file</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#3-calculate-the-ld-matrix">3. Calculate the LD matrix</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#4-perform-ld-score-regression">4. Perform LD score regression</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#5-calculate-the-null-r2">5. Calculate the null R2</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#7-obtain-model-prs">7. Obtain model PRS</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#using-genome-wide-bed-file">Using Genome wide bed file</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#using-chromosome-separated-bed-files">Using chromosome separated bed files</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#8-get-the-final-performance-of-the-ldpred-models">8. Get the final performance of the LDpred models</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Additional_considerations/">6. Additional Considerations</a>
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../prs/">PRS</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../prs/">7.PRS</a>
                     </li>
                 </ul>
       </div>
@@ -145,7 +113,7 @@
     
       
     
-    <li>liftover</li>
+    <li>Introduction</li>
     <li class="wy-breadcrumbs-aside">
       
         <a href="https://github.com/choishingwan/PRS-Tutorial/edit/master/docs/liftover.md"
@@ -159,8 +127,8 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h1>
-<p><a href="https://privefl.github.io/bigsnpr/articles/LDpred2.html">LDpred-2</a> is one of the dedicated PRS programs which is an <code>R</code> package that uses a Bayesian approach to polygenic risk scoring.</p>
+                <h1 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h1>
+<p>While this tutorial is intended to be as robust as possible, there are some additional processes and considerations that may be needed for individual datasets. This section serves to provide examples of when and how to incorportant various tools and commands that were not necessary for our example HapMap dataset, but are likely to come up in other analyses. </p>
 <h2 id="installing-ldpred-2">Installing LDpred-2<a class="headerlink" href="#installing-ldpred-2" title="Permanent link">&para;</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -660,15 +628,6 @@ auto.model &lt;- lm(reg.formula, dat=reg.dat) %&gt;%
           </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../prs/" class="btn btn-neutral float-right" title="PRS">Next <span class="icon icon-circle-arrow-right"></span></a>
-      
-      
-        <a href="../plink_visual/" class="btn btn-neutral" title="4. Visualizing association results"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-      
-    </div>
-  
 
   <hr/>
 
@@ -693,10 +652,6 @@ auto.model &lt;- lm(reg.formula, dat=reg.dat) %&gt;%
           <a href="https://github.com/choishingwan/PRS-Tutorial/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href="../plink_visual/" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      
-      
-        <span style="margin-left: 15px"><a href="../prs/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
