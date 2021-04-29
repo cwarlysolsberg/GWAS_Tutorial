@@ -2,7 +2,7 @@
 
 
 ## Background
-In this section of the tutorial you will learn how to construct a Polygenic Risk Score (PRS) for Alzheimer's disease, using PLINK and ldpred, and use this PRS to predict the likelihood of late-onset alzheimer's disease. As part of this analysis, you will estimate the heritability of alzheimer's disease using ld score regression on the GWAS summary statistics, and using GCTA on the target dataset. 
+In this section of the tutorial you will learn how to construct a Polygenic Risk Score (PRS) for Alzheimer's disease, using PLINK and ldpred, and use this PRS to predict the likelihood of late-onset alzheimer's disease. As part of this analysis, you will also learn how to estimate the heritability of alzheimer's disease using ld score regression on the GWAS summary statistics, and using GCTA on the target dataset. 
 
 Whenever evaluating the predictiveness of a PRS, it is of vital importance that the target data set was not included in the original GWAS analysis. When using GWAS results from previously published work, it is important to check the accompanying article for the data sources that the authors used and ensure that your target data was not included in the study. When this is the case, it is advised to search for GWAS results elsewhere, or to contact the original GWAS authors to see whether it is possible to acquire meta-analysed summary statistics that exclude the target population.
 

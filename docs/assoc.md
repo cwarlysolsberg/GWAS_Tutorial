@@ -23,15 +23,42 @@ All these analyses are performed M times, for each SNP. As a result, conventiona
     ```
 
 === "logistic" 
-The **--logistic** method performs logistic analysis and allows you to include covariates in your association analysis. We include sex as a covariate (which is recommended for many phenotypes), adding sex to the **--logistic** flag as shown below. Sex will be inferred from the .fam file. We will be using 10 principal components as covariates in this logistic analysis. We use the PCA components calculated from the previous tutorial: covar_PCA.txt. In that tutorial, we showed in the scree plot that the first two PCs should in principal be sufficient to control for population stratification. Nonetheless, we add the first 10 as this is considered the minimum in the literature and controlling for too many PCs is unlikely to have a large effect on the overall results (Price et al., 2006). We use the option **hide-covar** to only show the additive results of the SNPs in the output file. 
+The **--logistic** method performs logistic analysis and allows you to include covariates in your association analysis. We include sex as a covariate (which is recommended for many phenotypes), adding sex to the **--logistic** flag as shown below. Sex will be inferred from the .fam file. We will be using 10 principal components as covariates in this logistic analysis. We use the PCA components calculated from the previous tutorial: covar_PCA.txt. In that tutorial, we showed in the scree plot that the first two PCs should in principal be sufficient to control for population stratification. Nonetheless, we add the first 10 as this is considered the minimum in the literature and controlling for too many PCs is unlikely to have a large effect on the overall results (Price et al., 2006). We use the option **hide-covar** to only show the additive results of the SNPs in the output file.
 
     ```bash
-    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --adjust --out logistic_results
+    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results
     ```
     **Remove NA values, those might give problems generating plots in later steps.**
     ```bash 
     awk '!/'NA'/' logistic_results.assoc.logistic > logistic_results.assoc_2.logistic
     ```
+    
+    ??? note: "The resulting output:"
+    plink --bfile $FILE_GWAS --covar $FILE_COV --logistic 'hide-covar' sex --out logistic_results
+    PLINK v1.90b6.17 64-bit (28 Apr 2020)          www.cog-genomics.org/plink/1.9/
+    (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+    Logging to logistic_results.log.
+    Options in effect:
+      --bfile popstratout
+      --covar covar_PCs.txt
+      --logistic hide-covar sex
+      --out logistic_results
+
+    12574 MB RAM detected; reserving 6287 MB for main workspace.
+    1181555 variants loaded from .bim file.
+    107 people (54 males, 53 females) loaded from .fam.
+    107 phenotype values loaded from .fam.
+    Using 1 thread (no multithreaded calculations invoked).
+    --covar: 10 covariates loaded.
+    Before main variant filters, 107 founders and 0 nonfounders present.
+    Calculating allele frequencies... done.
+    Total genotyping rate is 0.99815.
+    1181555 variants and 107 people pass filters and QC.
+    Among remaining phenotypes, 53 are cases and 54 are controls.
+    Writing logistic model association results to logistic_results.assoc.logistic
+    ... done.
+    ```bash
+    
 
 === "--linear"
     In case of a quantitative outcome measure the option --logistic should be replaced by **--linear** as to perform linear regression analysis. The use of the --assoc option is also possible for quantitative outcome measures (as metioned previously, this option does not allow the use of covariates). 
@@ -49,21 +76,9 @@ sed 's/\.$//' test.txt >lambda.txt
 ```
 The output file gives a Bonferroni corrected p-value, along with FDR and others.
 
+## Generate Manhattan and QQ plots.
+The Manhattan plot is the key visualization tool to assess GWAS results. It has minus the log of the p-value on the y-axis, and the SNPs ordered by chromosome and position within the chromosome on the x-axis. 
 
-## Permutation
-!!! warning 
-    This is a computational intensive step. Further pros and cons of this method, which can be used for association and dealing with multiple testing, are described in our article corresponding to this tutorial (https://www.ncbi.nlm.nih.gov/pubmed/29484742).To reduce computational time, we only perform this test on a subset of the SNPs from chromosome 22. The EMP2 column provides the values for multiple testing corrected p-value.
-
-```bash
-# Perform 1000000 permutations.
-plink --bfile $FILE_GWAS --assoc --mperm 1000000 --out 1M_perm_result
-# Order your data, from lowest to highest p-value.
-sort -gk 4 1M_perm_result.assoc.mperm > sorted_subset.txt
-# Check ordered permutation results
-head sorted_subset.txt
-```
-
-# Generate Manhattan and QQ plots.
 === "Generating Manhattan plot in R"
 
     ```{r}
