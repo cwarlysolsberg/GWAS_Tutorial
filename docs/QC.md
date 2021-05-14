@@ -320,6 +320,14 @@ plink --bfile $FILESET.geno --mind $MIND --make-bed --out $FILESET.mind
 
 As expected, In the first step, 0 variants and 0 individuals were removed from the data. When subsequently filtering on the stricter threshold of 0.02, 27454 SNPs were removed from the data, leaving 1430443 SNPs. Finally, 0 people were removed due to missing genotype data, leaving 165 individuals. 
 
+**Remove SNPS with Significant Levels of Differential Missingness**
+```bash
+plink --bfile $FILESET.mind --test-missing
+awk '$5 <= 1e-8' plink.missing | awk '{print $2}' > differentialsnps.txt
+plink --bfile  $FILESET.mind --exclude differentialsnps.txt --make-bed --out  $FILESET.mind.diff
+```
+**1e-8 p-value cut off
+
 ## Check for Sex Discrepancies
 
 We check whether each individual's assigned sex corresponds with their genotype. The **--check-sex** flag in PLINK tests this by calculating X chromosome homozygosity. Males should have an X chromosome homozygosity estimate >0.8. Females should have a value < 0.2. Subjects who do not fulfill these requirements are flagged as a "PROBLEM" by PLINK.
@@ -329,7 +337,7 @@ We check whether each individual's assigned sex corresponds with their genotype.
 
 First, we want to visualize the F-values and check for discrepencies.
 ```bash
-plink --bfile $FILESET.mind --check-sex 
+plink --bfile $FILESET.mind.diff --check-sex 
 ```
 
 ??? note "This results in the following output:"
@@ -339,7 +347,7 @@ plink --bfile $FILESET.mind --check-sex
       (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
       Logging to plink.log.
       Options in effect:
-        --bfile HapMap_3_r3_1.mind
+        --bfile HapMap_3_r3_1.mind.diff
         --check-sex
 
       12574 MB RAM detected; reserving 6287 MB for main workspace.
@@ -416,7 +424,7 @@ The third histogram shows where the problem lies: one individual is marked as fe
 
 ```bash
 grep "PROBLEM" plink.sexcheck| awk '{print$1,$2}'> sex_discrepancy.txt
-plink --bfile $FILESET.mind --remove sex_discrepancy.txt --make-bed --out $FILESET.rem
+plink --bfile $FILESET.mind.diff --remove sex_discrepancy.txt --make-bed --out $FILESET.rem
 ```
 
 ## Limit data to autosomal SNPs only 
